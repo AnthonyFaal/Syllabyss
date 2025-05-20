@@ -16,7 +16,6 @@ import Terms from "../pages/Policies/TermsConditions";
 import UserInterest from "../pages/interest/InterestPage"
 import ContentStudioPage from '../pages/ContentStudioPage';
 import CollaborationPage from '../pages/CollaborationPage';
-import Personality from "../pages/tests/personality/personality_screen";
 
 
 const AppRoutes = () => (
@@ -28,7 +27,6 @@ const AppRoutes = () => (
     <Route path="/user-interest"  element = {<UserInterest/>}/>
     <Route path="/auth" element={<AuthPage />} />
     <Route path="/terms" element={<Terms />} />
-    <Route path="/personality" element={<Personality />} />
 
     {/* Protected App Routes under sidebar layout */}
      <Route path="/app" element={<ProtectedRoute><SidebarLayout /></ProtectedRoute>}>
