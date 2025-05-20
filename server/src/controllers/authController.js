@@ -50,9 +50,9 @@ const verifyEmail = async (req, res) => {
     if (!user) return res.status(400).send("Invalid or expired token");
 
     // Redirect to frontend with verification status, userId, and token
-    return res.redirect(`http://localhost:5173/user-interest?verified=true&userId=${user.user_id}&token=${token}`);
+    return res.redirect(`https://final-year-frontend-orcin.vercel.app/user-interest?verified=true&userId=${user.user_id}&token=${token}`);
   } catch (err) {
-    return res.redirect(`http://localhost:5173/user-interest?verified=false&error=${encodeURIComponent(err.message)}`);
+    return res.redirect(`https://final-year-frontend-orcin.vercel.app/user-interest?verified=false&error=${encodeURIComponent(err.message)}`);
   }
 };
 
