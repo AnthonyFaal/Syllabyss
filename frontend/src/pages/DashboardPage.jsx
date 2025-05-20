@@ -20,7 +20,7 @@ const Dashboard = () => {
       setToken(storedToken);
       fetchUserData(storedUserId); // Fetch user data
     } else {
-      window.location.href = '/auth';
+      window.location.href = '/';
     }
   }, []);
 

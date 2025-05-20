@@ -50,7 +50,7 @@ const AppRoutes = () => (
     </Route>
 
     {/* Catch-all route for undefined root paths */}
-    <Route path="*" element={<Navigate to="/auth" replace />} />
+    <Route path="*" element={<Navigate to="/" replace />} />
   </Routes>
 );
 
