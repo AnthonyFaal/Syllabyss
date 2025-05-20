@@ -1,0 +1,1898 @@
+ {
+        
+    "field_selection": {
+        "question": "What field are you learning for?",
+        "options": [
+        "Software Development",
+        "Human Resources",
+        "Data & Analytics",
+        "Education & Training",
+        "Information Technology",
+        "Customer Support",
+        "Marketing",
+        "Health & Wellness",
+        "Design",
+        "Writing",
+        "Finance & Accounting",
+        "Legal",
+        "Product & Project Management",
+        "Art",
+        "Business Operations",
+        "None of the above",
+        "Sales & Business Development"
+        ]
+    },
+    
+     "experience_level": {
+    "question": "What is your experience level?",
+    "options": ["Beginner", "Intermediate", "Advanced"]
+  },
+  
+    "skill_recommendations": {
+        "Software Development": {
+            "header": "You're in the right place!",
+            "question": "What area of software development interests you?",
+            "instruction": "Select a focus area to see relevant skills.",
+            "specializations": [
+                {
+                "label": "Frontend Development",
+                "description": "Building user interfaces and client-side logic",
+                "skills": {
+                    "question": "What frontend skills are you interested in?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Frameworks/Libraries",
+                        "skills": ["React", "Angular", "Vue.js", "Svelte", "Next.js"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Core Technologies",
+                        "skills": ["HTML/CSS", "JavaScript", "TypeScript", "Web Components"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Backend Development",
+                "description": "Server-side programming and APIs",
+                "skills": {
+                    "question": "What backend skills are you interested in?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Frameworks",
+                        "skills": ["Node.js (Express)", "Django", "Spring Boot", "Laravel", "Ruby on Rails", "ASP.NET Core"]
+                    },
+                    
+                    {
+                        "type": "skill_group",
+                        "label": "API Technologies",
+                        "skills": ["REST", "GraphQL", "gRPC", "WebSocket"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Mobile Development",
+                "description": "Building iOS/Android applications",
+                "skills": {
+                    "question": "What mobile skills are you interested in?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Cross-Platform",
+                        "skills": ["Flutter", "React Native", "Ionic", "Xamarin"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Native",
+                        "skills": ["Swift (iOS)", "Kotlin (Android)", "Jetpack Compose", "SwiftUI"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Data Science/AI",
+                "description": "Machine learning, analytics, and AI systems",
+                "skills": {
+                    "question": "What data/AI skills are you interested in?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "ML Frameworks",
+                        "skills": ["TensorFlow", "PyTorch", "scikit-learn", "Keras"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Data Tools",
+                        "skills": ["Python (Pandas)", "SQL", "Jupyter", "Apache Spark"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "DevOps/Cloud",
+                "description": "Deployment, infrastructure, and scalability",
+                "skills": {
+                    "question": "What DevOps skills are you interested in?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Cloud Platforms",
+                        "skills": ["AWS", "Azure", "Google Cloud", "Docker", "Kubernetes"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Infrastructure",
+                        "skills": ["Terraform", "Ansible", "CI/CD Pipelines", "Serverless"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Game Development",
+                "description": "Creating games and interactive experiences",
+                "skills": {
+                    "question": "What game dev skills are you interested in?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Engines",
+                        "skills": ["Unity", "Unreal Engine", "Godot", "CryEngine"]
+                    }
+    
+                    ]
+                }
+                }
+            ]
+            },
+        "Human Resources": {
+            "header": "Build a thriving workplace!",
+            "question": "What area of HR interests you?",
+            "instruction": "Select a focus area to see relevant skills.",
+            "specializations": [
+                {
+                "label": "Recruitment & Talent Acquisition",
+                "description": "Hiring, interviewing, and employer branding",
+                "skills": {
+                    "question": "What recruitment skills are you interested in?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Core Recruitment",
+                        "skills": ["Candidate Sourcing", "Interviewing Techniques", "Employer Branding", "ATS (Applicant Tracking Systems)"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Tools & Platforms",
+                        "skills": ["LinkedIn Recruiter", "Indeed Hire", "Greenhouse", "Lever"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Employee Relations",
+                "description": "Workplace culture, conflict resolution, and engagement",
+                "skills": {
+                    "question": "What employee relations skills are you interested in?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Core Skills",
+                        "skills": ["Conflict Resolution", "Performance Management", "Employee Engagement", "Workplace Investigations"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Compliance",
+                        "skills": ["Labor Laws", "HR Policies", "Diversity & Inclusion", "Unconscious Bias Training"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Compensation & Benefits",
+                "description": "Pay structures, incentives, and total rewards",
+                "skills": {
+                    "question": "What compensation skills are you interested in?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Core Compensation",
+                        "skills": ["Salary Benchmarking", "Pay Equity Analysis", "Bonus Structures", "Stock Options"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Benefits Administration",
+                        "skills": ["Health Insurance Plans", "Retirement Plans (401k)", "Wellness Programs", "Leave Management"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "HR Analytics",
+                "description": "Data-driven HR decision-making",
+                "skills": {
+                    "question": "What HR analytics skills are you interested in?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Data Skills",
+                        "skills": ["HR Metrics (Turnover, Retention)", "People Analytics", "Workforce Planning", "Predictive Modeling"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Tools",
+                        "skills": ["Tableau (HR Dashboards)", "Excel (Advanced)", "Power BI", "Visier"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Learning & Development",
+                "description": "Training programs and career growth",
+                "skills": {
+                    "question": "What L&D skills are you interested in?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Program Design",
+                        "skills": ["Needs Assessment", "Curriculum Development", "eLearning Design", "Leadership Training"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Delivery Methods",
+                        "skills": ["Virtual Training", "Coaching/Mentoring", "Microlearning", "Gamification"]
+                    }
+                    ]
+                }
+                }
+            ]
+            },
+        "Data & Analytics": {
+        "header": "Unlock the power of data!",
+        "question": "What area of data & analytics interests you?",
+        "instruction": "Select a focus area to see relevant skills.",
+        "specializations": [
+            {
+            "label": "Data Analysis",
+            "description": "Exploring, cleaning, and interpreting data",
+            "skills": {
+                "question": "What data analysis skills are you interested in?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Core Analysis",
+                    "skills": ["SQL", "Excel (Advanced)", "Data Cleaning", "Exploratory Data Analysis (EDA)"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Visualization",
+                    "skills": ["Tableau", "Power BI", "Matplotlib", "Seaborn"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Data Science",
+            "description": "Building predictive models and machine learning",
+            "skills": {
+                "question": "What data science skills are you interested in?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Machine Learning",
+                    "skills": ["Python (Pandas, Scikit-learn)", "TensorFlow", "PyTorch", "Feature Engineering"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Advanced Topics",
+                    "skills": ["Natural Language Processing (NLP)", "Computer Vision", "Time Series Analysis"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Business Intelligence",
+            "description": "Transforming data into business insights",
+            "skills": {
+                "question": "What BI skills are you interested in?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Core BI",
+                    "skills": ["Dashboard Design", "KPI Development", "Data Storytelling", "OLAP"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Tools",
+                    "skills": ["Looker", "Qlik", "MicroStrategy", "SAP BusinessObjects"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Data Engineering",
+            "description": "Building data pipelines and infrastructure",
+            "skills": {
+                "question": "What data engineering skills are you interested in?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Data Pipelines",
+                    "skills": ["Apache Spark", "Airflow", "ETL Processes", "Data Warehousing"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Big Data",
+                    "skills": ["Hadoop", "Kafka", "NoSQL Databases", "Delta Lake"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Data Governance",
+            "description": "Ensuring data quality, security, and compliance",
+            "skills": {
+                "question": "What data governance skills are you interested in?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Core Governance",
+                    "skills": ["Data Quality", "Metadata Management", "GDPR Compliance", "Master Data Management"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Tools",
+                    "skills": ["Collibra", "Alation", "Informatica", "Talend"]
+                }
+                ]
+            }
+            }
+        ]
+        },
+    "Education & Training": {
+            "header": "Shape the future of learning!",
+            "question": "What area of education interests you?",
+            "instruction": "Select a focus area to see relevant skills.",
+            "specializations": [
+                {
+                "label": "Classroom Teaching",
+                "description": "Traditional K-12 or higher education instruction",
+                "skills": {
+                    "question": "What teaching skills are you interested in?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Teaching Methods",
+                        "skills": ["Lesson Planning", "Differentiated Instruction", "Classroom Management", "Assessment Design"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Subject Specialties",
+                        "skills": ["STEM Education", "Literacy Instruction", "Special Education", "ESL/TESOL"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "E-Learning Development",
+                "description": "Creating digital courses and online learning experiences",
+                "skills": {
+                    "question": "What e-learning skills are you interested in?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Course Creation",
+                        "skills": ["Instructional Design", "SCORM Compliance", "Storyboarding", "Gamification"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Authoring Tools",
+                        "skills": ["Articulate 360", "Captivate", "Camtasia", "Moodle"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Corporate Training",
+                "description": "Workplace learning and professional development",
+                "skills": {
+                    "question": "What corporate training skills are you interested in?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Training Delivery",
+                        "skills": ["Facilitation Skills", "Needs Analysis", "ROI Measurement", "Virtual Training"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Leadership Development",
+                        "skills": ["Coaching", "Mentoring Programs", "Succession Planning", "Soft Skills Training"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Educational Technology",
+                "description": "Implementing tech solutions in learning environments",
+                "skills": {
+                    "question": "What edtech skills are you interested in?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Learning Platforms",
+                        "skills": ["LMS Administration", "Canvas", "Blackboard", "Google Classroom"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Emerging Technologies",
+                        "skills": ["VR/AR Learning", "Adaptive Learning Systems", "AI in Education", "Learning Analytics"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Curriculum Design",
+                "description": "Developing educational programs and materials",
+                "skills": {
+                    "question": "What curriculum design skills are you interested in?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Design Frameworks",
+                        "skills": ["Backward Design", "UDL Principles", "Competency-Based Education", "Bloom's Taxonomy"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Content Development",
+                        "skills": ["OER Creation", "Textbook Writing", "Microlearning", "Accessible Materials"]
+                    }
+                    ]
+                }
+                }
+            ]
+            } ,
+        "Information Technology": {
+        "header": "Master the digital infrastructure!",
+        "question": "Which IT domain aligns with your goals?",
+        "instruction": "Select a specialization to see relevant skills.",
+        "specializations": [
+            {
+            "label": "Network Engineering",
+            "description": "Designing and maintaining network systems",
+            "skills": {
+                "question": "What networking skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Core Networking",
+                    "skills": ["TCP/IP", "DNS", "VPN", "Subnetting", "OSI Model"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Enterprise Solutions",
+                    "skills": ["Cisco Systems", "Juniper", "SD-WAN", "Load Balancing"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Cybersecurity",
+            "description": "Protecting systems from digital threats",
+            "skills": {
+                "question": "What security skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Defensive Security",
+                    "skills": ["SIEM Tools", "Firewall Configuration", "Endpoint Protection", "SOC Operations"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Offensive Security",
+                    "skills": ["Penetration Testing", "Ethical Hacking", "Vulnerability Assessment", "OWASP Top 10"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Cloud Computing",
+            "description": "Deploying and managing cloud infrastructure",
+            "skills": {
+                "question": "What cloud skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Platform Expertise",
+                    "skills": ["AWS", "Azure", "Google Cloud", "OCI"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Cloud Architecture",
+                    "skills": ["IaaS/PaaS/SaaS", "Serverless Computing", "Cloud Migration", "Multi-Cloud Strategy"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "System Administration",
+            "description": "Managing servers and IT infrastructure",
+            "skills": {
+                "question": "What sysadmin skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Operating Systems",
+                    "skills": ["Linux Administration", "Windows Server", "Active Directory", "PowerShell/Bash"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Virtualization",
+                    "skills": ["VMware", "Hyper-V", "Containerization", "Kubernetes"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "IT Support",
+            "description": "Technical assistance and troubleshooting",
+            "skills": {
+                "question": "What support skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Helpdesk Fundamentals",
+                    "skills": ["Ticketing Systems", "Remote Support", "Hardware Troubleshooting", "ITIL Framework"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Enterprise Support",
+                    "skills": ["MDM Solutions", "Printer Management", "Email Systems", "Backup Solutions"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Database Administration",
+            "description": "Managing and optimizing database systems",
+            "skills": {
+                "question": "What DBA skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Database Platforms",
+                    "skills": ["SQL Server", "Oracle", "MySQL", "PostgreSQL"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Administration",
+                    "skills": ["Performance Tuning", "Backup/Recovery", "High Availability", "Database Security"]
+                }
+                ]
+            }
+            }
+        ]
+        },
+    "Customer Support": {
+        "header": "Deliver exceptional customer experiences!",
+        "question": "What type of customer support interests you?",
+        "instruction": "Select a focus area to see relevant skills.",
+        "specializations": [
+            {
+            "label": "Technical Support",
+            "description": "Troubleshooting technical products and services",
+            "skills": {
+                "question": "What technical support skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Core Technical Skills",
+                    "skills": ["Product Knowledge", "Troubleshooting Methodology", "Log Analysis", "Remote Desktop Tools"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Support Platforms",
+                    "skills": ["Zendesk", "ServiceNow", "Jira Service Desk", "Freshdesk"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Customer Success",
+            "description": "Ensuring customers achieve their goals with your product",
+            "skills": {
+                "question": "What customer success skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Relationship Management",
+                    "skills": ["Onboarding", "QBRs (Quarterly Business Reviews)", "Churn Prevention", "Upselling/Cross-selling"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Success Tools",
+                    "skills": ["Gainsight", "Totango", "CRM Systems", "Customer Health Scoring"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Live Chat & Social Media Support",
+            "description": "Real-time digital customer engagement",
+            "skills": {
+                "question": "What digital support skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Communication Skills",
+                    "skills": ["Live Chat Etiquette", "Social Media Tone", "Typing Speed", "Multitasking"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Platform Expertise",
+                    "skills": ["Intercom", "LiveChat", "Facebook Messenger", "Twitter DM Support"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Call Center Operations",
+            "description": "Phone-based customer service and support",
+            "skills": {
+                "question": "What call center skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Voice Support",
+                    "skills": ["Active Listening", "Call Control", "De-escalation Techniques", "Phone Systems"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Performance Metrics",
+                    "skills": ["AHT (Average Handle Time)", "FCR (First Call Resolution)", "CSAT (Customer Satisfaction)", "Quality Assurance"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Support Leadership",
+            "description": "Managing support teams and operations",
+            "skills": {
+                "question": "What leadership skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Team Management",
+                    "skills": ["Agent Coaching", "Shift Scheduling", "KPI Monitoring", "Escalation Management"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Strategic Skills",
+                    "skills": ["Process Improvement", "Support Scaling", "Budgeting", "Vendor Management"]
+                }
+                ]
+            }
+            }
+        ]
+        },
+    "Marketing": {
+        "header": "Drive growth and engagement!",
+        "question": "What marketing specialty interests you?",
+        "instruction": "Select an area to see relevant skills.",
+        "specializations": [
+            {
+            "label": "Digital Marketing",
+            "description": "Online promotion and customer acquisition",
+            "skills": {
+                "question": "What digital marketing skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Channels",
+                    "skills": ["SEO", "PPC Advertising", "Social Media Marketing", "Email Marketing"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Analytics",
+                    "skills": ["Google Analytics", "Conversion Rate Optimization", "A/B Testing", "Marketing Attribution"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Content Marketing",
+            "description": "Creating valuable content to attract audiences",
+            "skills": {
+                "question": "What content skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Content Creation",
+                    "skills": ["Blog Writing", "Video Production", "Infographics", "Podcasting"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Strategy",
+                    "skills": ["Content Calendar", "SEO Writing", "Brand Storytelling", "Content Distribution"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Social Media Marketing",
+            "description": "Building brand presence on social platforms",
+            "skills": {
+                "question": "What social media skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Platform Expertise",
+                    "skills": ["Instagram Marketing", "LinkedIn Marketing", "TikTok Strategy", "Twitter/X Engagement"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Community Management",
+                    "skills": ["Influencer Partnerships", "User-Generated Content", "Crisis Management", "Social Listening"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Marketing Analytics",
+            "description": "Measuring and optimizing marketing performance",
+            "skills": {
+                "question": "What analytics skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Data Tools",
+                    "skills": ["Google Data Studio", "Tableau", "Mixpanel", "HubSpot Analytics"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Technical Skills",
+                    "skills": ["UTM Tracking", "SQL for Marketing", "ROI Calculation", "Customer Lifetime Value"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Brand Management",
+            "description": "Developing and maintaining brand identity",
+            "skills": {
+                "question": "What brand management skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Core Branding",
+                    "skills": ["Brand Positioning", "Visual Identity", "Brand Guidelines", "Brand Voice Development"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Strategy",
+                    "skills": ["Competitive Analysis", "Brand Extensions", "Reputation Management", "Rebranding"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Product Marketing",
+            "description": "Launching and promoting products",
+            "skills": {
+                "question": "What product marketing skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Go-To-Market",
+                    "skills": ["Market Research", "Positioning Statements", "Launch Campaigns", "Sales Enablement"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Lifecycle Marketing",
+                    "skills": ["Feature Adoption", "Customer Education", "Upsell Strategies", "Retention Campaigns"]
+                }
+                ]
+            }
+            }
+        ]
+        },
+      "Health & Wellness": {
+            "header": "Promote holistic well-being!",
+            "question": "What area of health & wellness interests you?",
+            "instruction": "Select a focus area to see relevant skills.",
+            "specializations": [
+                {
+                "label": "Fitness Training",
+                "description": "Exercise programming and physical conditioning",
+                "skills": {
+                    "question": "What fitness skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Training Modalities",
+                        "skills": ["Strength Training", "Yoga Instruction", "HIIT", "Pilates", "Functional Movement"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Specializations",
+                        "skills": ["Senior Fitness", "Athletic Performance", "Post-Rehab Training", "Pre/Postnatal Exercise"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Nutrition Coaching",
+                "description": "Dietary guidance and meal planning",
+                "skills": {
+                    "question": "What nutrition skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Dietary Approaches",
+                        "skills": ["Macronutrient Balancing", "Plant-Based Nutrition", "Ketogenic Diets", "Sports Nutrition"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Coaching Skills",
+                        "skills": ["Meal Planning", "Behavior Change Strategies", "Supplement Guidance", "Disordered Eating Awareness"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Mental Wellness",
+                "description": "Supporting emotional and psychological health",
+                "skills": {
+                    "question": "What mental wellness skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Techniques",
+                        "skills": ["Mindfulness Meditation", "Stress Management", "Breathwork", "Cognitive Behavioral Techniques"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Applications",
+                        "skills": ["Corporate Wellness Programs", "School-Based Interventions", "Trauma-Informed Care", "Sleep Hygiene"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Holistic Therapies",
+                "description": "Complementary and alternative healing",
+                "skills": {
+                    "question": "What holistic therapy skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Modalities",
+                        "skills": ["Acupressure", "Ayurveda", "Reiki", "Aromatherapy", "Sound Healing"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Integration",
+                        "skills": ["Western-Holistic Bridge", "Client Assessment", "Dosage Guidelines", "Contraindications"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Wellness Technology",
+                "description": "Digital health tools and innovations",
+                "skills": {
+                    "question": "What wellness tech skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Devices & Platforms",
+                        "skills": ["Wearable Tech", "Meditation Apps", "Telehealth Platforms", "Biofeedback Devices"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Implementation",
+                        "skills": ["Data Interpretation", "Client Onboarding", "Tech-Based Coaching", "Privacy Compliance"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Corporate Wellness",
+                "description": "Workplace health programs",
+                "skills": {
+                    "question": "What corporate wellness skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Program Design",
+                        "skills": ["Needs Assessment", "Incentive Structures", "Ergonomics", "Work-Life Balance Initiatives"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Metrics",
+                        "skills": ["ROI Calculation", "Employee Engagement", "Health Risk Assessments", "Absenteeism Reduction"]
+                    }
+                    ]
+                }
+                }
+            ]
+            },
+        "Design": {
+        "header": "Create visually stunning experiences!",
+        "question": "What design discipline interests you?",
+        "instruction": "Select a focus area to see relevant skills.",
+        "specializations": [
+            {
+            "label": "Graphic Design",
+            "description": "Visual communication and branding",
+            "skills": {
+                "question": "What graphic design skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Core Design",
+                    "skills": ["Typography", "Color Theory", "Layout Composition", "Brand Identity"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Tools",
+                    "skills": ["Adobe Photoshop", "Illustrator", "InDesign", "Canva"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "UI/UX Design",
+            "description": "Digital product interfaces and experiences",
+            "skills": {
+                "question": "What UI/UX skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "User-Centered Design",
+                    "skills": ["Wireframing", "Prototyping", "User Flows", "Accessibility"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Tools",
+                    "skills": ["Figma", "Sketch", "Adobe XD", "User Testing Platforms"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Motion Design",
+            "description": "Animation and dynamic visuals",
+            "skills": {
+                "question": "What motion design skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Animation Techniques",
+                    "skills": ["2D Animation", "3D Motion", "Kinetic Typography", "Motion Graphics"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Tools",
+                    "skills": ["After Effects", "Cinema 4D", "Blender", "Lottie"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Product Design",
+            "description": "Physical products and industrial design",
+            "skills": {
+                "question": "What product design skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Design Process",
+                    "skills": ["Sketching", "3D Modeling", "Material Selection", "Ergonomics"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Tools",
+                    "skills": ["SolidWorks", "Rhino", "Keyshot", "3D Printing"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Interaction Design",
+            "description": "Designing digital interactions",
+            "skills": {
+                "question": "What interaction design skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Core Skills",
+                    "skills": ["Microinteractions", "Gestural Design", "Sound Design", "Haptic Feedback"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Emerging Tech",
+                    "skills": ["AR/VR Interfaces", "Voice UI", "Wearable Interfaces", "AI-Assisted Design"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Design Strategy",
+            "description": "Design-led business solutions",
+            "skills": {
+                "question": "What design strategy skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Strategic Thinking",
+                    "skills": ["Design Thinking", "Service Design", "Design Ops", "Design Systems"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Business Integration",
+                    "skills": ["Stakeholder Alignment", "ROI Measurement", "Design Leadership", "Cross-Functional Collaboration"]
+                }
+                ]
+            }
+            }
+        ]
+        },
+    "Writing": {
+        "header": "Craft compelling narratives!",
+        "question": "What type of writing interests you?",
+        "instruction": "Select a focus area to see relevant skills.",
+        "specializations": [
+            {
+            "label": "Creative Writing",
+            "description": "Fiction, poetry, and narrative storytelling",
+            "skills": {
+                "question": "What creative writing skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Genres",
+                    "skills": ["Novel Writing", "Short Stories", "Poetry", "Screenwriting", "Playwriting"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Techniques",
+                    "skills": ["Character Development", "Plot Structure", "Worldbuilding", "Dialogue", "Show vs Tell"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Content Writing",
+            "description": "Digital and marketing content creation",
+            "skills": {
+                "question": "What content writing skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Formats",
+                    "skills": ["Blog Posts", "SEO Articles", "Whitepapers", "Newsletters", "Social Media Content"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Specialized Writing",
+                    "skills": ["Technical Writing", "Grant Writing", "Scriptwriting", "Microcopy", "UX Writing"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Business Writing",
+            "description": "Professional and corporate communication",
+            "skills": {
+                "question": "What business writing skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Document Types",
+                    "skills": ["Business Proposals", "Reports", "Emails", "Press Releases", "Case Studies"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Professional Skills",
+                    "skills": ["Executive Summaries", "Persuasive Writing", "Editing", "Style Guides", "Tone Adaptation"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Journalism",
+            "description": "News reporting and investigative writing",
+            "skills": {
+                "question": "What journalism skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Reporting",
+                    "skills": ["Interviewing", "Fact-Checking", "Investigative Research", "Beat Reporting", "Live Blogging"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Formats",
+                    "skills": ["News Articles", "Features", "Opinion Pieces", "Profiles", "Reviews"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Academic Writing",
+            "description": "Research papers and scholarly work",
+            "skills": {
+                "question": "What academic writing skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Research Skills",
+                    "skills": ["Citation Styles", "Literature Reviews", "Thesis Development", "Peer Review", "Plagiarism Avoidance"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Document Types",
+                    "skills": ["Research Papers", "Dissertations", "Conference Abstracts", "Academic Articles", "Annotated Bibliographies"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Copywriting",
+            "description": "Persuasive writing for advertising",
+            "skills": {
+                "question": "What copywriting skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Advertising Formats",
+                    "skills": ["Ad Copy", "Landing Pages", "Taglines", "Direct Mail", "Video Scripts"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Persuasion Techniques",
+                    "skills": ["Features vs Benefits", "Call-to-Action", "Brand Voice", "AIDA Framework", "Emotional Triggers"]
+                }
+                ]
+            }
+            }
+        ]
+        },
+    "Finance & Accounting": {
+            "header": "Master financial strategy and analysis!",
+            "question": "What financial area interests you?",
+            "instruction": "Select a specialization to see relevant skills.",
+            "specializations": [
+                {
+                "label": "Corporate Finance",
+                "description": "Financial management for businesses",
+                "skills": {
+                    "question": "What corporate finance skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Financial Analysis",
+                        "skills": ["Financial Modeling", "Valuation", "DCF Analysis", "M&A Due Diligence", "Scenario Planning"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Capital Management",
+                        "skills": ["Working Capital Optimization", "Debt Financing", "Equity Financing", "Dividend Policy", "Risk Management"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Investment Banking",
+                "description": "Capital raising and advisory services",
+                "skills": {
+                    "question": "What investment banking skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Deal Execution",
+                        "skills": ["Pitch Books", "LBO Modeling", "IPO Preparation", "Teaser Documents", "Comparable Company Analysis"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Industry Specializations",
+                        "skills": ["TMT (Tech/Media/Telecom)", "Healthcare", "Energy", "Consumer Retail", "Financial Institutions"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Accounting",
+                "description": "Financial reporting and compliance",
+                "skills": {
+                    "question": "What accounting skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Core Accounting",
+                        "skills": ["GAAP/IFRS", "Financial Statements", "Auditing", "Tax Preparation", "Cost Accounting"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Software & Tools",
+                        "skills": ["QuickBooks", "SAP FICO", "Oracle Financials", "Excel (Advanced)", "ERP Systems"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Financial Planning & Analysis (FP&A)",
+                "description": "Budgeting and forecasting",
+                "skills": {
+                    "question": "What FP&A skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Planning Processes",
+                        "skills": ["Budgeting", "Forecasting", "KPI Tracking", "Variance Analysis", "Management Reporting"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Advanced Analytics",
+                        "skills": ["Driver-Based Planning", "Zero-Based Budgeting", "Scenario Analysis", "Data Visualization", "Power BI/Tableau"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Risk Management",
+                "description": "Identifying and mitigating financial risks",
+                "skills": {
+                    "question": "What risk management skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Risk Assessment",
+                        "skills": ["Credit Risk", "Market Risk", "Operational Risk", "Liquidity Risk", "Enterprise Risk Management"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Quantitative Methods",
+                        "skills": ["Value at Risk (VaR)", "Monte Carlo Simulation", "Stress Testing", "Derivatives Pricing", "Basel Accords"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "FinTech",
+                "description": "Technology-driven financial solutions",
+                "skills": {
+                    "question": "What FinTech skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Emerging Technologies",
+                        "skills": ["Blockchain", "Digital Payments", "Robo-Advisors", "Open Banking", "RegTech"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Implementation",
+                        "skills": ["API Integration", "AI in Finance", "Cryptocurrency", "Smart Contracts", "Financial Data Analytics"]
+                    }
+                    ]
+                }
+                }
+            ]
+            },
+        "Legal": {
+        "header": "Navigate the complexities of law!",
+        "question": "What legal specialization interests you?",
+        "instruction": "Select an area to see relevant skills and practice areas.",
+        "specializations": [
+            {
+            "label": "Corporate Law",
+            "description": "Business transactions and corporate governance",
+            "skills": {
+                "question": "What corporate law skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Practice Areas",
+                    "skills": ["Mergers & Acquisitions", "Securities Regulation", "Corporate Governance", "Private Equity", "Contract Negotiation"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Core Skills",
+                    "skills": ["Due Diligence", "Regulatory Compliance", "Shareholder Agreements", "IPO Preparation", "Antitrust Law"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Litigation",
+            "description": "Dispute resolution and courtroom advocacy",
+            "skills": {
+                "question": "What litigation skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Trial Practice",
+                    "skills": ["Civil Procedure", "Evidence", "Depositions", "Motion Practice", "Jury Selection"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Specializations",
+                    "skills": ["Commercial Litigation", "Personal Injury", "White Collar Defense", "Appellate Practice", "Class Actions"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Intellectual Property",
+            "description": "Protection of creations and inventions",
+            "skills": {
+                "question": "What IP law skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "IP Categories",
+                    "skills": ["Patent Law", "Trademark Law", "Copyright Law", "Trade Secrets", "Entertainment Law"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Practice Skills",
+                    "skills": ["IP Licensing", "Portfolio Management", "Infringement Analysis", "Patent Prosecution", "DMCA Compliance"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Compliance & Regulatory",
+            "description": "Ensuring legal adherence",
+            "skills": {
+                "question": "What compliance skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Regulatory Areas",
+                    "skills": ["GDPR/Data Privacy", "Healthcare Compliance", "Financial Regulations", "Environmental Law", "Labor Compliance"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Implementation",
+                    "skills": ["Policy Drafting", "Risk Assessment", "Audit Procedures", "Whistleblower Programs", "Compliance Training"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Real Estate Law",
+            "description": "Property transactions and land use",
+            "skills": {
+                "question": "What real estate law skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Transaction Types",
+                    "skills": ["Commercial Leases", "Residential Closings", "Zoning Law", "Construction Contracts", "1031 Exchanges"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Documentation",
+                    "skills": ["Title Searches", "Deed Preparation", "Mortgage Documents", "Easements", "Land Use Approvals"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Legal Technology",
+            "description": "Tech-driven legal solutions",
+            "skills": {
+                "question": "What legal tech skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Innovations",
+                    "skills": ["E-Discovery", "Contract AI", "Legal Research Platforms", "Blockchain for Law", "Practice Management Software"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Implementation",
+                    "skills": ["Document Automation", "Data Privacy Tools", "CLM Systems", "Legal Analytics", "Cybersecurity for Law"]
+                }
+                ]
+            }
+            }
+        ]
+        },
+    "Product & Project Management": {
+            "header": "Lead teams to deliver successful products!",
+            "question": "What area of product or project management interests you?",
+            "instruction": "Select a focus area to see relevant skills.",
+            "specializations": [
+                {
+                "label": "Product Management",
+                "description": "Driving product strategy and development",
+                "skills": {
+                    "question": "What product management skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Core Product Skills",
+                        "skills": ["Market Research", "Product Roadmapping", "User Stories", "MVP Definition", "Go-to-Market Strategy"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Execution",
+                        "skills": ["Agile Methodology", "Prioritization Frameworks", "Stakeholder Management", "Customer Development", "Metrics Analysis"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Technical Product Management",
+                "description": "Managing technology-focused products",
+                "skills": {
+                    "question": "What technical PM skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Technical Understanding",
+                        "skills": ["API Fundamentals", "System Architecture", "Data Flows", "Technical Debt Management", "Platform Strategy"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Collaboration",
+                        "skills": ["Engineering Team Alignment", "Technical Documentation", "Feature Trade-offs", "Release Planning", "QA Coordination"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Project Management",
+                "description": "Planning and executing projects",
+                "skills": {
+                    "question": "What project management skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Methodologies",
+                        "skills": ["Waterfall", "Agile", "Scrum", "Kanban", "Hybrid Approaches"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Core PM Skills",
+                        "skills": ["Risk Management", "Budgeting", "Timeline Estimation", "Resource Allocation", "Stakeholder Reporting"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Program Management",
+                "description": "Overseeing multiple related projects",
+                "skills": {
+                    "question": "What program management skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Strategic Alignment",
+                        "skills": ["Portfolio Management", "Cross-Functional Coordination", "Dependency Mapping", "Strategic Planning", "ROI Analysis"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Governance",
+                        "skills": ["PMO Standards", "Compliance Tracking", "Quality Assurance", "Change Management", "Benefits Realization"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Product Operations",
+                "description": "Optimizing product development processes",
+                "skills": {
+                    "question": "What product ops skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Process Improvement",
+                        "skills": ["Tooling Implementation", "Workflow Optimization", "Data Collection", "Feedback Loops", "Scaling Processes"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Enablement",
+                        "skills": ["Team Onboarding", "Documentation Standards", "Cross-Team Alignment", "Metric Definition", "Best Practices"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Agile Coaching",
+                "description": "Guiding teams in agile transformation",
+                "skills": {
+                    "question": "What agile coaching skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Agile Practices",
+                        "skills": ["Scrum Mastery", "Sprint Planning", "Retrospectives", "User Story Mapping", "Agile Metrics"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Organizational Change",
+                        "skills": ["Transformation Roadmaps", "Leadership Coaching", "Mindset Shifts", "Scaling Frameworks", "Impediment Removal"]
+                    }
+                    ]
+                }
+                }
+            ]
+            },
+        "Art": {
+        "header": "Express your creative vision!",
+        "question": "What artistic discipline interests you?",
+        "instruction": "Select a focus area to see relevant skills and techniques.",
+        "specializations": [
+            {
+            "label": "Fine Arts",
+            "description": "Traditional and contemporary art forms",
+            "skills": {
+                "question": "What fine art skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Mediums",
+                    "skills": ["Oil Painting", "Watercolor", "Charcoal Drawing", "Sculpture", "Printmaking"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Techniques",
+                    "skills": ["Figure Drawing", "Color Theory", "Composition", "Art History", "Mixed Media"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Digital Art",
+            "description": "Creating art using digital tools",
+            "skills": {
+                "question": "What digital art skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Digital Mediums",
+                    "skills": ["Digital Painting", "Vector Art", "3D Modeling", "Pixel Art", "NFT Art Creation"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Software",
+                    "skills": ["Adobe Photoshop", "Procreate", "Blender", "Clip Studio Paint", "ZBrush"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Illustration",
+            "description": "Visual storytelling and conceptual art",
+            "skills": {
+                "question": "What illustration skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Specializations",
+                    "skills": ["Children's Book Illustration", "Editorial Illustration", "Concept Art", "Scientific Illustration", "Comics/Graphic Novels"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Technical Skills",
+                    "skills": ["Perspective Drawing", "Character Design", "Storyboarding", "Visual Narrative", "Typography Integration"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Photography",
+            "description": "Capturing and editing images",
+            "skills": {
+                "question": "What photography skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Genres",
+                    "skills": ["Portrait Photography", "Landscape Photography", "Street Photography", "Product Photography", "Photojournalism"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Technical Skills",
+                    "skills": ["Lighting Techniques", "Photo Editing", "Camera Operation", "Composition", "Color Grading"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Art Business",
+            "description": "Marketing and selling artwork",
+            "skills": {
+                "question": "What art business skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Entrepreneurship",
+                    "skills": ["Art Pricing", "Portfolio Development", "Gallery Representation", "Commission Management", "Artist Statements"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Digital Presence",
+                    "skills": ["Social Media for Artists", "Website Creation", "Online Marketplaces", "Print-on-Demand", "NFT Marketing"]
+                }
+                ]
+            }
+            },
+            {
+            "label": "Art Education",
+            "description": "Teaching and art instruction",
+            "skills": {
+                "question": "What art education skills interest you?",
+                "options": [
+                {
+                    "type": "skill_group",
+                    "label": "Teaching Methods",
+                    "skills": ["Curriculum Development", "Art Lesson Planning", "Classroom Management", "Critique Techniques", "Adaptive Instruction"]
+                },
+                {
+                    "type": "skill_group",
+                    "label": "Community Engagement",
+                    "skills": ["Workshop Facilitation", "Public Art Projects", "Art Therapy Basics", "Museum Education", "Outreach Programs"]
+                }
+                ]
+            }
+            }
+        ]
+        },
+    "Business Operations": {
+            "header": "Optimize organizational performance!",
+            "question": "What area of business operations interests you?",
+            "instruction": "Select a focus area to see relevant skills.",
+            "specializations": [
+                {
+                "label": "Operations Management",
+                "description": "Streamlining business processes and workflows",
+                "skills": {
+                    "question": "What operations management skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Process Optimization",
+                        "skills": ["Lean Six Sigma", "Continuous Improvement", "Workflow Analysis", "Standard Operating Procedures", "Quality Control"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Tools & Methodologies",
+                        "skills": ["Business Process Modeling", "ERP Systems", "KPIs & Metrics", "Root Cause Analysis", "Automation Tools"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Supply Chain Management",
+                "description": "Managing the flow of goods and services",
+                "skills": {
+                    "question": "What supply chain skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Core Functions",
+                        "skills": ["Inventory Management", "Logistics", "Procurement", "Demand Forecasting", "Vendor Management"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Emerging Trends",
+                        "skills": ["Blockchain in SCM", "Sustainable Supply Chains", "Digital Twins", "Last-Mile Delivery", "Risk Mitigation"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Business Strategy",
+                "description": "Developing and executing organizational strategy",
+                "skills": {
+                    "question": "What strategy skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Strategic Frameworks",
+                        "skills": ["SWOT Analysis", "Porter's Five Forces", "Balanced Scorecard", "Scenario Planning", "Market Entry Strategies"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Execution",
+                        "skills": ["Change Management", "Strategic Alignment", "OKR Implementation", "Corporate Development", "M&A Integration"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Business Analytics",
+                "description": "Data-driven decision making",
+                "skills": {
+                    "question": "What business analytics skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Analytical Techniques",
+                        "skills": ["Data Visualization", "Predictive Modeling", "Customer Segmentation", "Price Optimization", "A/B Testing"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Tools & Platforms",
+                        "skills": ["Power BI", "Tableau", "SQL", "Google Analytics", "R/Python for Business"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Administrative Leadership",
+                "description": "Overseeing business functions",
+                "skills": {
+                    "question": "What administrative leadership skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Core Competencies",
+                        "skills": ["Cross-Functional Collaboration", "Policy Development", "Resource Allocation", "Crisis Management", "Stakeholder Communication"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Organizational Development",
+                        "skills": ["Team Building", "Performance Management", "Succession Planning", "Corporate Governance", "Culture Shaping"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Business Technology",
+                "description": "Leveraging tech for operational efficiency",
+                "skills": {
+                    "question": "What business technology skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Digital Transformation",
+                        "skills": ["CRM Implementation", "Workflow Automation", "AI for Business", "Cloud Migration", "Data Security"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Systems Management",
+                        "skills": ["SaaS Platforms", "IT Service Management", "Business Intelligence", "Integration Architectures", "User Training"]
+                    }
+                    ]
+                }
+                }
+            ]
+            },
+        "Sales & Business Development": {
+            "header": "Drive revenue and growth!",
+            "question": "What sales or business development area interests you?",
+            "instruction": "Select a focus area to see relevant skills.",
+            "specializations": [
+                {
+                "label": "B2B Sales",
+                "description": "Business-to-business selling and account management",
+                "skills": {
+                    "question": "What B2B sales skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Sales Process",
+                        "skills": ["Consultative Selling", "Solution Selling", "MEDDIC Methodology", "Challenger Sale", "Value Selling"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Account Management",
+                        "skills": ["Enterprise Account Planning", "Stakeholder Mapping", "Quarterly Business Reviews", "Expansion Selling", "Customer Success Alignment"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "B2C Sales",
+                "description": "Direct-to-consumer selling and retail",
+                "skills": {
+                    "question": "What B2C sales skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Sales Techniques",
+                        "skills": ["Closing Techniques", "Objection Handling", "Upselling/Cross-selling", "Relationship Building", "Influencer Selling"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Channel Management",
+                        "skills": ["Retail Merchandising", "E-commerce Sales", "Direct Marketing", "Affiliate Programs", "Omnichannel Strategy"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Business Development",
+                "description": "Strategic partnerships and market expansion",
+                "skills": {
+                    "question": "What business development skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Market Development",
+                        "skills": ["Lead Generation", "Prospecting", "Cold Outreach", "Partnership Development", "Market Entry Strategies"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Deal Execution",
+                        "skills": ["Pitch Development", "Contract Negotiation", "Term Sheet Creation", "Due Diligence", "Joint Venture Structuring"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Sales Operations",
+                "description": "Optimizing sales processes and tools",
+                "skills": {
+                    "question": "What sales operations skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Process Optimization",
+                        "skills": ["CRM Management", "Sales Forecasting", "Pipeline Management", "Sales Enablement", "Compensation Planning"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Analytics",
+                        "skills": ["Sales Metrics", "Conversion Rate Optimization", "Territory Planning", "Win/Loss Analysis", "Predictive Analytics"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Digital Sales",
+                "description": "Online and social selling",
+                "skills": {
+                    "question": "What digital sales skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Online Strategies",
+                        "skills": ["Social Selling", "Chatbot Sales", "Email Marketing", "Webinar Selling", "Conversational Marketing"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "E-commerce",
+                        "skills": ["Marketplace Optimization", "Shopping Cart Conversion", "Personalization", "Subscription Models", "DTC Strategies"]
+                    }
+                    ]
+                }
+                },
+                {
+                "label": "Sales Leadership",
+                "description": "Managing and scaling sales teams",
+                "skills": {
+                    "question": "What sales leadership skills interest you?",
+                    "options": [
+                    {
+                        "type": "skill_group",
+                        "label": "Team Development",
+                        "skills": ["Sales Training", "Hiring Strategies", "Coaching", "Motivation Techniques", "Performance Management"]
+                    },
+                    {
+                        "type": "skill_group",
+                        "label": "Strategic Growth",
+                        "skills": ["Go-to-Market Strategy", "Sales Compensation Design", "Channel Strategy", "Sales Tech Stack", "Global Expansion"]
+                    }
+                    ]
+                }
+                }
+            ]
+            },
+        "None of the above": {
+        "header": "Explore your unique path!",
+        "options": [
+            { "type": "search", "label": "Search for a skill" },
+            { "type": "category", "label": "Interdisciplinary Skills" }
+        ]
+        }
+    }
+    }
+   

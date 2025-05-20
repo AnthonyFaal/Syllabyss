@@ -1,0 +1,35 @@
+
+
+  /* Base Styles */
+:root {
+  --primary-color: #4361ee;
+  --primary-light: #e0e7ff;
+  --secondary-color: #9f8cca;
+  --accent-color: #f72585;
+  --text-color: #2b2d42;
+  --light-text: #8d99ae;
+  --background: #f8f9fa;
+  --white: #ffffff;
+  --success: #4bb543;
+  --error: #ff3333;
+  --border-radius: 12px;
+  --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+  
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+    width: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f9fafb;
+  }
+  

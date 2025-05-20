@@ -1,0 +1,389 @@
+{
+    "questions": [
+      {
+        "question": "I feel energized after spending time alone.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I prefer small gatherings over large parties.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I often think before I speak.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I enjoy deep, one-on-one conversations.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I feel drained after socializing for too long.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I prefer working independently rather than in a group.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I often reflect on my thoughts and feelings.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I find it easy to focus in quiet environments.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I prefer listening rather than speaking in group discussions.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I feel more comfortable expressing myself in writing than in person.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I enjoy spending time in nature to recharge.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I prefer to have a few close friends rather than many acquaintances.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I often take time to make decisions.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I feel overwhelmed in crowded places.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I enjoy solitary hobbies like reading or writing.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I prefer to work on projects alone rather than in a team.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I feel more creative when I'm by myself.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I often avoid being the center of attention.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I prefer to observe rather than participate in social situations.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I feel more comfortable in familiar environments.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I enjoy planning my day in advance.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I prefer to stay home rather than go out on weekends.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I find it hard to start conversations with strangers.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I enjoy spending time with close family members.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I prefer to work in a quiet, private space.",
+        "category": "Introversion_vs_Extraversion"
+      },
+      {
+        "question": "I often think about the future and what it holds.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I enjoy brainstorming new ideas.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I prefer abstract concepts over concrete details.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I often imagine different possibilities for a situation.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I enjoy exploring new theories and concepts.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I focus more on the big picture rather than the details.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I often come up with creative solutions to problems.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I enjoy discussing hypothetical scenarios.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I prefer to learn through experimentation rather than step-by-step instructions.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I often think about the meaning behind events.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I enjoy reading books that challenge my thinking.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I prefer to work on projects that allow for innovation.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I often notice patterns and connections between ideas.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I enjoy thinking about how things could be improved.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I prefer to focus on long-term goals rather than immediate tasks.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I enjoy exploring new technologies or trends.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I often think about the potential of new ideas.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I enjoy solving complex problems.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I prefer to work on projects that require creativity.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I often think about the future impact of my decisions.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I enjoy learning about abstract subjects like philosophy or psychology.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I prefer to focus on possibilities rather than realities.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I often think about how things could be different.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I enjoy exploring new ways of doing things.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I prefer to focus on the future rather than the present.",
+        "category": "Intuition_vs_Sensing"
+      },
+      {
+        "question": "I make decisions based on logic rather than emotions.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I prefer to focus on facts rather than feelings.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I often analyze situations objectively.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I value honesty over harmony in a conflict.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I prefer to solve problems using logic and reasoning.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I often prioritize efficiency over empathy.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I prefer to focus on results rather than relationships.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I often think about the logical consequences of my actions.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I prefer to work in a structured, organized environment.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I often think about how to improve systems and processes.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I prefer to focus on tasks rather than people.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I often think about how to achieve my goals efficiently.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I prefer to work with data and facts rather than opinions.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I often think about how to optimize my work.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I prefer to focus on the logical aspects of a problem.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I often think about how to make decisions based on evidence.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I prefer to focus on the practical aspects of a situation.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I often think about how to achieve my objectives.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I prefer to focus on the logical outcomes of my decisions.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I often think about how to improve my performance.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I prefer to focus on the logical aspects of a situation.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I often think about how to achieve my goals.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I prefer to focus on the logical consequences of my actions.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I often think about how to improve my work.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I prefer to focus on the logical aspects of a problem.",
+        "category": "Thinking_vs_Feeling"
+      },
+      {
+        "question": "I prefer to have a clear plan before starting a project.",
+        "category": "Judging_vs_Perceiving"
+      },
+      {
+        "question": "I enjoy following a schedule.",
+        "category": "Judging_vs_Perceiving"
+      },
+      {
+        "question": "I prefer to finish tasks before starting new ones.",
+        "category": "Judging_vs_Perceiving"
+      },
+      {
+        "question": "I often make to-do lists.",
+        "category": "Judging_vs_Perceiving"
+      },
+      {
+        "question": "I prefer to work in a structured environment.",
+        "category": "Judging_vs_Perceiving"
+      },
+      {
+        "question": "I often think about deadlines and timelines.",
+        "category": "Judging_vs_Perceiving"
+      },
+      {
+        "question": "I prefer to have a clear goal in mind.",
+        "category": "Judging_vs_Perceiving"
+      },
+      {
+        "question": "I often think about how to organize my work.",
+        "category": "Judging_vs_Perceiving"
+      },
+      {
+        "question": "I prefer to have a clear idea of what needs to be done.",
+        "category": "Judging_vs_Perceiving"
+      },
+      {
+        "question": "I often think about how to achieve my goals.",
+        "category": "Judging_vs_Perceiving"
+      },
+      {
+        "question": "I prefer to have a clear plan for the future.",
+        "category": "Judging_vs_Perceiving"
+      },
+      {
+        "question": "I often think about how to improve my work.",
+        "category": "Judging_vs_Perceiving"
+      },
+      {
+        "question": "I prefer to have a clear idea of what needs to be done.",
+        "category": "Judging_vs_Perceiving"
+      },
+      {
+        "question": "I often think about how to achieve my goals.",
+        "category": "Judging_vs_Perceiving"
+      },
+      {
+        "question": "I prefer to have a clear plan for the future.",
+        "category": "Judging_vs_Perceiving"
+      },
+      {
+        "question": "I often think about how to improve my work.",
+        "category": "Judging_vs_Perceiving"
+      },
+      {
+        "question": "I prefer to have a clear idea of what needs to be done.",
+        "category": "Judging_vs_Perceiving"
+      },
+      {
+        "question": "I often think about how to achieve my goals.",
+        "category": "Judging_vs_Perceiving"
+      },
+      {
+        "question": "I prefer to have a clear plan for the future.",
+        "category": "Judging_vs_Perceiving"
+      },
+      {
+        "question": "I often think about how to improve my work.",
+        "category": "Judging_vs_Perceiving"
+      },
+      {
+        "question": "I prefer to have a clear idea of what needs to be done.",
+        "category": "Judging_vs_Perceiving"
+      }
+    ],
+    "scale": ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"]
+  }

@@ -1,0 +1,37 @@
+/* TermsConditions.css */
+*{
+  margin: 0;
+}
+.terms-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+  }
+  
+  .terms-box {
+    max-width: 800px;
+    width: 100%;
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    padding: 20px;
+    border-radius: 5px;
+  }
+  
+  h1, h2 {
+    color: #222;
+  }
+  
+  p, ul {
+    color: #555;
+  }
+  
+  a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  a:hover {
+    text-decoration: underline;
+  }
+  

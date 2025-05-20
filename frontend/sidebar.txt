@@ -1,0 +1,72 @@
+Sidebar UI Tabs Derived from the URD
+Here’s how I’d define the sidebar tabs:
+
+1. Dashboard
+Personalized overview (progress, recommendations, goals)
+
+Quick links to continue learning
+
+Notifications or insights
+
+2. Courses / Learning Path
+Browse All Courses
+
+My Learning Path (AI-suggested tracks)
+
+Microlearning Modules (on-demand)
+
+3. Challenges & Rewards
+Gamified challenges
+
+Leaderboards
+
+Badges, XP, and unlocked content
+
+4. AI Assistant
+Chatbot access (Help, Support, Guidance)
+
+“Ask Me Anything” learning queries
+
+Troubleshooting and learning recommendations
+
+5. Collaboration Hub
+Group Discussions / Forums
+
+Study Groups (AI-matched peers)
+
+Project-based or case study collaborations
+
+6. Insights & Reports
+My Learning Behavior
+
+Efficiency Tips (AI-generated)
+
+Educator Feedback (if applicable)
+
+7. Content Studio (Visible only to Educators/Admins)
+AI Course Generator
+
+Quiz Builder
+
+Simulation & Case Study Generator
+
+8. Accessibility Settings
+Text-to-speech / Speech-to-text
+
+Font / Contrast adjustments
+
+Audio learning toggle
+
+9. Admin Panel (Admins only)
+User Management
+
+AI Performance Logs
+
+Content Quality Review
+
+10. Settings & Profile
+Language & Localization
+
+Personal Info
+
+Notification Preferences

@@ -1,0 +1,340 @@
+// migrate.js
+const pool = require('./db');
+
+
+// SQL statements for table creation
+const createTables = async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        user_id SERIAL PRIMARY KEY,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        name VARCHAR(50) UNIQUE NOT NULL,
+        role VARCHAR(20) NOT NULL CHECK (role IN ('student','admin')),
+        profile_image TEXT,
+        google_id TEXT,
+        facebook_id TEXT,
+        is_verified BOOLEAN DEFAULT FALSE,
+        verification_token VARCHAR(255),
+        token_expires_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        last_login TIMESTAMP,
+        is_active BOOLEAN DEFAULT TRUE
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_interest_flows (
+        interest_flow_id SERIAL PRIMARY KEY,
+        user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+        selected_field VARCHAR(100) NOT NULL,
+        selected_specialization VARCHAR(100),
+        selected_experience VARCHAR(20) CHECK (selected_experience IN ('beginner', 'intermediate', 'advanced')),
+        created_at TIMESTAMP DEFAULT NOW()
+        );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_skills (
+        skill_id SERIAL PRIMARY KEY,
+        interest_flow_id INT NOT NULL REFERENCES user_interest_flows(interest_flow_id) ON DELETE CASCADE,
+        skill_group VARCHAR(100) NOT NULL,
+        skill VARCHAR(100) NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW()
+     );
+    `);
+  
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS courses (
+        course_id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        thumbnail_url TEXT,
+        difficulty_level VARCHAR(20) CHECK (difficulty_level IN ('beginner', 'intermediate', 'advanced')),
+        estimated_duration INT, -- in minutes
+        user_id INT REFERENCES users(user_id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS tags (
+        tag_id SERIAL PRIMARY KEY,
+        name VARCHAR(100) UNIQUE NOT NULL
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS course_tags (
+        course_tag_id SERIAL PRIMARY KEY,
+        course_id INT REFERENCES courses(course_id) ON DELETE CASCADE,
+        tag_id INT REFERENCES tags(tag_id) ON DELETE CASCADE
+      );
+    `);
+
+    await pool.query(`
+     CREATE TABLE IF NOT EXISTS modules (
+        module_id SERIAL PRIMARY KEY,
+        course_id INT REFERENCES courses(course_id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        order_number INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS learning_materials (
+        material_id SERIAL PRIMARY KEY,
+        module_id INT REFERENCES modules(module_id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        content_type VARCHAR(50) NOT NULL CHECK (content_type IN ('video', 'article', 'quiz', 'infographic', 'audio', 'interactive')),
+        content_url TEXT,
+        duration INT, -- in minutes
+        order_number INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_progress (
+        progress_id SERIAL PRIMARY KEY,
+        user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+        material_id INT REFERENCES learning_materials(material_id) ON DELETE CASCADE,
+        status VARCHAR(20) DEFAULT 'not_started' CHECK (status IN ('not_started', 'in_progress', 'completed')),
+        completion_date TIMESTAMP,
+        time_spent INT DEFAULT 0, -- in seconds
+        attempts INT DEFAULT 0,
+        last_accessed TIMESTAMP
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS learning_style_assessments (
+        assessment_id SERIAL PRIMARY KEY,
+        user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+        learning_style VARCHAR(50), -- e.g., 'visual', 'auditory', 'kinesthetic'
+        assessment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        confidence_score DECIMAL(5,2)
+      );
+    `);
+     
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS ai_recommendations (
+        recommendation_id SERIAL PRIMARY KEY,
+        user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+        recommended_course_id INT REFERENCES courses(course_id) ON DELETE SET NULL,
+        recommended_material_id INT REFERENCES learning_materials(material_id) ON DELETE SET NULL,
+        recommendation_type VARCHAR(50) NOT NULL,
+        reason TEXT,
+        confidence_score DECIMAL(5,2),
+        is_accepted BOOLEAN,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `); 
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS achievements (
+        achievement_id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        description TEXT,
+        icon_url TEXT,
+        criteria TEXT NOT NULL,
+        xp_value INT NOT NULL
+      );
+    `); 
+     
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_achievements (
+        user_achievement_id SERIAL PRIMARY KEY,
+        user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+        achievement_id INT REFERENCES achievements(achievement_id) ON DELETE CASCADE,
+        earned_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        is_seen BOOLEAN DEFAULT FALSE
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS leaderboard (
+        leaderboard_id SERIAL PRIMARY KEY,
+        user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+        xp_points INT DEFAULT 0,
+        weekly_xp INT DEFAULT 0,
+        monthly_xp INT DEFAULT 0,
+        last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS quizzes (
+        quiz_id SERIAL PRIMARY KEY,
+        material_id INT REFERENCES learning_materials(material_id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        passing_score INT DEFAULT 70,
+        max_attempts INT DEFAULT 3,
+        time_limit INT -- in minutes
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS questions (
+        question_id SERIAL PRIMARY KEY,
+        quiz_id INT REFERENCES quizzes(quiz_id) ON DELETE CASCADE,
+        question_text TEXT NOT NULL,
+        question_type VARCHAR(50) NOT NULL CHECK (question_type IN ('multiple_choice', 'true_false', 'short_answer', 'matching')),
+        points INT DEFAULT 1,
+        order_number INT NOT NULL
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS question_options (
+        option_id SERIAL PRIMARY KEY,
+        question_id INT REFERENCES questions(question_id) ON DELETE CASCADE,
+        option_text TEXT NOT NULL,
+        is_correct BOOLEAN DEFAULT FALSE,
+        order_number INT NOT NULL
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_quiz_attempts (
+        attempt_id SERIAL PRIMARY KEY,
+        user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+        quiz_id INT REFERENCES quizzes(quiz_id) ON DELETE CASCADE,
+        attempt_number INT NOT NULL,
+        start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        end_time TIMESTAMP,
+        score DECIMAL(5,2),
+        status VARCHAR(20) DEFAULT 'in_progress' CHECK (status IN ('in_progress', 'completed', 'abandoned'))
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_answers (
+        answer_id SERIAL PRIMARY KEY,
+        attempt_id INT REFERENCES user_quiz_attempts(attempt_id) ON DELETE CASCADE,
+        question_id INT REFERENCES questions(question_id) ON DELETE CASCADE,
+        selected_option_id INT REFERENCES question_options(option_id) ON DELETE SET NULL,
+        answer_text TEXT,
+        is_correct BOOLEAN,
+        points_earned DECIMAL(5,2)
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS chatbot_conversations (
+        conversation_id SERIAL PRIMARY KEY,
+        user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+        start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        end_time TIMESTAMP,
+        sentiment_score DECIMAL(5,2),
+        satisfaction_rating INT CHECK (satisfaction_rating BETWEEN 1 AND 5)
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS chatbot_messages (
+        message_id SERIAL PRIMARY KEY,
+        conversation_id INT REFERENCES chatbot_conversations(conversation_id) ON DELETE CASCADE,
+        message_text TEXT NOT NULL,
+        is_from_user BOOLEAN NOT NULL,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        intent VARCHAR(100),
+        confidence_score DECIMAL(5,2)
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_engagement (
+        engagement_id SERIAL PRIMARY KEY,
+        user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+        date DATE NOT NULL,
+        login_count INT DEFAULT 0,
+        time_spent INT DEFAULT 0, -- in seconds
+        materials_completed INT DEFAULT 0,
+        quizzes_taken INT DEFAULT 0,
+        chatbot_interactions INT DEFAULT 0
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS system_analytics (
+        analytic_id SERIAL PRIMARY KEY,
+        metric_name VARCHAR(100) NOT NULL,
+        metric_value DECIMAL(10,2) NOT NULL,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        dimension VARCHAR(100) -- e.g., 'daily', 'weekly', 'by_course'
+      );
+    `);
+ 
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS collaborations (
+        collaboration_id SERIAL PRIMARY KEY,
+        course_id INT REFERENCES courses(course_id) ON DELETE CASCADE,
+        group_name VARCHAR(255) NOT NULL,
+        created_by INT REFERENCES users(user_id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS collaboration_members (
+        member_id SERIAL PRIMARY KEY,
+        collaboration_id INT REFERENCES collaborations(collaboration_id) ON DELETE CASCADE,
+        user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+        joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS notifications (
+        notification_id SERIAL PRIMARY KEY,
+        user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        is_read BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS feedback (
+        feedback_id SERIAL PRIMARY KEY,
+        user_id INT REFERENCES users(user_id) ON DELETE SET NULL,
+        course_id INT REFERENCES courses(course_id) ON DELETE CASCADE,
+        rating INT CHECK (rating BETWEEN 1 AND 5),
+        comment TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_id ON users(user_id);`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_course_id ON courses(course_id);`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_material_id ON learning_materials(material_id);`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_progress_user_material ON user_progress(user_id, material_id);`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_quiz ON user_quiz_attempts(user_id, quiz_id);`);
+
+    console.log('All tables created successfully!');
+  } catch (err) {
+    console.error('Error creating tables:', err);
+  }
+};
+
+// Execute the migration
+(async () => {
+  try {
+    await createTables();
+    console.log("✅ Tables created successfully.");
+  } catch (err) {
+    console.error("❌ Error during migration:", err.message);
+  } finally {
+    await pool.end();
+    process.exit();
+  }
+})();

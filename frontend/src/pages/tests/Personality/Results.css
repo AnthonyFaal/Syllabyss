@@ -1,0 +1,75 @@
+.results {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .results-header {
+    margin-bottom: 30px;
+  }
+  
+  .results-header h1 {
+    color: #007bff;
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  .results-header .personality-type {
+    color: #333;
+    font-weight: bold;
+  }
+  
+  .results-header .description {
+    font-size: 16px;
+    color: #555;
+    margin-top: 10px;
+  }
+  
+  .results-section {
+    margin-bottom: 30px;
+  }
+  
+  .results-section h2 {
+    font-size: 24px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .results-section ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .results-section ul li {
+    background-color: #f9f9f9;
+    margin: 10px 0;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 16px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .results-section ul li .bullet {
+    font-size: 18px;
+    color: #007bff;
+  }
+  
+  .icon {
+    font-size: 24px;
+    color: #007bff; 
+  }
