@@ -5,7 +5,7 @@ import { GiGraduateCap } from "react-icons/gi";
 import { useNavigate } from 'react-router-dom';
 import { getUserById, uploadProfileImage, updateUserBio } from '../../api/APIs'; 
 import './Profile.css';
-
+ 
 const Profile = () => {
   const [userId, setUserId] = useState(null);
   const [token, setToken] = useState(null);
@@ -71,7 +71,8 @@ const Profile = () => {
   };
   const handleBioSave = async () => {
     try {
-      await updateUserBio(userId, bioText);
+      // Send bio in the request body as expected by the backend
+      await updateUserBio(userId, { bio: bioText });
       setEditingBio(false);
       await fetchUserData(userId);
     } catch (error) {
@@ -79,6 +80,7 @@ const Profile = () => {
       alert("Could not update bio. Please try again.");
     }
   };
+
   const handleBioCancel = () => {
     setBioText(userData?.bio || '');
     setEditingBio(false);

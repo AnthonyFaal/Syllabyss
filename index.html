@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Interactive Tutorial Avatar</title>
+  <style>
+    body {
+      background: #121212;
+      color: white;
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    input, button {
+      padding: 10px;
+      font-size: 1.2rem;
+      margin: 10px;
+    }
+
+    canvas {
+      margin-top: 20px;
+      background: #222;
+      border-radius: 10px;
+    }
+
+    #talkBox {
+      margin-top: 20px;
+      font-size: 1.3rem;
+      background: #333;
+      padding: 1rem;
+      border-radius: 8px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎓 Tutorial Avatar</h1>
+  <input id="topic" type="text" placeholder="Enter a topic e.g. JavaScript" />
+  <button onclick="startLecture()">▶️ Start</button>
+
+  <div id="talkBox">Hi there! I'm ready to teach.</div>
+  <canvas id="avatarCanvas" width="300" height="300"></canvas>
+
+  <script>
+    const canvas = document.getElementById("avatarCanvas");
+    const ctx = canvas.getContext("2d");
+    const talkBox = document.getElementById("talkBox");
+    let mouthOpen = false;
+    let talking = false;
+
+    function drawAvatar() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Head
+      ctx.fillStyle = "#f5c6a5";
+      ctx.beginPath();
+      ctx.arc(150, 150, 100, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Eyes
+      ctx.fillStyle = "#000";
+      ctx.beginPath();
+      ctx.arc(110, 120, 10, 0, Math.PI * 2);
+      ctx.arc(190, 120, 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Mouth
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      if (mouthOpen) {
+        ctx.ellipse(150, 190, 20, 10, 0, 0, Math.PI * 2);
+      } else {
+        ctx.moveTo(130, 190);
+        ctx.lineTo(170, 190);
+      }
+      ctx.stroke();
+    }
+
+    // Animate mouth
+    setInterval(() => {
+      if (talking) {
+        mouthOpen = !mouthOpen;
+      } else {
+        mouthOpen = false;
+      }
+      drawAvatar();
+    }, 200);
+
+    function generateLecture(topic) {
+      return [
+        `Hi! I'm your AI tutor, and today we're talking about ${topic}.`,
+        `${topic} is an essential concept that affects many areas of technology.`,
+        `Let's break ${topic} down into simple parts.`,
+        `We’ll look at some examples of ${topic} to understand it better.`,
+        `That’s the basics of ${topic}! Keep learning and exploring.`
+      ];
+    }
+
+    function speakSlide(slide, callback) {
+      const utterance = new SpeechSynthesisUtterance(slide);
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      utterance.lang = 'en-US';
+
+      utterance.onstart = () => {
+        talking = true;
+        talkBox.innerText = slide;
+      };
+
+      utterance.onend = () => {
+        talking = false;
+        setTimeout(callback, 500); // wait before next
+      };
+
+      speechSynthesis.speak(utterance);
+    }
+
+    function playSlides(slides, index = 0) {
+      if (index >= slides.length) {
+        talkBox.innerText = "Lecture complete. 😊";
+        return;
+      }
+      speakSlide(slides[index], () => playSlides(slides, index + 1));
+    }
+
+    function startLecture() {
+      const topic = document.getElementById("topic").value.trim();
+      if (!topic) {
+        alert("Please enter a topic.");
+        return;
+      }
+
+      if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+      }
+
+      const lecture = generateLecture(topic);
+
+      // Give TTS a tiny warmup pause
+      setTimeout(() => playSlides(lecture), 300);
+    }
+
+    drawAvatar();
+  </script>
+</body>
+</html>

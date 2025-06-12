@@ -1,0 +1,154 @@
+.course-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  width: 320px;
+  margin: 0 15px;
+  flex-shrink: 0;
+}
+
+.course-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+.course-thumbnail {
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+}
+
+.course-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.course-card-content {
+  padding: 20px;
+}
+
+.course-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.course-card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+  flex: 1;
+}
+
+.difficulty-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 12px;
+  margin-left: 10px;
+}
+
+.difficulty-badge.beginner {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.difficulty-badge.intermediate {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.difficulty-badge.advanced {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.course-card-description {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.course-card-stats {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 16px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.stat-icon {
+  margin-right: 6px;
+  font-size: 12px;
+}
+
+.deadline-container {
+  margin-bottom: 16px;
+}
+
+.deadline-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.deadline-icon {
+  margin-right: 6px;
+  font-size: 12px;
+}
+
+.progress-bar {
+  height: 6px;
+  background-color: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+
+.progress-fill.deadline {
+  background-color: #10b981;
+}
+
+.course-card-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.course-card-btn:hover {
+  background-color: #2563eb;
+}
+
+.btn-icon {
+  margin-right: 8px;
+  font-size: 12px;
+}

@@ -110,8 +110,74 @@ async function updateInterestFlow(interestFlowId, data) {
   }
 }
 
+async function getAllInterestFlows() {
+  // Query all interest flows ordered by creation date
+  const interestFlowQuery = `
+    SELECT *
+    FROM user_interest_flows
+    ORDER BY created_at DESC
+  `;
+
+  // Query skills for all interest flows found
+  const skillsQuery = `
+    SELECT skill_id, interest_flow_id, skill_group, skill
+    FROM user_skills
+    WHERE interest_flow_id = ANY($1::int[])
+  `;
+
+  // Fetch all interest flows
+  const interestFlowsRes = await pool.query(interestFlowQuery);
+  const interestFlows = interestFlowsRes.rows;
+
+  if (interestFlows.length === 0) return [];
+
+  // Extract all interest_flow_ids
+  const interestFlowIds = interestFlows.map((flow) => flow.interest_flow_id);
+
+  // Fetch skills related to all interest flows
+  const skillsRes = await pool.query(skillsQuery, [interestFlowIds]);
+  const skills = skillsRes.rows;
+
+  // Map skills to interest_flow_id grouped by skill_group
+  const skillsMap = {};
+  skills.forEach(({ interest_flow_id, skill_group, skill }) => {
+    if (!skillsMap[interest_flow_id]) skillsMap[interest_flow_id] = {};
+    skillsMap[interest_flow_id][skill_group] = skill;
+  });
+
+  // Combine interest flows with their skills
+  return interestFlows.map((flow) => ({
+    ...flow,
+    selectedSkills: skillsMap[flow.interest_flow_id] || {},
+  }));
+}
+
+async function deleteInterestFlow(interestFlowId) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // Delete skills associated with the interest flow
+    await client.query(`DELETE FROM user_skills WHERE interest_flow_id = $1`, [interestFlowId]);
+
+    // Delete the interest flow itself
+    await client.query(`DELETE FROM user_interest_flows WHERE interest_flow_id = $1`, [interestFlowId]);
+
+    await client.query('COMMIT');
+    return true;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 module.exports = {
   createInterestFlow,
   getInterestFlowsByUserId,
   updateInterestFlow,
+  getAllInterestFlows,  
+  deleteInterestFlow,
 };
+

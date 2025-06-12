@@ -1,0 +1,90 @@
+/* PageLoader.css */
+.page-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  backdrop-filter: blur(5px);
+}
+
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.loader-spinner {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.loader-bar {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 20px;
+  margin-left: -3px;
+  margin-top: -10px;
+  background: #3f51b5;
+  border-radius: 3px;
+  animation: fade 1.2s linear infinite;
+  opacity: 0;
+}
+
+@keyframes fade {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.25;
+  }
+}
+
+/* Create delay for each bar */
+.loader-bar:nth-child(1) { animation-delay: 0s; transform: rotate(0deg) translate(0, -30px); }
+.loader-bar:nth-child(2) { animation-delay: 0.1s; transform: rotate(30deg) translate(0, -30px); }
+.loader-bar:nth-child(3) { animation-delay: 0.2s; transform: rotate(60deg) translate(0, -30px); }
+.loader-bar:nth-child(4) { animation-delay: 0.3s; transform: rotate(90deg) translate(0, -30px); }
+.loader-bar:nth-child(5) { animation-delay: 0.4s; transform: rotate(120deg) translate(0, -30px); }
+.loader-bar:nth-child(6) { animation-delay: 0.5s; transform: rotate(150deg) translate(0, -30px); }
+.loader-bar:nth-child(7) { animation-delay: 0.6s; transform: rotate(180deg) translate(0, -30px); }
+.loader-bar:nth-child(8) { animation-delay: 0.7s; transform: rotate(210deg) translate(0, -30px); }
+.loader-bar:nth-child(9) { animation-delay: 0.8s; transform: rotate(240deg) translate(0, -30px); }
+.loader-bar:nth-child(10) { animation-delay: 0.9s; transform: rotate(270deg) translate(0, -30px); }
+.loader-bar:nth-child(11) { animation-delay: 1s; transform: rotate(300deg) translate(0, -30px); }
+.loader-bar:nth-child(12) { animation-delay: 1.1s; transform: rotate(330deg) translate(0, -30px); }
+
+.loader-text {
+  font-size: 1.2rem;
+  color: #3f51b5;
+  font-weight: 500;
+  letter-spacing: 1px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@media (min-width: 768px) {
+  .page-loader {
+    left: 255px;
+    width: calc(100% - 255px);
+  }
+}

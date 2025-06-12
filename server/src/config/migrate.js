@@ -35,7 +35,7 @@ const createTables = async () => {
         created_at TIMESTAMP DEFAULT NOW()
         );
     `);
-
+ 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS user_skills (
         skill_id SERIAL PRIMARY KEY,
@@ -56,22 +56,8 @@ const createTables = async () => {
         estimated_duration INT, -- in minutes
         user_id INT REFERENCES users(user_id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        deadline TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS tags (
-        tag_id SERIAL PRIMARY KEY,
-        name VARCHAR(100) UNIQUE NOT NULL
-      );
-    `);
-
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS course_tags (
-        course_tag_id SERIAL PRIMARY KEY,
-        course_id INT REFERENCES courses(course_id) ON DELETE CASCADE,
-        tag_id INT REFERENCES tags(tag_id) ON DELETE CASCADE
       );
     `);
 
@@ -83,6 +69,7 @@ const createTables = async () => {
         description TEXT,
         order_number INT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        deadline TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
@@ -96,7 +83,8 @@ const createTables = async () => {
         content_url TEXT,
         duration INT, -- in minutes
         order_number INT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        deadline TIMESTAMP
       );
     `);
 
@@ -177,7 +165,8 @@ const createTables = async () => {
         description TEXT,
         passing_score INT DEFAULT 70,
         max_attempts INT DEFAULT 3,
-        time_limit INT -- in minutes
+        time_limit INT, -- in minutes
+        deadline TIMESTAMP
       );
     `);
 
@@ -228,9 +217,12 @@ const createTables = async () => {
     `);
 
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS chatbot_conversations (
-        conversation_id SERIAL PRIMARY KEY,
+      CREATE TABLE IF NOT EXISTS chats (
+        chat_id SERIAL PRIMARY KEY,
         user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+        chat_name VARCHAR(100),  -- optional group name
+        profile_image TEXT,      -- optional image URL or path
+        is_chatbot BOOLEAN DEFAULT FALSE,  -- true if chat is with a bot
         start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         end_time TIMESTAMP,
         sentiment_score DECIMAL(5,2),
@@ -239,9 +231,9 @@ const createTables = async () => {
     `);
 
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS chatbot_messages (
+      CREATE TABLE IF NOT EXISTS chat_messages (
         message_id SERIAL PRIMARY KEY,
-        conversation_id INT REFERENCES chatbot_conversations(conversation_id) ON DELETE CASCADE,
+        chat_id INT REFERENCES chats(chat_id) ON DELETE CASCADE,
         message_text TEXT NOT NULL,
         is_from_user BOOLEAN NOT NULL,
         timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -312,14 +304,56 @@ const createTables = async () => {
         comment TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+      /* CREATE TABLE IF NOT EXISTS feedback (
+        feedback_id SERIAL PRIMARY KEY,
+        user_id INT REFERENCES users(user_id) ON DELETE SET NULL,
+        course_id INT REFERENCES courses(course_id) ON DELETE CASCADE,
+        module_id INT REFERENCES modules(module_id) ON DELETE SET NULL,
+        material_id INT REFERENCES learning_materials(material_id) ON DELETE SET NULL,
+        rating INT CHECK (rating BETWEEN 1 AND 5),
+        comment TEXT,
+        submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP*/
     `);
+    
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_deadlines (
+        deadline_id SERIAL PRIMARY KEY,
+        user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+        course_id INT REFERENCES courses(course_id) ON DELETE CASCADE,
+        module_id INT REFERENCES modules(module_id) ON DELETE CASCADE,
+        material_id INT REFERENCES learning_materials(material_id) ON DELETE CASCADE,
+        deadline TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );`
+    );
+    
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_streaks (
+        user_id INT PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
+        streak_days INT DEFAULT 0,
+        last_active_date TIMESTAMP,
+        longest_streak INT DEFAULT 0,
+        streak_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );`
+    );
 
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS streak_notifications (
+        notification_id SERIAL PRIMARY KEY,
+        user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+        streak_days INT NOT NULL,
+        sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        is_read BOOLEAN DEFAULT FALSE
+      );`
+    );
+    
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_id ON users(user_id);`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_course_id ON courses(course_id);`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_material_id ON learning_materials(material_id);`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_progress_user_material ON user_progress(user_id, material_id);`);
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_quiz ON user_quiz_attempts(user_id, quiz_id);`);
-
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_quiz ON user_quiz_attempts(user_id, quiz_id);`);await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_quiz ON user_quiz_attempts(user_id, quiz_id);`);
+    
     console.log('All tables created successfully!');
   } catch (err) {
     console.error('Error creating tables:', err);

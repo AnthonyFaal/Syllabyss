@@ -1,39 +1,38 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from 'react';
 import { FaChartPie, FaBookOpen, FaTrophy, FaUsers, FaCalendarAlt, FaBell, FaSearch } from "react-icons/fa";
-import { FiChevronDown } from "react-icons/fi";
-import { getUserById } from '../api/APIs'; 
+import { getUserById } from '../api/APIs';
+import PageLoader from '../components/Loader/pageLoader';
+import {getAuthToken, getUserId}  from '../utils/authToken';
 import "./Dashboard.css";
 
 const Dashboard = () => {
-  const [userId, setUserId] = useState(null);
-  const [token, setToken] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Retrieve userId and token from localStorage
-    const storedUserId = localStorage.getItem('userId');
-    const storedToken = localStorage.getItem('token');
+    const id = getUserId();
+    const token = getAuthToken();
 
-    if (storedUserId && storedToken) {
-      setUserId(storedUserId);
-      setToken(storedToken);
-      fetchUserData(storedUserId); // Fetch user data
+    if (id) {
+      fetchUserData(id);
     } else {
-      window.location.href = '/';
+      setLoading(false);
     }
   }, []);
 
   const fetchUserData = async (id) => {
     try {
+      setLoading(true);
       const response = await getUserById(id);
       setUserData(response.data);
     } catch (error) {
       console.error("Failed to fetch user data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Dummy data for stats and schedule
   const stats = {
     activeCourses: 5,
     challengesCompleted: 12,
@@ -49,8 +48,17 @@ const Dashboard = () => {
     { day: "Fri", time: "10:00 - 11:30", course: "DevOps Basics", type: "live" }
   ];
 
+  if (loading) {
+    return <PageLoader />;
+  }
+  if (!userData) {
+    return <p>Unable to load user data.</p>;
+  }
+
   return (
     <div className="dashboard-container">
+      {loading && <PageLoader />}
+      
       <header className="dashboard-header">
         <div className="header-profile">
           <FaBell className="notification-icon" />
@@ -94,8 +102,8 @@ const Dashboard = () => {
             <div className="progress-container">
               <p>{stats.learningProgress}%</p>
               <div className="progress-bar">
-                <div 
-                  className="progress-fill" 
+                <div
+                  className="progress-fill"
                   style={{ width: `${stats.learningProgress}%` }}
                 ></div>
               </div>
@@ -123,12 +131,10 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Add Admin Panel Link if User is Admin */}
           {userData?.role === 'admin' && (
             <div className="admin-panel-access">
               <h2>Admin Panel</h2>
               <p>You have access to the admin panel.</p>
-              {/* Link to Admin Panel */}
             </div>
           )}
         </div>

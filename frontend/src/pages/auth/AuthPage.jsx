@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { registerUser, loginUser } from '../../api/APIs';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import FormField from '../../components/Fields/FormField';
+import { setAuthToken, getAuthToken } from '../../utils/authToken';
 import './AuthPage.css';
 
 const AuthPage = () => {
@@ -12,21 +13,17 @@ const AuthPage = () => {
   const [rememberMe, setRememberMe] = useState(false);
 
   const navigate = useNavigate();
-  const location = useLocation();
 
+  // On component mount, check if user is already logged in & rememberMe is true
   useEffect(() => {
-    const query = new URLSearchParams(location.search);
-    const verified = query.get('verified');
-    const userId = query.get('userId');
-    const error = query.get('error');
+    const token = getAuthToken();
+    const remember = localStorage.getItem('rememberMe') === 'true';
 
-    if (verified === 'true' && userId) {
-      setMessage({ text: 'Email verified successfully. Complete your profile.', type: 'success' });
-      navigate('/user-interest', { state: { userId } });
-    } else if (verified === 'false' && error) {
-      setMessage({ text: decodeURIComponent(error), type: 'error' });
+    if (token && remember) {
+      // Auto-login and navigate to dashboard
+      navigate('/app/dashboard', { replace: true });
     }
-  }, [location]);
+  }, [navigate]);
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
@@ -41,45 +38,40 @@ const AuthPage = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    if (!isLogin && !agree) {
-      return setMessage({ text: 'You must agree to the Terms & Conditions', type: 'error' });
-    }
+    e.preventDefault();
+    try {
+      if (!isLogin && !agree) {
+        return setMessage({ text: 'You must agree to the Terms & Conditions', type: 'error' });
+      }
 
-    if (isLogin) {
-  const res = await loginUser(formData);
-  const token = res.data.token;
-  const userId = res.data.userId;
+      if (isLogin) {
+        const res = await loginUser(formData);
+        const { token, userId } = res.data;
 
-  localStorage.setItem('token', token);
-  localStorage.setItem('userId', userId);
+        // Store token and userId persistently
+        setAuthToken(token, userId);
 
-  if (rememberMe) {
-    localStorage.setItem('rememberMe', 'true');
-    const expirationDate = new Date();
-    expirationDate.setDate(expirationDate.getDate() + 7);
-    localStorage.setItem('tokenExpiration', expirationDate.toISOString());
-  }
+        if (rememberMe) {
+          localStorage.setItem('rememberMe', 'true');
+        } else {
+          localStorage.removeItem('rememberMe');
+          // Optionally clear token if user does not want to be remembered on refresh
+          // setAuthToken(null, null);
+        }
 
-  setMessage({ text: 'Login successful!', type: 'success' });
-
-  // Navigate with token and userId in URL
-  navigate(`/app/dashboard?token=${encodeURIComponent(token)}&userId=${encodeURIComponent(userId)}`,
-  {replace: true }
-);
-}
- else {
-      const res = await registerUser(formData);
-      setMessage({
-        text: res.message || 'Registered! Check your email to verify.',
-        type: 'success'
-      });
-      setIsLogin(true);
-      setFormData(prev => ({ name: '', email: prev.email, password: '' }));
-      setAgree(false);
-    }
-  } catch (error) {
+        setMessage({ text: 'Login successful!', type: 'success' });
+        navigate('/app/dashboard', { replace: true });
+      } else {
+        const res = await registerUser(formData);
+        setMessage({
+          text: res.message || 'Registered! Check your email to verify.',
+          type: 'success'
+        });
+        setIsLogin(true);
+        setFormData(prev => ({ name: '', email: prev.email, password: '' }));
+        setAgree(false);
+      }
+    } catch (error) {
       let errorMessage = 'Something went wrong';
       if (error.response?.status === 422 && error.response.data.errors) {
         errorMessage = error.response.data.errors[0].msg;
@@ -91,22 +83,10 @@ const AuthPage = () => {
 
       setMessage({ text: errorMessage, type: 'error' });
     }
-  }
+  };
 
   return (
     <div className="auth-page-container">
-      <div className="auth-branding">
-        <div className="branding-content">
-          <h1>Welcome to LearnUp</h1>
-          <p className="tagline">Your AI-powered personalized learning companion</p>
-          <div className="features-list">
-            <div className="feature-item"><div className="feature-icon">🎯</div><div className="feature-text">Adaptive learning paths</div></div>
-            <div className="feature-item"><div className="feature-icon">🤖</div><div className="feature-text">24/7 AI tutor support</div></div>
-            <div className="feature-item"><div className="feature-icon">🏆</div><div className="feature-text">Gamified learning rewards</div></div>
-          </div>
-        </div>
-      </div>
-
       <div className="auth-form-container">
         <div className="auth-form-wrapper">
           <h2 className="form-title">{isLogin ? 'Welcome Back!' : 'Get Started'}</h2>
@@ -160,7 +140,7 @@ const AuthPage = () => {
                     onChange={(e) => setAgree(e.target.checked)}
                   />
                   <label htmlFor="agree-terms">
-                    I agree to the <a href="/terms" target="_blank">Terms & Conditions</a>
+                    I agree to the <a href="/terms" target="_blank" rel="noreferrer">Terms & Conditions</a>
                   </label>
                 </div>
               )}

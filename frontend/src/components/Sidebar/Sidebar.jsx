@@ -14,10 +14,14 @@ import {
   FaComment
 } from "react-icons/fa";
 import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import ChatAssistant from "../Chatbot/ChatAssistant";
+import {clearAuthToken } from '../../utils/authToken';
+
 import "./Sidebar.css";
 
-const Sidebar = () => {
+const Sidebar = ({ children }) => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showChat, setShowChat] = useState(false);
@@ -33,12 +37,19 @@ const Sidebar = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
+ 
+  const handleLogout = () => {
+    clearAuthToken(); 
+    if (isMobile) {
+      setIsOpen(false); 
+    }
+    navigate('/auth', { replace: true }); 
+    window.location.reload(); 
+  };
   const tabs = [
     { label: "Dashboard", path: "/app/dashboard", icon: <FaChartPie /> },
     { label: "Courses", path: "/app/courses", icon: <FaBook /> },
     { label: "Challenges", path: "/app/challenges", icon: <FaTrophy /> },
-    { label: "Content Studio", path: "/app/content", icon: <FaLightbulb /> },
     { label: "Insights", path: "/app/insights", icon: <FaLayerGroup /> },
     { label: "Collaboration", path: "/app/collaboration", icon: <FaUsers /> },
     { label: "Admin Panel", path: "/app/admin", icon: <FaUserShield /> }
@@ -98,24 +109,26 @@ const Sidebar = () => {
                 <span>Profile</span>
               </NavLink>
             </li>
-            <li>
-              <NavLink
-                to="/auth"
-                className="sidebar-link logout"
-                onClick={() => isMobile && setIsOpen(false)}
-              >
-                <span className="sidebar-icon">
-                  <FaSignOutAlt />
-                </span>
-                <span>Logout</span>
-              </NavLink>
+            <li><NavLink
+              to="/auth"
+              className="sidebar-link logout"
+              onClick={(e) => {
+                e.preventDefault(); // Prevent default NavLink behavior
+                handleLogout();
+              }}
+            >
+              <span className="sidebar-icon">
+                <FaSignOutAlt />
+              </span>
+              <span>Logout</span>
+            </NavLink>
             </li>
           </ul>
         </nav>
       </aside>
 
       <main className="main-content">
-        {/* Main content here */}
+        {children}
       </main>
 
       {/* Chatbot toggle button */}
