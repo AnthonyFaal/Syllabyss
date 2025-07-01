@@ -43,13 +43,14 @@ const verifyUser = async (token) => {
 const getAllUsers = async () => {
   const res = await pool.query(`
     SELECT 
-      u.user_id, u.email, u.name, u.role, u.bio, u.profile_image, u.created_at,
+      u.user_id, u.email, u.name, u.role, u.bio, u.profile_image, u.created_at, u.last_login,
       i.selected_field, i.selected_specialization, i.selected_experience
     FROM users u
     LEFT JOIN user_interest_flows i ON u.user_id = i.user_id
   `);
   return res.rows;
 };
+
 
 const getUserById = async (userId) => {
   const userRes = await pool.query(`
@@ -132,12 +133,25 @@ const updateBio = async (userId, bio) => {
   return res.rows[0];
 };
 
+const loginUser = async (email) => {
+  const res = await pool.query(`
+    UPDATE users 
+    SET last_login = NOW(), updated_at = NOW() 
+    WHERE email = $1 
+    RETURNING *`, 
+    [email]
+  );
+  return res.rows[0];
+};
+
+
 module.exports = {
+  loginUser,
   createUser,
   getUserByEmail,
   verifyUser,
   getAllUsers,
-  updatePassword,
+  updatePassword, 
   getUserById,
   updateProfileImage,
   updateBio

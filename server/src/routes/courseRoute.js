@@ -11,9 +11,10 @@ router.get('/:id', courseController.getCourse);
 router.use(authenticate); 
 
 router.post('/', courseController.createCourse);
-router.put('/:id', courseController.updateCourse);
+router.patch('/:courseId/status', courseController.updateCourse);
 //router.delete('/:id', courseController.deleteCourse);
 router.delete('/del', courseController.deleteAllCourses);
 router.get('/user/:userId?', courseController.getCoursesByUser);
-
+router.patch('/:moduleId/update', courseController.updateModule);
+router.get("/:courseId/modules",courseController.getCourseModelsWithMaterials);
 module.exports = router;

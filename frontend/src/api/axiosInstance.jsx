@@ -3,8 +3,9 @@ import axios from 'axios';
 import { clearAuthToken } from '../utils/authToken';
 
 const axiosInstance = axios.create({
-  baseURL:'https://final-year-server.onrender.com', //'http://localhost:4000/api',
-  timeout: 100000,
+  baseURL: 'http://localhost:4000/api',
+  //https://final-year-server.onrender.com/api
+  timeout: 30000,
 });
 
 axiosInstance.interceptors.request.use(

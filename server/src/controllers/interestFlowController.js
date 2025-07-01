@@ -79,7 +79,6 @@ async function createInterestFlowHandler(req, res) {
       course: mockRes.response?.data || null
     });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'Failed to create interest flow' });
   }
 }
@@ -92,7 +91,6 @@ async function getInterestFlowsByUserIdHandler(req, res) {
     const data = await getInterestFlowsByUserId(userId);
     res.json(data);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'Failed to fetch interest flows' });
   }
 }
@@ -102,7 +100,6 @@ async function getAllInterestFlowsHandler(req, res) {
     const flows = await getAllInterestFlows();
     res.json(flows);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'Failed to fetch interest flows' });
   }
 }
@@ -120,7 +117,6 @@ async function updateInterestFlowHandler(req, res) {
     await updateInterestFlow(parseInt(interestFlowId, 10), data);
     res.json({ message: 'Interest flow updated' });
   } catch (err) { 
-    console.error(err);
     res.status(500).json({ error: 'Failed to update interest flow' });
   }
 }
@@ -133,7 +129,6 @@ async function deleteInterestFlowHandler(req, res) {
     await deleteInterestFlow(parseInt(interestFlowId, 10));
     res.json({ message: 'Interest flow deleted' });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'Failed to delete interest flow' });
   }
 }

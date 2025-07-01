@@ -1,435 +1,383 @@
+// pages/Collaboration.js
 import React, { useEffect, useState } from "react";
-import { 
-  FaSearch, 
-  FaFilter, 
-  FaArrowLeft, 
-  FaPlus, 
-  FaTrash, 
-  FaEdit,
-  FaInfoCircle,
-  FaPlayCircle,
-  FaTachometerAlt,
-  FaClock,
-  FaCalendarAlt,
-  FaSpinner
-} from "react-icons/fa";
-import {createCourse, getUserById, getCoursesByUserId, deleteCourse} from '../../api/APIs';
-import PageLoader from '../../components/Loader/pageLoader';
-import { getUserId } from '../../utils/authToken';
-import CourseCard from "../../components/Card/courseCard";
-import Modal from "../../components/Modal/Modal";
+import "./Collaboration.css";
+import {
+  getPublicChats,
+  getUserChats,
+  createChat,
+  joinChat
+} from '../api/APIs'; 
+import PageLoader from "../components/Loader/pageLoader";
+import ChatPanel from "../components/ChatPanel/ChatPanel";
+import { getUserId } from "../utils/authToken";
+import { formatLastActiveTime } from '../utils/global';
+import io from 'socket.io-client';
 
-const Courses = () => {
-  const [courses, setCourses] = useState([]);
+const Collaboration = () => {
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [userId, setUserId] = useState(null);
-  const [activeFilter, setActiveFilter] = useState("all");
-  const [selectedCourse, setSelectedCourse] = useState(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newCourse, setNewCourse] = useState({
-    title: "",
-    description: "",
-    difficulty_level: "beginner",
-    content_type: "video",
-    estimated_duration: 1,
-    deadline: "",
-    prompt: ""
+  const [activeTab, setActiveTab] = useState('myGroups'); // 'myGroups' or 'generalChats'
+  const [chatData, setChatData] = useState({
+    myGroups: {
+      success: true,
+      data: []
+    },
+    generalChats: {
+      success: true,
+      data: []
+    }
   });
-  const [userData, setUserData] = useState(null);
-  const [error, setError] = useState("");
+  const [activeChat, setActiveChat] = useState(null);
+  const [showCreateChat, setShowCreateChat] = useState(false);
+  const [newChatName, setNewChatName] = useState('');
+  const [newChatAvatar, setNewChatAvatar] = useState('');
+  const [socket, setSocket] = useState(null);
+
+  const defaultAvatar = 'https://cdn-icons-png.flaticon.com/512/565/565547.png';
 
   useEffect(() => {
-    const uid = getUserId();
-    setUserId(uid);
-    if (uid) {
-      fetchUserData(uid);
-    }
-  }, []);
-  
+    // Initialize socket connection
+    const newSocket = io('http://localhost:4000');
+    setSocket(newSocket);
 
-  useEffect(() => {
-    if (userData?.difficulty_level) {
-      setNewCourse(prev => ({
-        ...prev,
-        difficulty_level: userData.difficulty_level
-      }));
-    }
-  }, [userData]);
-
-  useEffect(() => {
-    const fetchUserCourses = async () => {
-      if (!userId) return;
-
-      setLoading(true);
-      try {
-        const response = await getCoursesByUserId(userId);
-        if (response?.data?.success) {
-          const userCourses = response.data.data
-            .filter(course => course.user_id == userId)
-            .map(course => ({
-              ...course,
-              id: course.id || `${course.user_id}-${course.title}-${Date.now()}`
-            }));
-          setCourses(userCourses);
-        } else {
-          setCourses([]);
-        }
-      } catch (error) {
-        console.error("Failed to fetch user courses", error);
-        setCourses([]);
-      }
-      setLoading(false);
+    return () => {
+      newSocket.disconnect();
     };
+  }, []);
 
-    fetchUserCourses();
-  }, [userId]);
+  useEffect(() => {
+    if (!socket) return;
 
-  const fetchUserData = async (id) => {
-    try {
-      const response = await getUserById(id);
-      setUserData(response.data);
-    } catch (error) {
-      console.error("Failed to fetch user data:", error);
-      setError("Failed to load user data");
-    }
-  };
+    // Listen for chat updates
+    socket.on('chatUpdate', (updatedChat) => {
+      setChatData(prev => {
+        const updateChatInList = (list) => {
+          if (!list.data?.data) return list;
+          return {
+            ...list,
+            data: {
+              ...list.data,
+              data: list.data.data.map(chat => 
+                chat.chat_id === updatedChat.chat_id ? updatedChat : chat
+              )
+            }
+          };
+        };
 
-  const filteredCourses = courses.filter(course => {
-    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = activeFilter === "all" || 
-                         (activeFilter === "active" && new Date(course.deadline) > new Date()) ||
-                         (activeFilter === "completed" && new Date(course.deadline) <= new Date());
-    return matchesSearch && matchesFilter;
-  });
+        return {
+          myGroups: updateChatInList(prev.myGroups),
+          generalChats: updateChatInList(prev.generalChats)
+        };
+      });
 
-  const handleCourseClick = (course) => {
-    setSelectedCourse(course);
-  };
-
-  const handleBackClick = () => {
-    setSelectedCourse(null);
-  };
-
-  const handleCreateCourse = async () => {
-    if (!newCourse.title || !newCourse.description) {
-      setError("Title and description are required");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const courseData = {
-        ...newCourse,
-        user_id: userId,
-        difficulty_level: newCourse.difficulty_level
-      };
-      
-      const response = await createCourse(courseData);
-      if (response.data.success) {
-        setCourses([...courses, response.data.data]);
-        setShowCreateModal(false);
-        setNewCourse({
-          title: "",
-          description: "",
-          difficulty_level: userData?.difficulty_level || "beginner",
-          content_type: "video",
-          estimated_duration: 1,
-          deadline: "",
-          prompt: ""
-        });
+      // Update active chat if it's the one being updated
+      if (activeChat && activeChat.chat_id === updatedChat.chat_id) {
+        setActiveChat(updatedChat);
       }
-    } catch (error) {
-      console.error("Failed to create course", error);
-      setError("Failed to create course. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    });
 
-  const handleDeleteCourse = async (courseId) => {
-    if (window.confirm("Are you sure you want to delete this course?")) {
+    // Listen for new messages
+    socket.on('newMessage', (message) => {
+      setChatData(prev => {
+        const updateChatWithNewMessage = (list) => {
+          if (!list.data?.data) return list;
+          return {
+            ...list,
+            data: {
+              ...list.data,
+              data: list.data.data.map(chat => {
+                if (chat.chat_id === message.chat_id) {
+                  return {
+                    ...chat,
+                    last_message: message
+                  };
+                }
+                return chat;
+              })
+            }
+          };
+        };
+
+        return {
+          myGroups: updateChatWithNewMessage(prev.myGroups),
+          generalChats: updateChatWithNewMessage(prev.generalChats)
+        };
+      });
+    });
+
+    return () => {
+      socket.off('chatUpdate');
+      socket.off('newMessage');
+    };
+  }, [socket, activeChat]);
+
+  useEffect(() => {
+    const fetchChats = async () => {
       try {
-        setLoading(true);
-        await deleteCourse(courseId);
-        setCourses(courses.filter(course => course.id !== courseId));
-        if (selectedCourse?.id === courseId) {
-          setSelectedCourse(null);
+        const [myGroups, generalChats] = await Promise.all([
+          getUserChats(getUserId()),
+          getPublicChats()
+        ]);
+        
+        setChatData({
+          myGroups: myGroups,
+          generalChats: generalChats
+        });
+
+        // Set the first chat as active by default if available
+        if (myGroups.data?.data?.length > 0) {
+          setActiveChat(myGroups.data.data[0]);
         }
       } catch (error) {
-        console.error("Failed to delete course", error);
-        setError("Failed to delete course. Please try again.");
+        console.error("Failed to load chats:", error);
+        setChatData({
+          myGroups: {
+            success: false,
+            data: []
+          },
+          generalChats: {
+            success: false,
+            data: []
+          }
+        });
       } finally {
         setLoading(false);
       }
+    };
+
+    fetchChats();
+  }, []);
+
+  const handleCreateChat = async () => {
+    try {
+      const result = await createChat({
+        chat_name: newChatName,
+        profile_image: newChatAvatar || defaultAvatar,
+        is_private: false
+      });
+      
+      // Add the new chat to both myGroups and generalChats if it's public
+      setChatData(prev => ({
+        ...prev,
+        myGroups: {
+          ...prev.myGroups,
+          data: {
+            ...prev.myGroups.data,
+            data: [...(prev.myGroups.data?.data || []), result.data]
+          }
+        },
+        generalChats: {
+          ...prev.generalChats,
+          data: {
+            ...prev.generalChats.data,
+            data: [...(prev.generalChats.data?.data || []), result.data]
+          }
+        }
+      }));
+      
+      setNewChatName('');
+      setNewChatAvatar('');
+      setShowCreateChat(false);
+      setActiveChat(result.data);
+
+      // Emit socket event for new chat
+      if (socket) {
+        socket.emit('newChat', result.data);
+      }
+    } catch (error) {
+      console.error("Failed to create chat:", error);
     }
   };
 
-  if (!userId) return null;
+  const handleJoinChat = async (chatId) => {
+    try {
+      await joinChat(chatId, getUserId());
+      
+      // Update the chat lists
+      const [myGroups, generalChats] = await Promise.all([
+        getUserChats(getUserId()),
+        getPublicChats()
+      ]);
+      
+      setChatData({
+        myGroups: myGroups,
+        generalChats: generalChats
+      });
+      
+      // Set the joined chat as active
+      const joinedChat = generalChats.data?.data?.find(chat => chat.chat_id === chatId);
+      if (joinedChat) {
+        setActiveChat(joinedChat);
+      }
+
+      // Emit socket event for joining chat
+      if (socket) {
+        socket.emit('joinChat', { chatId, userId: getUserId() });
+      }
+    } catch (error) {
+      console.error("Failed to join chat:", error);
+    }
+  };
+
+  const isMemberOfChat = (chatId) => {
+    return chatData.myGroups.data?.data?.some(chat => chat.chat_id === chatId);
+  };
+
+  if (loading) {
+    return <PageLoader />;
+  }
 
   return (
-    <div className="course-container">
-      {selectedCourse ? (
-        <div className="course-detail-view">
-          <div className="course-detail-header">
-            <button onClick={handleBackClick} className="back-button">
-              <FaArrowLeft className="back-icon" />
-              Back to Courses
+    <div className="collaboration-container">
+      <div className="chat-list-container">
+        <div className="sidebar-header">
+          <div className="chat-tabs">
+            <button 
+              className={`tab-button ${activeTab === 'myGroups' ? 'active' : ''}`}
+              onClick={() => setActiveTab('myGroups')}
+              title="My Groups"
+            >
+              👥
             </button>
-            <div className="course-actions">
-              <button className="edit-button">
-                <FaEdit className="action-icon" />
-                Edit
-              </button>
-              <button 
-                className="delete-button"
-                onClick={() => handleDeleteCourse(selectedCourse.id)}
-              >
-                <FaTrash className="action-icon" />
-                Delete
-              </button>
-            </div>
+            <button 
+              className={`tab-button ${activeTab === 'generalChats' ? 'active' : ''}`}
+              onClick={() => setActiveTab('generalChats')}
+              title="General Chats"
+            >
+              🌐
+            </button>
           </div>
-          
-          <div className="course-detail-content">
-            <h2 className="course-detail-title">{selectedCourse.title}</h2>
-            <p className="course-detail-description">{selectedCourse.description}</p>
-            
-            <div className="course-meta">
-              <span className={`difficulty-badge ${selectedCourse.difficulty_level}`}>
-                {selectedCourse.difficulty_level}
-              </span>
-              <span className="content-type-badge">{selectedCourse.content_type}</span>
-              <span className="duration">{selectedCourse.estimated_duration} hours</span>
-              {selectedCourse.deadline && (
-                <span className="deadline-badge">
-                  Due: {new Date(selectedCourse.deadline).toLocaleDateString()}
-                </span>
-              )}
-            </div>
-            
-            {selectedCourse.modules?.length > 0 && (
-              <div className="modules-section">
-                <h3>Modules</h3>
-                <div className="modules-list">
-                  {selectedCourse.modules.map(module => (
-                    <div key={module.module_id} className="module-card">
-                      <h4>{module.title}</h4>
-                      <p>{module.description}</p>
-                      {module.learning_materials?.length > 0 && (
-                        <div className="materials-list">
-                          {module.learning_materials.map(material => (
-                            <div key={material.material_id} className="material-item">
-                              <span>{material.title}</span>
-                              <span className="material-type">{material.content_type}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          <button 
+            className="create-chat-btn"
+            onClick={() => setShowCreateChat(!showCreateChat)}
+            title="Create new chat"
+          >
+            {showCreateChat ? '×' : '+'}
+          </button>
         </div>
-      ) : (
-        <>
-          <div className="course-controls">
-            <div className="search-box">
-              <FaSearch className="search-icon" />
-              <input
-                type="text"
-                placeholder="Search courses..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input"
+        
+        {showCreateChat && (
+          <div className="create-chat-form">
+            <div className="avatar-preview">
+              <img 
+                src={newChatAvatar || defaultAvatar} 
+                alt="New chat avatar" 
+                className="preview-avatar"
               />
             </div>
-            <div className="filter-options">
-              <select 
-                value={activeFilter}
-                onChange={(e) => setActiveFilter(e.target.value)}
-                className="filter-select"
-              >
-                <option value="all">All Courses</option>
-                <option value="active">Active</option>
-                <option value="completed">Completed</option>
-              </select>
-              <FaFilter className="filter-icon" />
-            </div>
-            <button 
-              className="create-course-button"
-              onClick={() => setShowCreateModal(true)}
-            >
-              <FaPlus className="create-icon" />
-              Create Course
-            </button>
-          </div>
-
-          <div className="courses-content">
-            {loading ? (
-              <PageLoader />
-            ) : filteredCourses.length > 0 ? (
-              <div className="courses-horizontal-scroll">
-                {filteredCourses.map(course => (
-                  <CourseCard 
-                    key={course.id} 
-                    course={course} 
-                    onClick={() => handleCourseClick(course)}
-                    onDelete={() => handleDeleteCourse(course.id)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="no-courses">
-                <h3>No courses found</h3>
-                <p>Try adjusting your search or filters</p>
-                <button 
-                  className="create-course-button"
-                  onClick={() => setShowCreateModal(true)}
-                >
-                  <FaPlus className="create-icon" />
-                  Create Your First Course
-                </button>
-              </div>
-            )}
-          </div>
-        </>
-      )}
-
-      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)}>
-        <div className="create-course-modal">
-          <h2>Create New Course</h2>
-          {error && <div className="error-message">{error}</div>}
-          
-          <div className="form-group">
-            <label>Course Title</label>
             <input
               type="text"
-              value={newCourse.title}
-              onChange={(e) => setNewCourse({...newCourse, title: e.target.value})}
-              placeholder="e.g. 'Introduction to React'"
-              maxLength={100}
+              value={newChatAvatar}
+              onChange={(e) => setNewChatAvatar(e.target.value)}
+              placeholder="Paste avatar image URL"
             />
-            <div className="character-counter">{newCourse.title.length}/100</div>
-          </div>
-          
-          <div className="form-group">
-            <label>Course Description</label>
-            <textarea
-              value={newCourse.description}
-              onChange={(e) => setNewCourse({...newCourse, description: e.target.value})}
-              placeholder="Briefly describe what this course will cover"
-              rows="3"
-              maxLength={300}
+            <input
+              type="text"
+              value={newChatName}
+              onChange={(e) => setNewChatName(e.target.value)}
+              placeholder="Enter chat name"
             />
-            <div className="character-counter">{newCourse.description.length}/300</div>
+            <button onClick={handleCreateChat}>Create Chat</button>
           </div>
-          
-          <div className="form-group">
-            <label>
-              <FaInfoCircle className="info-icon" /> 
-              What should this course cover?
-            </label>
-            <div className="input-hint">
-              Be specific about topics, skills, or concepts you want to learn
-            </div>
-            <textarea
-              value={newCourse.prompt}
-              onChange={(e) => setNewCourse({...newCourse, prompt: e.target.value})}
-              placeholder="Example: 'I want to learn React hooks, state management with Redux, and building reusable components'"
-              rows="4"
-              maxLength={500}
-              className="prompt-input"
-            />
-            <div className="character-counter">{newCourse.prompt.length}/500</div>
-          </div>
-          
-          <div className="form-row">
-            <div className="form-group">
-              <label>
-                <FaPlayCircle className="input-icon" />
-                Content Type
-              </label>
-              <select
-                value={newCourse.content_type}
-                onChange={(e) => setNewCourse({...newCourse, content_type: e.target.value})}
-              >
-                <option value="video">Video</option>
-                <option value="article">Article</option>
-                <option value="quiz">Quiz</option>
-                <option value="mixed">Mixed</option>
-              </select>
-            </div>
-            
-            <div className="form-group">
-              <label>
-                <FaTachometerAlt className="input-icon" />
-                Difficulty Level
-              </label>
-              <select
-                value={newCourse.difficulty_level}
-                onChange={(e) => setNewCourse({...newCourse, difficulty_level: e.target.value})}
-              >
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
-            </div>
-          </div>        
-          
-          <div className="form-row">
-            <div className="form-group">
-              <label>
-                <FaClock className="input-icon" />
-                Estimated Duration (hours)
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="100"
-                value={newCourse.estimated_duration}
-                onChange={(e) => setNewCourse({...newCourse, estimated_duration: e.target.value})}
-              />
-            </div>
-            
-            <div className="form-group">
-              <label>
-                <FaCalendarAlt className="input-icon" />
-                Deadline (optional)
-              </label>
-              <input
-                type="date"
-                value={newCourse.deadline}
-                onChange={(e) => setNewCourse({...newCourse, deadline: e.target.value})}
-                min={new Date().toISOString().split('T')[0]}
-              />
-            </div>
-          </div>
-          
-          <div className="modal-actions">
-            <button 
-              className="cancel-button"
-              onClick={() => {
-                setShowCreateModal(false);
-                setError("");
-              }}
-            >
-              Cancel
-            </button>
-            <button 
-              className="create-button"
-              onClick={handleCreateCourse}
-              disabled={loading}
-            >
-              {loading ? <FaSpinner className="spin-icon" /> : "Create Course"}
-            </button>
-          </div>
+        )}
+        
+        <div className="chat-list">
+          {activeTab === 'myGroups' ? (
+            Array.isArray(chatData.myGroups.data?.data) && chatData.myGroups.data.data.length > 0 ? (
+              chatData.myGroups.data.data.map(chat => (
+                <div 
+                  key={chat.chat_id} 
+                  className={`chat-card ${activeChat?.chat_id === chat.chat_id ? 'active' : ''}`}
+                  onClick={() => setActiveChat(chat)}
+                >
+                  <img 
+                    src={chat.profile_image || defaultAvatar} 
+                    alt={chat.chat_name} 
+                    className="chat-avatar"
+                  />
+                  <div className="chat-details">
+                    <h3>{chat.chat_name}</h3>
+                    <p className="last-message">
+                     {chat.last_message?.message_text
+                      ? chat.last_message.message_text.length > 20
+                        ? chat.last_message.message_text.slice(0, 20) + '...'
+                        : chat.last_message.message_text
+                      : 'No messages yet'}
+
+                    </p>
+                    <p className="last-active">
+                       {formatLastActiveTime(chat.last_message?.timestamp || chat.joined_at)}
+                    </p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="no-chats">
+                <img src={defaultAvatar} alt="No chats" className="no-chats-icon" />
+                <p>No Groups yet</p>
+                <p>Create one to get started!</p>
+              </div>
+            )
+          ) : (
+            Array.isArray(chatData.generalChats.data?.data) && chatData.generalChats.data.data.length > 0 ? (
+              chatData.generalChats.data.data.map(chat => (
+                <div 
+                  key={chat.chat_id} 
+                  className={`chat-card ${activeChat?.chat_id === chat.chat_id ? 'active' : ''}`}
+                  onClick={() => isMemberOfChat(chat.chat_id) ? setActiveChat(chat) : null}
+                >
+                  <img 
+                    src={chat.profile_image || defaultAvatar} 
+                    alt={chat.chat_name} 
+                    className="chat-avatar"
+                  />
+                  <div className="chat-details">
+                    <h3>{chat.chat_name}</h3>
+                    <p className="last-message">
+                     {chat.last_message?.message_text
+                      ? chat.last_message.message_text.length > 20
+                        ? chat.last_message.message_text.slice(0, 20) + '...'
+                        : chat.last_message.message_text
+                      : 'No messages yet'}
+
+                    </p>
+                    <p className="last-active">
+                      {formatLastActiveTime(chat.last_message?.timestamp || chat.joined_at)}
+                    </p>
+                    {!isMemberOfChat(chat.chat_id) && (
+                      <button className="join-chat-btn" onClick={(e) => {
+                        e.stopPropagation();
+                        handleJoinChat(chat.chat_id);
+                      }}>
+                        Join
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="no-chats">
+                <img src={defaultAvatar} alt="No chats" className="no-chats-icon" />
+                <p>No public chats found</p>
+                <p>Create one to get started!</p>
+              </div>
+            )
+          )}
         </div>
-      </Modal>
+      </div>
+      
+      <div className="chat-panel-container">
+        {activeChat ? (
+          <ChatPanel activeChat={activeChat} socket={socket} />
+        ) : (
+          <div className="no-chat-selected">
+            <img src={defaultAvatar} alt="Select a chat" className="welcome-avatar" />
+            <h3>Select a chat to start collaborating</h3>
+            <p>Or create/join one to get started!</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
-export default Courses;
+export default Collaboration;

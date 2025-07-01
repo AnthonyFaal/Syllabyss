@@ -1,144 +1,64 @@
-import { FaTrophy, FaMedal, FaLock, FaStar, FaCheckCircle, FaRunning } from "react-icons/fa";
-import { GiProgression, GiBookshelf, GiDiscussion } from "react-icons/gi";
+/* eslint-disable no-unused-vars */
+import React, { useEffect, useState } from 'react';
+import { getAllGoals, createGoal, grantGoal, getGoal, getUserGoals, markUserGoalAsSeen} from '../api/APIs';
+import { FaMedal, FaCheckCircle, FaStar } from 'react-icons/fa';
 import './Challenges.css';
-
+ 
 const Challenges = () => {
-  const challenges = [
-    { 
-      id: 1, 
-      title: "7-Day Learning Streak", 
-      description: "Learn for 7 consecutive days",
-      category: "Consistency",
-      icon: <GiProgression className="icon" />,
-      completed: true, 
-      reward: "Gold Badge",
-      xp: 100
-    },
-    { 
-      id: 2, 
-      title: "Complete 5 Lessons", 
-      description: "Finish any 5 lessons across subjects",
-      category: "Progress",
-      icon: <GiBookshelf className="icon" />,
-      completed: false, 
-      reward: "Silver Badge",
-      xp: 50
-    },
-    { 
-      id: 3, 
-      title: "Discussion Champion", 
-      description: "Participate in 3 forum discussions",
-      category: "Community",
-      icon: <GiDiscussion className="icon" />,
-      completed: false, 
-      reward: "Diamond Badge",
-      xp: 75
-    },
-    { 
-      id: 4, 
-      title: "Speed Learner", 
-      description: "Complete a lesson in record time",
-      category: "Achievement",
-      icon: <FaRunning className="icon" />,
-      completed: false, 
-      reward: "Bronze Badge",
-      xp: 30
-    }
-  ];
+  const [challenges, setChallenges] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const badges = [
-    { type: "gold", name: "Learning Streak", count: 1 },
-    { type: "silver", name: "Quick Learner", count: 3 },
-    { type: "bronze", name: "First Steps", count: 5 }
-  ];
+  useEffect(() => {
+    const fetchGoals = async () => {
+      try {
+        const response = await getAllGoals(); // <- This is probably returning { data: [...] }
+        const goalsArray = Array.isArray(response)
+          ? response
+          : response.data; // fallback to `response.data`
 
-  const leaderboard = [
-    { rank: 1, name: "John Doe", xp: 350 },
-    { rank: 2, name: "Jane Smith", xp: 300 },
-    { rank: 3, name: "Alice Johnson", xp: 250 },
-    { rank: 4, name: "Bob Brown", xp: 200 },
-    { rank: 5, name: "Charlie Davis", xp: 150 },
-  ];
+        if (Array.isArray(goalsArray)) {
+          setChallenges(goalsArray);
+        } else {
+          console.error("Invalid response format: ", response);
+        }
+      } catch (error) {
+        console.error("Error fetching goals:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGoals();
+  }, []);
+
+  if (loading) return <p>Loading...</p>;
 
   return (
     <div className="challenges-container">
-      <header className="challenges-header">
-        <h1>Learning Challenges</h1>
-        <p className="subtitle">Complete challenges to earn badges and XP!</p>
-      </header>
-
+      <h1>Learning Challenges</h1>
       <div className="challenges-grid">
         {challenges.map((challenge) => (
-          <div key={challenge.id} className={`challenge-card ${challenge.completed ? 'completed' : ''}`}>
+          <div key={challenge.goal_id} className="challenge-card">
             <div className="card-header">
-              <div className="challenge-icon">
-                {challenge.completed ? (
-                  <FaCheckCircle className="completed-icon" />
-                ) : (
-                  challenge.icon
-                )}
-              </div>
+              <img src={challenge.icon} alt="icon" className="challenge-icon" />
               <div className="challenge-category">{challenge.category}</div>
-              {challenge.completed && (
-                <div className="xp-badge">+{challenge.xp} XP</div>
-              )}
+              <div className="xp-badge">
+                {challenge.reward_type === "xp" ? `+${challenge.reward_value} XP` : challenge.reward_value}
+              </div>
             </div>
-            
             <div className="challenge-content">
               <h3>{challenge.title}</h3>
               <p className="description">{challenge.description}</p>
-              
               <div className="reward-info">
-                <FaMedal className={`reward-icon ${challenge.reward.split(' ')[0].toLowerCase()}`} />
-                <span>Reward: {challenge.reward}</span>
+                <FaMedal className={`reward-icon ${challenge.reward_type}`} />
+                <span>Reward: {challenge.reward_type === 'xp' ? `${challenge.reward_value} XP` : 'Badge'}</span>
               </div>
             </div>
-            
             <div className="challenge-footer">
-              {challenge.completed ? (
-                <div className="completed-status">
-                  <FaStar className="star-icon" />
-                  <span>Completed!</span>
-                </div>
-              ) : (
-                <button className="start-btn">
-                  Start Challenge
-                </button>
-              )}
+              <button className="start-btn">Start Challenge</button>
             </div>
           </div>
         ))}
-      </div>
-
-      <div className="badge-collection">
-        <h2>Your Badge Collection</h2>
-        <div className="badges-grid">
-          {badges.map((badge, index) => (
-            <div key={index} className="badge-card">
-              <div className="badge-icon">
-                <FaMedal className={badge.type} />
-                <span className="badge-count">{badge.count}x</span>
-              </div>
-              <div className="badge-info">
-                <h4>{badge.name}</h4>
-                <p className="badge-type">{badge.type.charAt(0).toUpperCase() + badge.type.slice(1)} Badge</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="leaderboard">
-        <h2>Leaderboard</h2>
-        <div className="leaderboard-grid">
-          {leaderboard.map((entry) => (
-            <div key={entry.rank} className="leaderboard-entry">
-              <span className="rank">{entry.rank}</span>
-              <span className="player-name">{entry.name}</span>
-              <span className="player-xp">{entry.xp} XP</span>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );

@@ -26,10 +26,26 @@ export const post = (url, data = {}, headers = {}) =>
 export const put = (url, data = {}, headers = {}) =>
   apiRequest({ method: 'put', url, data, headers });
 
+export const patch = (url, data = {}, headers = {}) =>
+  apiRequest({ method: 'patch', url, data, headers });
+
 export const del = (url, data = {}, headers = {}) =>
   apiRequest({ method: 'delete', url, data, headers });
 
-// Now export the auth API calls using these helpers
+
+export const overview = async (userId) => {
+  const response = await get(`/dashboard/${userId}/overview`);
+  return response.data; // Make sure to return the data property
+};
+
+export const getAdminOverview = async () => {
+  const response = await get(`/admin/overview`);
+  return response.data; // Make sure to return the data property
+};
+export const timetable = async (userId) => {
+  const response = await get(`/dashboard/${userId}/timetable`);
+  return response.data; // Make sure to return the data property
+};
 
 export const registerUser = (data) => post('/auth/register', data);
 
@@ -69,26 +85,14 @@ export const createCourse = (data) => post('/courses', data);
 export const deleteCourse = (courseId) => del(`/courses/${courseId}`);
 
 export const getCourseById = (courseId) => get(`/courses/${courseId}`);
-
+export const getCourseModules = (courseId) => get(`/courses/${courseId}/modules`);
 export const getCoursesByUserId = (userId) =>get(`/courses/user/${userId}`) 
+export const updateModule = (moduleId, data) => patch(`/courses/${moduleId}/update`, data);
+export const updateCourseStatus = (courseId, data) => patch(`/courses/${courseId}/status`, data);
 
-export const updateCourse = (courseId, data) => put(`/courses/${courseId}`, data);
 
-// Questions
-export const createQuestion = (data) => post('/questions', data);
-export const getQuestionsByQuiz = (quizId) => get(`/quizzes/${quizId}/questions`);
-
-// Question Options
-export const createOption = (data) => post('/question-options', data);
-export const getOptionsByQuestion = (questionId) => get(`/questions/${questionId}/options`);
-
-// Quiz Attempts
-export const createAttempt = (data) => post('/attempts', data);
-export const getAttemptsByUser = (userId) => get(`/users/${userId}/attempts`);
-
-// Answers
-export const createAnswer = (data) => post('/answers', data);
-export const getAnswersByAttempt = (attemptId) => get(`/attempts/${attemptId}/answers`);
+export const submitQuizAnswers = (quiz_id, answers) =>  post(`/quizzes/${quiz_id}/answer`, { answers });
+export const getQuizAttemptStatus = (quiz_id) =>  get(`/quizzes/${quiz_id}/attempt-status`);
 
 export const createOrUpdateProgress = (data) => post('/progress', data);
 export const getProgressByMaterial = (userId, materialId) => get(`/progress/user/${userId}/material/${materialId}`);
@@ -108,24 +112,59 @@ export const recordProgressTime = (userId, materialId, data) =>
 export const getCompletedMaterials = (userId) => get(`/progress/user/${userId}/completed`);
 export const getInProgressMaterials = (userId) => get(`/progress/user/${userId}/in-progress`);
 
-// Achievements
-export const createAchievement = (data) => post('/achievements', data);
-export const getAllAchievements = () => get('/achievements');
-export const getAchievement = (id) => get(`/achievements/${id}`);
-export const updateAchievement = (id, data) => put(`/achievements/${id}`, data);
-export const deleteAchievement = (id) => del(`/achievements/${id}`);
+// Goals
+export const createGoal = (data) => post('/goals', data);
+export const deleteGoal = (id) => del(`/goals/${id}`);
+export const updateGoal = (id, data) => put(`/goals/${id}`, data);
+export const getAllGoals = () => get('/goals');
+export const getGoal = (id) => get(`/goals/${id}`);
 
-// User Achievements
-export const grantAchievement = (data) => post('/user-achievements', data);
-export const getUserAchievements = (userId) => get(`/users/${userId}/achievements`);
-export const markUserAchievementAsSeen = (userAchievementId, data) =>
+// User Goals
+export const grantGoal = (data) => post('/user-goals', data);
+export const getUserGoals = (userId) => get(`/users/${userId}/goals`);
+export const markUserGoalAsSeen = (userGoalId, data) =>
   apiRequest({
     method: 'patch',
-    url: `/user-achievements/${userAchievementId}/seen`,
+    url: `/user-goals/${userGoalId}/seen`,
     data,
   });
 
-// Leaderboard
-export const getLeaderboard = () => get('/leaderboard');
-export const getUserRank = (userId) => get(`/users/${userId}/rank`);
 
+// Chat API endpoints
+export const getPublicChats = () => get('/chats/public-chats');
+export const createChat = (chatData) => post('/chats', chatData);
+export const getUserChats = (userId) => get(`/chats/user/${userId}`);
+export const getChat = (chatId) => get(`/chats/${chatId}`);
+export const updateChat = (chatId, updateData) => put(`/chats/${chatId}`, updateData);
+export const deleteChat = (chatId) => del(`/chats/${chatId}`);
+
+// Message endpoints
+export const sendMessage = (chatId, messageData) => post(`/chats/${chatId}/messages`, messageData);
+export const getMessages = (chatId) => get(`/chats/${chatId}/messages`);
+
+// Member endpoints
+
+export const joinChat = (chatId, memberData) => post(`/chats/${chatId}/members`, memberData);
+export const addMember = (chatId, memberData) => post(`/chats/${chatId}/members`, memberData);
+export const removeMember = (chatId, userId) => del(`/chats/${chatId}/members/${userId}`);
+
+// Typing indicators
+export const setTyping = (chatId) => post(`/chats/${chatId}/typing`);
+export const getTypingUsers = (chatId) => get(`/chats/${chatId}/typing`);
+
+// Recommendations
+export const getRecommendations = (userId) => get(`/recommendations/${userId}`);
+export const acceptRecommendation = (recommendationId) => patch(`/recommendations/${recommendationId}/accept`);
+
+
+// Leaderboard APIs
+export const getLeaderboard = (period = 'all') => get(`/leaderboard?period=${period}`);
+export const getUserRank = (userId) => get(`/leaderboard/users/${userId}/rank`);
+export const updateUserXP = (userId, xpData) => patch(`/leaderboard/users/${userId}/xp`, xpData);
+
+// Insights APIs
+export const getUserKPIs = (userId) => get(`/insights/kpis/${userId}`);
+export const getUserQuizTrends = (userId) => get(`/insights/quiz-trends/${userId}`);
+export const getUserGoalProgress = (userId) => get(`/insights/goals/progress/${userId}`);
+export const getUserRecentActivity = (userId) => get(`/insights/activity/${userId}`);
+export const getUserXPBreakdown = (userId) => get(`/insights/xp-breakdown/${userId}`);

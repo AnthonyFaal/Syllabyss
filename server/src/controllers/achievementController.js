@@ -1,129 +1,166 @@
-const {BaseRepository, validateEntity } = require('../utils/index');
+const {BaseRepository, validateEntity, grantGoalToUser } = require('../utils/index');
 
-
-const achievementRepo = new BaseRepository('achievements');
-const userAchievementRepo = new BaseRepository('user_achievements');
-const leaderboardRepo = new BaseRepository('leaderboard');
+const goalRepo = new BaseRepository('goals');
+const userGoalRepo = new BaseRepository('user_goals');
 
 const achievementController = {
-  // Achievements CRUD
-  async createAchievement(req, res) {
+
+async createGoal(req, res) {
+  try {
+    const data = req.body;
+    const goalsArray = Array.isArray(data) ? data : [data];
+
+    const createdGoals = [];
+
+    for (const goalData of goalsArray) {
+      // Set visibility based on created_by
+      if (goalData.created_by) {
+        goalData.visibility = 'personal';
+      } else {
+        goalData.visibility = 'global';
+        goalData.created_by = null; 
+      }
+
+      // Check for duplicates before creation
+      let existingGoal;
+      if (goalData.visibility === 'personal') {
+        existingGoal = await goalRepo.getOne({
+          created_by: goalData.created_by,
+          title: goalData.title
+        });
+      } else {
+        existingGoal = await goalRepo.getOne({
+          visibility: 'global',
+          title: goalData.title
+        });
+      }
+
+      if (existingGoal) {
+        console.warn(`⚠️ Goal "${goalData.title}" already exists, skipping creation`);
+        continue; // Skip creating duplicate
+      }
+
+      // Validate input
+      validateEntity(goalData, 'goal', 'create');
+
+      // Create the goal
+      const createdGoal = await goalRepo.create(goalData);
+      createdGoals.push(createdGoal);
+
+      // Grant goal if personal
+      if (createdGoal.created_by) {
+        try {
+          await grantGoalToUser(createdGoal.created_by, createdGoal.goal_id);
+        } catch (grantError) {
+          console.error(`⚠️ Failed to grant goal (goal_id: ${createdGoal.goal_id}) to user:`, grantError);
+        }
+      }
+    }
+
+    if (createdGoals.length === 0) {
+      return res.status(400).json({
+        message: 'No new goals were created — all were duplicates.'
+      });
+    }
+
+    return res.status(201).json({
+      message: `Successfully created ${createdGoals.length} goal(s)`,
+      goals: createdGoals
+    });
+
+  } catch (error) {
+    console.error('🚨 Goal creation error:', error);
+
+    const status = error.statusCode || 500;
+    const message = error.message || 'An unexpected error occurred';
+
+    return res.status(status).json({
+      error: message,
+      details: error.details || null
+    });
+  }
+},
+
+  // User Goals
+ async grantGoal(req, res) {
+  try {
+    const { user_id, goal_id } = req.body;
+    const userGoal = await grantGoalToUser(user_id, goal_id);
+    res.status(201).json(userGoal);
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
+},
+  
+ async markAsSeen(req, res) {
     try {
-      const achievementData = req.body;
-      validateEntity(achievementData, 'achievement', 'create');
-      
-      const achievement = await achievementRepo.create(achievementData);
-      res.status(201).json(achievement);
+      const { user_goal_id } = req.params;
+      const userGoal = await userGoalRepo.update(user_goal_id, {
+        is_seen: true
+      });
+      res.json(userGoal);
     } catch (error) {
-      res.status(error.statusCode || 500).json({ error: error.message });
+      res.status(500).json({ error: error.message });
     }
   },
 
-  async getAchievement(req, res) {
+  async getGoal(req, res) {
     try {
       const { id } = req.params;
-      const achievement = await achievementRepo.getById(id);
+      const goal = await goalRepo.getById(id);
       
-      if (!achievement) {
-        return res.status(404).json({ error: 'Achievement not found' });
+      if (!goal) {
+        return res.status(404).json({ error: 'Goal not found' });
       }
       
-      res.json(achievement);
+      res.json(goal);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   },
 
-  async getAllAchievements(req, res) {
+  async getAllGoals(req, res) {
     try {
-      const achievements = await achievementRepo.getAll();
-      res.json(achievements);
+      const goals = await goalRepo.getAll();
+      res.json(goals);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   },
 
-  async updateAchievement(req, res) {
+  async updateGoal(req, res) {
     try {
       const { id } = req.params;
       const updateData = req.body;
-      validateEntity(updateData, 'achievement', 'update');
+      validateEntity(updateData, 'goal', 'update');
       
-      const achievement = await achievementRepo.update(id, updateData);
-      res.json(achievement);
+      const goal = await goalRepo.update(id, updateData);
+      res.json(goal);
     } catch (error) {
       res.status(error.statusCode || 500).json({ error: error.message });
     }
   },
 
-  async deleteAchievement(req, res) {
+  async deleteGoal(req, res) {
     try {
       const { id } = req.params;
-      await achievementRepo.delete(id);
+      await goalRepo.delete(id);
       res.status(204).end();
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   },
 
-  // User Achievements
-  async grantAchievement(req, res) {
-    try {
-      const { user_id, achievement_id } = req.body;
-      validateEntity({ user_id, achievement_id }, 'userAchievement', 'create');
-      
-      const achievement = await achievementRepo.getById(achievement_id);
-      if (!achievement) {
-        return res.status(404).json({ error: 'Achievement not found' });
-      }
-      
-      // Check if user already has this achievement using BaseRepository
-      const existing = await userAchievementRepo.getAll({
-        user_id,
-        achievement_id
-      });
-      
-      if (existing.length > 0) {
-        return res.status(400).json({ error: 'User already has this achievement' });
-      }
-      
-      const userAchievement = await userAchievementRepo.create({
-        user_id,
-        achievement_id
-      });
-      
-      // Update leaderboard using the repository
-      await leaderboardRepo.createOrUpdate({
-        user_id,
-        xp_points: achievement.xp_value,
-        weekly_xp: achievement.xp_value,
-        monthly_xp: achievement.xp_value
-      }, {
-        conflictTarget: 'user_id',
-        mergeColumns: {
-          xp_points: db.raw('leaderboard.xp_points + EXCLUDED.xp_points'),
-          weekly_xp: db.raw('leaderboard.weekly_xp + EXCLUDED.weekly_xp'),
-          monthly_xp: db.raw('leaderboard.monthly_xp + EXCLUDED.monthly_xp'),
-          last_updated: db.raw('CURRENT_TIMESTAMP')
-        }
-      });
-      
-      res.status(201).json(userAchievement);
-    } catch (error) {
-      res.status(error.statusCode || 500).json({ error: error.message });
-    }
-  },
-
-  async getUserAchievements(req, res) {
+  async getUserGoals(req, res) {
     try {
       const { user_id } = req.params;
       // Using raw query for complex join
       const result = await db.query(`
-        SELECT a.*, ua.earned_date, ua.is_seen 
-        FROM user_achievements ua
-        JOIN achievements a ON ua.achievement_id = a.achievement_id
-        WHERE ua.user_id = $1
-        ORDER BY ua.earned_date DESC
+        SELECT g.*, ug.earned_date, ug.is_seen 
+        FROM user_goals ug
+        JOIN goals g ON ug.goal_id = g.id
+        WHERE ug.user_id = $1
+        ORDER BY ug.earned_date DESC
       `, [user_id]);
       res.json(result.rows);
     } catch (error) {
@@ -131,79 +168,8 @@ const achievementController = {
     }
   },
 
-  async markAsSeen(req, res) {
-    try {
-      const { user_achievement_id } = req.params;
-      const userAchievement = await userAchievementRepo.update(user_achievement_id, {
-        is_seen: true
-      });
-      res.json(userAchievement);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  },
-
-  // Leaderboard
-   async getLeaderboard(req, res) {
-    try {
-      const { period = 'all' } = req.query;
-      let orderBy = 'xp_points DESC';
-      
-      if (period === 'weekly') {
-        orderBy = 'weekly_xp DESC';
-      } else if (period === 'monthly') {
-        orderBy = 'monthly_xp DESC';
-      }
-      
-      // Using raw query for complex join and ordering
-      const result = await db.query(`
-        SELECT l.*, u.name, u.profile_image 
-        FROM leaderboard l
-        JOIN users u ON l.user_id = u.user_id
-        ORDER BY ${orderBy}
-        LIMIT 100
-      `);
-      res.json(result.rows);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  },
-
-  async getUserRank(req, res) {
-    try {
-      const { user_id } = req.params;
-      // Using raw query for window function
-      const result = await db.query(`
-        WITH ranked_leaderboard AS (
-          SELECT user_id, xp_points, RANK() OVER (ORDER BY xp_points DESC) as rank
-          FROM leaderboard
-        )
-        SELECT * FROM ranked_leaderboard WHERE user_id = $1
-      `, [user_id]);
-      
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'User not found on leaderboard' });
-      }
-      
-      res.json(result.rows[0]);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  },
-
-  // Internal method for XP updates
-  async updateLeaderboardXP(user_id, xp) {
-    const query = `
-      INSERT INTO leaderboard (user_id, xp_points, weekly_xp, monthly_xp)
-      VALUES ($1, $2, $2, $2)
-      ON CONFLICT (user_id) DO UPDATE SET
-        xp_points = leaderboard.xp_points + EXCLUDED.xp_points,
-        weekly_xp = leaderboard.weekly_xp + EXCLUDED.weekly_xp,
-        monthly_xp = leaderboard.monthly_xp + EXCLUDED.monthly_xp,
-        last_updated = CURRENT_TIMESTAMP
-    `;
-    await db.query(query, [user_id, xp]);
-  }
+  
 };
 
 module.exports = achievementController;
+

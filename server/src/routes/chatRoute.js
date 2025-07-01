@@ -5,19 +5,27 @@ const chatController = require('../controllers/chatController');
 const authenticate = require('../middlewares/authenticate');
 
 // Protected routes (require authentication)
+
+router.get('/public-chats', chatController.getPublicChats);
+
 router.use(authenticate);
 
-router.post('/',  chatController.createChat);
-// Get chat details by ID
-router.get('/:id',  chatController.getChat);
-
-// Send a message in a chat
+// Chat routes
+router.post('/', chatController.createChat);
+router.get('/:chat_id', chatController.getChat);
+router.put('/:id', chatController.updateChat);
+router.delete('/:id', chatController.deleteChat);
+router.get('/user/:userId?', chatController.getUserChats); 
+// Message routes 
 router.post('/:chatId/messages', chatController.sendMessage);
+router.get('/:chatId/messages', chatController.getMessages);
+ 
+// Member routes
+router.post('/:chatId/members', chatController.addMember);
+router.delete('/:chatId/members/:userId', chatController.removeMember);
 
-// Get all messages from a chat
-router.get('/:chatId/messages',  chatController.getMessages);
-
-// Delete a chat
-router.delete('/:id', authenticate, chatController.deleteChat);
+// Typing indicators
+router.post('/:chatId/typing', chatController.setTyping);
+router.get('/:chatId/typing', chatController.getTypingUsers);
 
 module.exports = router;

@@ -1,4 +1,9 @@
 /* Profile Header */
+
+.profile-container
+{
+margin-bottom: 20px;
+}
 .profile-header {
   display: flex;
   flex-direction: column;
@@ -518,4 +523,31 @@
   .profile-bottom-sections {
     grid-template-columns: 2fr 3fr;
   }
+}
+
+.password-update {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+  gap: 8px;
+}
+
+.password-input {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.save-password-btn {
+  background-color: #007BFF;
+  color: white;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.save-password-btn:hover {
+  background-color: #0056b3;
 }

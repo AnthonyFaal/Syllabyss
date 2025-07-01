@@ -1,10 +1,11 @@
 const db = require('../config/db');
 
 class BaseRepository {
-  constructor(tableName) {
+  constructor(tableName, Key = 'id') {
     this.tableName = tableName;
+    this.Key = Key;
   }
-
+ 
   async create(data) {
     const keys = Object.keys(data);
     const values = Object.values(data);
@@ -24,7 +25,7 @@ class BaseRepository {
   async getById(id) {
     const query = `
       SELECT * FROM ${this.tableName}
-      WHERE id = $1;
+      WHERE ${this.Key} = $1;
     `;
     const result = await db.query(query, [id]);
     return result.rows[0];
@@ -38,7 +39,7 @@ class BaseRepository {
     Object.entries(conditions).forEach(([key, value], index) => {
       if (value !== undefined && value !== null) {
         whereClauses.push(`${key} = $${index + 1}`);
-        values.push(value);
+        values.push(value); 
       }
     });
 
@@ -59,37 +60,105 @@ class BaseRepository {
     return result.rows;
   }
 
-  async getOne(conditions = {}) {
-    const results = await this.findAll(conditions);
-    return results[0] || null;
-  }
+ async getOne(conditions = {}) {
+  const results = await this.getAll(conditions);
+  return results[0] || null;
+}
 
   async update(id, data) {
-    const keys = Object.keys(data).filter(key => data[key] !== undefined);
+     const keys = Object.keys(data).filter(key => data[key] !== undefined);
     const values = keys.map(key => data[key]);
     const setClause = keys.map((key, i) => `${key} = $${i + 1}`).join(', ');
 
     const query = `
       UPDATE ${this.tableName}
       SET ${setClause}
-      WHERE id = $${keys.length + 1}
+      WHERE ${this.Key} = $${keys.length + 1}
       RETURNING *;
     `;
 
     const result = await db.query(query, [...values, id]);
     return result.rows[0];
   }
+ 
+  // In BaseRepository class
+ async getWhere(conditions = {}) {
+    let query = `SELECT * FROM ${this.tableName}`;
+    const values = [];
+    const whereClauses = [];
+    let paramIndex = 1;
+
+    Object.entries(conditions).forEach(([key, value]) => {
+      if (value === undefined || value === null) return;
+
+      // Handle $in operator for array values
+      if (typeof value === 'object' && value.$in) {
+        if (value.$in.length === 0) {
+          // Handle empty array case
+          whereClauses.push('1 = 0'); // Always false
+          return;
+        }
+        const placeholders = value.$in.map((_, i) => `$${paramIndex + i}`).join(',');
+        whereClauses.push(`${key} IN (${placeholders})`);
+        values.push(...value.$in);
+        paramIndex += value.$in.length;
+      } else {
+        // Standard equality condition
+        whereClauses.push(`${key} = $${paramIndex}`);
+        values.push(value);
+        paramIndex += 1;
+      }
+    });
+
+    if (whereClauses.length > 0) {
+      query += ` WHERE ${whereClauses.join(' AND ')}`;
+    }
+
+    const result = await db.query(query, values);
+    return result.rows;
+  }
 
   async delete(id) {
     const query = `
       DELETE FROM ${this.tableName}
-      WHERE id = $1
+      WHERE ${this.Key} = $1
       RETURNING *;
     `;
     const result = await db.query(query, [id]);
     return result.rows[0];
   }
   
+  async deleteWhere(column, values, extraConditions = {}) {
+  if (!values || values.length === 0) {
+    console.log(`⚠️ deleteWhereIn called with empty values`);
+    return [];
+  }
+
+  const baseIndex = Object.keys(extraConditions).length;
+  const inPlaceholders = values.map((_, i) => `$${i + 1}`).join(", ");
+  const extraClauses = [];
+  const queryParams = [...values];
+
+  Object.entries(extraConditions).forEach(([key, value], i) => {
+    extraClauses.push(`${key} = $${baseIndex + i + 1}`);
+    queryParams.push(value);
+  });
+
+  let query = `
+    DELETE FROM ${this.tableName}
+    WHERE ${column} IN (${inPlaceholders})
+  `;
+  
+  if (extraClauses.length > 0) {
+    query += ` AND ${extraClauses.join(" AND ")}`;
+  }
+
+  query += ' RETURNING *;';
+
+  const result = await db.query(query, queryParams);
+  return result.rows;
+}
+
  async deleteAll(conditions = {}) {
     let query = `DELETE FROM ${this.tableName}`;
     const values = [];
@@ -113,11 +182,28 @@ class BaseRepository {
     return result.rows;
   }
 
+  async  deleteWhereFieldsMissing(fields = []) {
+  if (!fields.length) {
+    throw new Error("At least one field must be provided to check for missing values");
+  }
+
+  // Build WHERE clause dynamically
+  const conditions = fields.map(field => `${field} IS NULL`).join(' OR ');
+
+  const query = `
+    DELETE FROM timetable
+    WHERE ${conditions};
+  `;
+
+  console.log(`🗑️ Deleting timetable rows where: ${conditions}`);
+  return pool.query(query);
+}
+
   async count(conditions = {}) {
     let query = `SELECT COUNT(*) FROM ${this.tableName}`;
     const values = [];
     const whereClauses = [];
-
+ 
     Object.entries(conditions).forEach(([key, value], index) => {
       if (value !== undefined && value !== null) {
         whereClauses.push(`${key} = $${index + 1}`);
@@ -132,6 +218,166 @@ class BaseRepository {
     const result = await db.query(query, values);
     return parseInt(result.rows[0].count, 10);
   }
+ 
+  async rawQuery(query, params = []) {
+  const result = await db.query(query, params);
+  return result.rows;
+  }
+
+  // Add this method to your BaseRepository class
+async upsert(data, conflictTarget, updateColumns) {
+  const keys = Object.keys(data);
+  const values = Object.values(data);
+  const placeholders = keys.map((_, i) => `$${i + 1}`).join(', ');
+  const columns = keys.join(', ');
+
+  // Build the SET clause for the update part
+  const setClause = updateColumns
+    .map(col => `${col} = EXCLUDED.${col}`)
+    .join(', ');
+
+  const query = `
+    INSERT INTO ${this.tableName} (${columns})
+    VALUES (${placeholders})
+    ON CONFLICT (${conflictTarget}) DO UPDATE 
+    SET ${setClause}
+    RETURNING *;
+  `;
+
+  const result = await db.query(query, values);
+  return result.rows[0];
+}
+
+// Add this method for increment operations
+async increment(id, increments) {
+  const setClause = Object.keys(increments)
+    .map((key, i) => `${key} = ${key} + $${i + 1}`)
+    .join(', ');
+
+  const values = Object.values(increments);
+
+  const query = `
+    UPDATE ${this.tableName}
+    SET ${setClause}
+    WHERE ${this.Key} = $${values.length + 1}
+    RETURNING *;
+  `;
+
+  const result = await db.query(query, [...values, id]);
+  return result.rows[0];
+}
+
+  // In BaseRepository class
+async joinTables({
+  mainTableAlias = 'main',
+  joinTables = [],
+  selectFields = ['main.*'],
+  conditions = {},
+  orderBy = '',
+  limit = null,
+  offset = null
+}) {
+  // Build SELECT clause
+  const selectClause = selectFields.join(', ');
+
+  // Build FROM clause with main table
+  let fromClause = `FROM ${this.tableName} AS ${mainTableAlias}`;
+
+  // Build JOIN clauses
+  const joinClauses = joinTables.map(join => {
+    const {
+      table,
+      alias,
+      on,
+      type = 'LEFT' // Default to LEFT JOIN
+    } = join;
+    return `${type} JOIN ${table} AS ${alias} ON ${on}`;
+  }).join(' ');
+
+  // Build WHERE clause
+  const whereClauses = [];
+  const values = [];
+  let paramIndex = 1;
+
+  Object.entries(conditions).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+
+    // Handle different comparison operators
+    if (typeof value === 'object' && !Array.isArray(value)) {
+      // Handle operators like $eq, $ne, $gt, etc.
+      Object.entries(value).forEach(([operator, opValue]) => {
+        const operators = {
+          $eq: '=',
+          $ne: '!=',
+          $gt: '>',
+          $gte: '>=',
+          $lt: '<',
+          $lte: '<=',
+          $like: 'LIKE',
+          $in: 'IN'
+        };
+
+        if (operators[operator]) {
+          if (operator === '$in' && Array.isArray(opValue)) {
+            if (opValue.length === 0) {
+              whereClauses.push('1 = 0'); // Always false for empty IN
+              return;
+            }
+            const placeholders = opValue.map((_, i) => `$${paramIndex + i}`).join(',');
+            whereClauses.push(`${key} IN (${placeholders})`);
+            values.push(...opValue);
+            paramIndex += opValue.length;
+          } else {
+            whereClauses.push(`${key} ${operators[operator]} $${paramIndex}`);
+            values.push(opValue);
+            paramIndex += 1;
+          }
+        }
+      });
+    } else {
+      // Standard equality condition
+      whereClauses.push(`${key} = $${paramIndex}`);
+      values.push(value);
+      paramIndex += 1;
+    }
+  });
+
+  let whereClause = '';
+  if (whereClauses.length > 0) {
+    whereClause = `WHERE ${whereClauses.join(' AND ')}`;
+  }
+
+  // Build ORDER BY clause
+  let orderByClause = '';
+  if (orderBy) {
+    orderByClause = `ORDER BY ${orderBy}`;
+  }
+
+  // Build LIMIT and OFFSET clauses
+  let limitOffsetClause = '';
+  if (limit !== null) {
+    limitOffsetClause = `LIMIT $${paramIndex}`;
+    values.push(limit);
+    paramIndex += 1;
+    
+    if (offset !== null) {
+      limitOffsetClause += ` OFFSET $${paramIndex}`;
+      values.push(offset);
+    }
+  }
+
+  const query = `
+    SELECT ${selectClause}
+    ${fromClause}
+    ${joinClauses}
+    ${whereClause}
+    ${orderByClause}
+    ${limitOffsetClause};
+  `;
+
+  const result = await db.query(query, values);
+  return result.rows;
+} 
 
   async paginate({ page = 1, limit = 10, conditions = {} }) {
     const offset = (page - 1) * limit;

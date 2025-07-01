@@ -6,7 +6,8 @@ const {
   updatePassword,
   getUserById,
   updateProfileImage,
-  updateBio
+  updateBio,
+  loginUser
 } = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -59,28 +60,48 @@ const verifyEmail = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    // 1. Check if user exists
     const user = await getUserByEmail(email);
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' }); // Unified error
     }
+
+    // 2. Validate password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Invalid credentials' }); // Unified error
+    }
+
+    // 3. Verify account status
     if (!user.is_verified) {
-      const token = generateToken(); // Generate a new token
-      const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); 
+      const token = generateToken();
+      const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
       await pool.query(`
         UPDATE users
         SET verification_token = $1, token_expires_at = $2
         WHERE email = $3
       `, [token, tokenExpiresAt, email]);
+
       await sendVerificationEmail(email, token);
+
       return res.status(403).json({
-        error: 'Email not verified. A new verification email has been sent to your email address.'
+        error: 'Email not verified. A new verification email has been sent.'
       });
     }
-    const token = jwt.sign({ user_id: user.user_id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: '7d',
-    });
-    res.json({ token, 
-       userId: user.user_id});
+
+    // 4. Update last login
+    await loginUser(email);
+
+    // 5. Create JWT
+    const token = jwt.sign(
+      { user_id: user.user_id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({ token, userId: user.user_id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -133,7 +154,6 @@ const updateProfileImageController = async (req, res) => {
       user: updatedUser,
     });
   } catch (error) {
-    console.error('Error updating profile image:', error);
     return res.status(500).json({ message: 'Server error.' });
   }
 };
@@ -176,7 +196,6 @@ const updateBioController = async (req, res) => {
       user: updatedUser,
     });
   } catch (error) {
-    console.error('Error updating bio:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

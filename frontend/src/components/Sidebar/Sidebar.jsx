@@ -15,7 +15,7 @@ import {
 } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
-import ChatAssistant from "../Chatbot/ChatAssistant";
+//import ChatAssistant from "../Chatbot/ChatAssistant";
 import {clearAuthToken } from '../../utils/authToken';
 
 import "./Sidebar.css";
@@ -24,7 +24,7 @@ const Sidebar = ({ children }) => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [showChat, setShowChat] = useState(false);
+ // const [showChat, setShowChat] = useState(false);
   
   useEffect(() => {
     const handleResize = () => {
@@ -131,17 +131,17 @@ const Sidebar = ({ children }) => {
         {children}
       </main>
 
-      {/* Chatbot toggle button */}
+      {/* Chatbot toggle button 
       <button className="chat-toggle" onClick={() => setShowChat(!showChat)}>
         <FaComment />
       </button>
 
-      {/* Chatbot component */}
+      
       {showChat && (
         <div className="chat-box">
           <ChatAssistant onClose={() => setShowChat(false)} />
         </div>
-      )}
+      )}*/}
 
       {/* Optional: sidebar overlay for mobile */}
       {isMobile && isOpen && <div className="sidebar-overlay" onClick={() => setIsOpen(false)} />}

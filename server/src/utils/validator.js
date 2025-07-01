@@ -25,6 +25,12 @@ validate.validators.futureDate = function(value) {
   return null;
 };
 
+// Configure datetime validator (needed for timestamp, userGoal, systemAnalytics, etc.)
+validate.validators.datetime.parse = value => +moment(value);
+validate.validators.datetime.format = (value, options) =>
+  moment(value).format((options && options.dateOnly) ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:mm:ss');
+
+
 validate.validators.passwordComplexity = function(value) {
   if (!value) return null;
   if (value.length < 8) return "must be at least 8 characters";
@@ -231,6 +237,73 @@ const validationRules = {
       order_number: commonRules.positiveInteger
     }
   },
+  
+  // Add this inside validationRules
+userAnswer: {
+  create: {
+    attempt_id: {
+      numericality: { onlyInteger: true, greaterThan: 0 },
+      presence: true
+    },
+    question_id: {
+      numericality: { onlyInteger: true, greaterThan: 0 },
+      presence: true
+    },
+    selected_option_id: {
+      numericality: { onlyInteger: true, greaterThan: 0 },
+      presence: false // optional for short_answer / non-multiple_choice
+    },
+    answer_text: {
+      presence: false,
+      length: { maximum: 5000 } // generous length for short answers
+    },
+    is_correct: {
+      inclusion: { within: [true, false] },
+      presence: false // system typically sets this after checking answer
+    },
+    points_earned: {
+      numericality: { greaterThanOrEqualTo: 0 },
+      presence: false
+    }
+  }
+},
+  aiRecommendation: {
+  create: {
+    user_id: commonRules.id,
+    suggested_course_title: { 
+      presence: true, 
+      length: { minimum: 3, maximum: 255 } 
+    },
+    suggested_course_description: { 
+      presence: false, 
+      length: { maximum: 2000 } 
+    },
+    suggested_difficulty_level: {
+      presence: false,
+      inclusion: { within: ['beginner', 'intermediate', 'advanced'] }
+    },
+    suggested_estimated_duration: { 
+      ...commonRules.positiveInteger, 
+      presence: false 
+    },
+    recommendation_type: { 
+      presence: true, 
+      length: { maximum: 50 } 
+    },
+    reason: { 
+      presence: false, 
+      length: { maximum: 2000 } 
+    },
+    confidence_score: {
+      numericality: { greaterThanOrEqualTo: 0, lessThanOrEqualTo: 100 },
+      presence: false
+    },
+    is_accepted: {
+      presence: false,
+      inclusion: { within: [true, false] }
+    }
+  }
+},
 
   // User Progress validations
   userProgress: {
@@ -303,118 +376,129 @@ const validationRules = {
         presence: true,
         length: { maximum: 100 }
       }
-    }
-  },
+    }  
+  }, 
 
   // Chat validations
 chat: {
-  create: {
-    user_id: commonRules.id,
-    chat_name: {
-      length: { maximum: 100 },
-      presence: { allowEmpty: true }
-    },
-    profile_image: {
-      url: true,
-      presence: { allowEmpty: true }
-    },
-    is_chatbot: commonRules.boolean,
-    start_time: commonRules.timestamp,
-    end_time: {
-      datetime: true
-    },
-    sentiment_score: {
-      numericality: {
-        greaterThanOrEqualTo: -1,
-        lessThanOrEqualTo: 1
-      }
-    },
-    satisfaction_rating: {
-      numericality: {
-        onlyInteger: true,
-        greaterThanOrEqualTo: 1,
-        lessThanOrEqualTo: 5
-      }
-    }
-  },
-  update: {
-    chat_name: {
-      length: { maximum: 100 },
-      presence: false
-    },
-    profile_image: {
-      url: true,
-      presence: false
-    },
-    is_chatbot: { ...commonRules.boolean, presence: false },
-    start_time: { ...commonRules.timestamp, presence: false },
-    end_time: { ...commonRules.timestamp, presence: false },
-    sentiment_score: {
-      numericality: {
-        greaterThanOrEqualTo: -1,
-        lessThanOrEqualTo: 1
-      },
-      presence: false
-    },
-    satisfaction_rating: {
-      numericality: {
-        onlyInteger: true,
-        greaterThanOrEqualTo: 1,
-        lessThanOrEqualTo: 5
-      },
-      presence: false
-    }
-  }
-},
-
-// Chat Message validations
-chatMessage: {
-  create: {
-    chat_id: commonRules.id,
-    message_text: {
-      presence: true,
-      length: { minimum: 1, maximum: 5000 }
-    },
-    is_from_user: commonRules.boolean,
-    timestamp: commonRules.timestamp,
-    intent: {
-      length: { maximum: 100 },
-      presence: { allowEmpty: true }
-    },
-    confidence_score: {
-      numericality: {
-        greaterThanOrEqualTo: 0,
-        lessThanOrEqualTo: 1
-      }
-    }
-  }
-},
-
-// Achievement validations
-  achievement: {
-    create: {
-      name: { presence: true, length: { minimum: 3, maximum: 100 } },
-      description: commonRules.description,
-      icon_url: { ...commonRules.url, presence: false },
-      criteria: { presence: true, length: { minimum: 10 } },
-      xp_value: { ...commonRules.positiveInteger, presence: true }
-    },
-    update: {
-      name: { ...commonRules.name, presence: false },
-      description: { ...commonRules.description, presence: false },
-      icon_url: { ...commonRules.url, presence: false },
-      criteria: { length: { minimum: 10 }, presence: false },
-      xp_value: { ...commonRules.positiveInteger, presence: false }
-    }
-  },
-
-  // User Achievement validations
-  userAchievement: {
     create: {
       user_id: commonRules.id,
-      achievement_id: commonRules.id
+      chat_name: {
+        length: { maximum: 100 },
+         presence: true,
+      },
+      profile_image: {
+        url: true,
+        presence: false
+      },
+      is_chatbot: commonRules.boolean,
+      is_private:commonRules.boolean,
+     
+    },
+    update: {
+      chat_name: {
+        length: { maximum: 100 },
+        presence: false
+      },
+      profile_image: {
+        url: true,
+        presence: false
+      },
+      is_chatbot: { ...commonRules.boolean, presence: false },
+      is_private: { ...commonRules.boolean, presence: true }
     }
   },
+
+  // Chat message validations
+  chatMessage: {
+    create: {
+      chat_id: commonRules.id,
+      chat_member_id: commonRules.id,
+      message_text: {
+        presence: true,
+        length: { minimum: 1, maximum: 5000 }
+      },
+      is_from_user: commonRules.boolean,
+      intent: {
+        length: { maximum: 100 }
+      },
+      confidence_score: {
+        numericality: {
+          greaterThanOrEqualTo: 0,
+          lessThanOrEqualTo: 1
+        }
+      }
+    }
+  },
+
+  // Chat member validations
+  chatMember: {
+    create: {
+      chat_id: commonRules.id,
+      user_id: commonRules.id,
+      is_admin: { ...commonRules.boolean, presence: { allowEmpty: true } },
+      joined_at: { ...commonRules.timestamp, presence: { allowEmpty: true } }
+    },
+    update: {
+      is_admin: { ...commonRules.boolean, presence: false },
+      joined_at: { ...commonRules.timestamp, presence: false }
+    }
+  },
+
+// Goal (challenge or achievement) validations
+goal: {
+  create: {
+    title: { presence: true, length: { minimum: 3, maximum: 255 } },
+    description: commonRules.description,
+    category: { presence: false, length: { maximum: 100 } },
+    type: { presence: true, inclusion: ['challenge', 'achievement'] },
+    reward_type: { presence: false, length: { maximum: 50 } },
+    reward_value: { ...commonRules.positiveInteger, presence: false },
+    icon: { ...commonRules.url, presence: false },
+    criteria: { presence: true },
+    created_by: {
+  presence: false,
+      numericality: {
+        onlyInteger: true,
+        greaterThan: 0
+      }
+    },
+     difficulty: {
+      presence: true,
+      inclusion: ['easy', 'medium', 'hard']
+    }
+  }, 
+  update: {
+    title: { presence: false, length: { minimum: 3, maximum: 255 } },
+    description: { ...commonRules.description, presence: false },
+    category: { presence: false, length: { maximum: 100 } },
+    type: { inclusion: ['challenge', 'achievement'], presence: false },
+    reward_type: { presence: false, length: { maximum: 50 } },
+    reward_value: { ...commonRules.positiveInteger, presence: false },
+    icon: { ...commonRules.url, presence: false },
+    criteria: { presence: false },
+     difficulty: {
+      presence: true,
+      inclusion: ['easy', 'medium', 'hard']
+    }
+  }
+},
+
+// User Goal validations (for tracking individual progress)
+userGoal: {
+  create: {
+    user_id: commonRules.id,
+    goal_id: commonRules.id,
+    status: {
+      presence: false,
+      inclusion: ['not_started', 'in_progress', 'completed']
+    },
+    started_at: { datetime: true, presence: false },
+    completed_at: { datetime: true, presence: false },
+    earned_date: { datetime: true, presence: false },
+    is_seen: { type: 'boolean', presence: false }
+  }
+},
 
   // Leaderboard validations
   leaderboard: {
@@ -423,10 +507,84 @@ chatMessage: {
       weekly_xp: commonRules.nonNegativeInteger,
       monthly_xp: commonRules.nonNegativeInteger
     }
+  },
+
+  systemAnalytics: {
+  create: {
+    metric_name: {
+      presence: true,
+      length: { minimum: 1, maximum: 100 }
+    },
+    metric_value: {
+      presence: true,
+      numericality: {
+        greaterThanOrEqualTo: 0
+      }
+    },
+    timestamp: {
+      datetime: true,
+      presence: false // will default if not provided
+    },
+    dimension: {
+      length: { maximum: 100 },
+      presence: false
+    },
+    user_id: {
+      ...commonRules.id,
+      presence: false
+    },
+    course_id: {
+      ...commonRules.id,
+      presence: false
+    },
+    module_id: {
+      ...commonRules.id,
+      presence: false
+    }
+  },
+
+  update: {
+    metric_name: { length: { minimum: 1, maximum: 100 }, presence: false },
+    metric_value: { numericality: { greaterThanOrEqualTo: 0 }, presence: false },
+    timestamp: { datetime: true, presence: false },
+    dimension: { length: { maximum: 100 }, presence: false },
+    user_id: { ...commonRules.id, presence: false },
+    course_id: { ...commonRules.id, presence: false },
+    module_id: { ...commonRules.id, presence: false }
   }
+},
+
+  userStreak: {
+    create: {
+      user_id: commonRules.id,
+      streak_days: commonRules.nonNegativeInteger,
+      last_active_date: { ...commonRules.timestamp, presence: false },
+      longest_streak: commonRules.nonNegativeInteger,
+      streak_updated_at: { ...commonRules.timestamp, presence: false }
+    },
+    update: {
+      streak_days: { ...commonRules.nonNegativeInteger, presence: false },
+      last_active_date: { ...commonRules.timestamp, presence: false },
+      longest_streak: { ...commonRules.nonNegativeInteger, presence: false },
+      streak_updated_at: { ...commonRules.timestamp, presence: false }
+    }
+  },
+
+  streakNotification: {
+    create: {
+      user_id: commonRules.id,
+      streak_days: commonRules.nonNegativeInteger,
+      sent_at: { ...commonRules.timestamp, presence: false },
+      is_read: { ...commonRules.boolean, presence: false }
+    },
+    update: {
+      streak_days: { ...commonRules.nonNegativeInteger, presence: false },
+      sent_at: { ...commonRules.timestamp, presence: false },
+      is_read: { ...commonRules.boolean, presence: false }
+    }
+  },
+
 };
-
-
 
 // Validation function
 function validateEntity(data, entityType, action = 'create') {

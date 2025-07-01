@@ -1,15 +1,62 @@
-.course-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  cursor: pointer;
-  width: 320px;
-  margin: 0 15px;
-  flex-shrink: 0;
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 24px;
+  padding: 20px;
+  width: 100%;
 }
 
+/* Course Card - Updated for Grid */
+.course-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  cursor: pointer;
+  height: 100%; /* Ensure all cards in row have same height */
+  display: flex;
+  flex-direction: column;
+}
+
+.course-card-content {
+  padding: 20px;
+  flex-grow: 1; /* Make content fill available space */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure all cards maintain consistent height */
+.course-card-header,
+.course-card-stats,
+.deadline-container {
+  flex-shrink: 0; /* Prevent these from shrinking */
+}
+
+.course-card-description {
+  flex-grow: 1; /* Allow description to grow and push stats down */
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+  .courses-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .courses-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .courses-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Keep all your existing card styles below */
 .course-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
@@ -25,17 +72,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.course-card-content {
-  padding: 20px;
-}
-
-.course-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
 }
 
 .course-card-title {
@@ -151,4 +187,27 @@
 .btn-icon {
   margin-right: 8px;
   font-size: 12px;
+}
+
+.status-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-badge.completed {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.status-badge.in_progress {
+  width: 85px;
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.status-badge.not_started {
+  background-color: #e5e7eb;
+  color: #374151;
 }
