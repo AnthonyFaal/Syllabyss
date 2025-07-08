@@ -165,7 +165,7 @@ const AuthPage = () => {
             )}
           </form>
 
-          <div className="divider"><span>or continue with</span></div>
+         {/* <div className="divider"><span>or continue with</span></div>
 
           <div className="social-auth">
             <button className="social-btn google-btn">
@@ -174,7 +174,7 @@ const AuthPage = () => {
             <button className="social-btn facebook-btn">
               <span className="social-icon">f</span> Facebook
             </button>
-          </div>
+          </div>*/}
 
           <p className="toggle-form">
             {isLogin ? "Don't have an account? " : "Already have an account? "}

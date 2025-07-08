@@ -65,10 +65,6 @@ const AdminPanel = () => {
     fetchData();
   }, []);
 
-  const handleDeleteUser = (id) => {
-    setUserList(prevUsers => prevUsers.filter(user => user.id !== id));
-  };
-
   const filteredUsers = userList.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -236,7 +232,6 @@ const AdminPanel = () => {
                     <th>Role</th>
                     {windowWidth > 768 && <th>Field</th>}
                     {windowWidth > 992 && <th>Specialization</th>}
-                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -267,18 +262,7 @@ const AdminPanel = () => {
                         )}
                         <td><span className={`role-badge ${user.role.toLowerCase()}`}>{user.role}</span></td>
                         {windowWidth > 768 && <td>{user.field}</td>}
-                        {windowWidth > 992 && <td>{user.specialization}</td>}
-                        <td>
-                          <div className="action-buttons">
-                            <button className="edit-btn"><FaEdit /></button>
-                            <button 
-                              className="delete-btn"
-                              onClick={() => handleDeleteUser(user.id)}
-                            >
-                              <FaTrashAlt />
-                            </button>
-                          </div>
-                        </td>
+                        {windowWidth > 992 && <td>{user.specialization}</td>} 
                       </tr>
                     ))
                   ) : (

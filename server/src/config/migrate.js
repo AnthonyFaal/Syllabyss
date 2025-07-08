@@ -76,7 +76,7 @@ const createTables = async () => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
-    `);
+    `); 
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS learning_materials (
@@ -201,11 +201,12 @@ const createTables = async () => {
     `);
 
     await pool.query(`
-      CREATE TABLE leaderboard (
+      CREATE TABLE if not exists leaderboard (
         user_id INT PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
         xp_points INT DEFAULT 0,
         weekly_xp INT DEFAULT 0,
         monthly_xp INT DEFAULT 0,
+        position INT,
         last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
@@ -215,9 +216,9 @@ const createTables = async () => {
         chat_id SERIAL PRIMARY KEY,
         user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
         chat_name VARCHAR(100),  -- optional group name
-        profile_image TEXT,      -- optional image URL or path
+        profile_image TEXT,      -- optional image URL or path 
         is_chatbot BOOLEAN DEFAULT FALSE,  -- true if chat is with a bot
-        start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
         is_private BOOLEAN DEFAULT TRUE
       );
     `);
@@ -231,7 +232,7 @@ const createTables = async () => {
           joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           UNIQUE (chat_id, user_id)  -- prevent duplicate membership
         );
-    `);
+    `); 
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS chat_messages (

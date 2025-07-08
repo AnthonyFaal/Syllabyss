@@ -1,12 +1,9 @@
 /* Insights.css */
-
-/* Base Styles */
 .insights-container {
   padding: 2rem;
-  max-width: 1800px;
+  max-width: 1400px;
   margin: 0 auto;
-  color: #2d3748;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
 }
 
 .insights-header {
@@ -14,24 +11,17 @@
   align-items: center;
   gap: 0.75rem;
   font-size: 2rem;
-  font-weight: 600;
   margin-bottom: 2rem;
-  color: #4a5568;
+  color: #2c3e50;
 }
 
-.insights-header svg {
-  color: #4f46e5;
-}
-
-/* Stats Grid */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
 }
 
-/* Insights Grid Layout */
 .insights-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -41,25 +31,21 @@
 
 .insight-card {
   background: white;
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 1.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
 }
 
 .insight-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+  transform: translateY(-5px);
 }
 
 .insight-card h3 {
-  font-size: 1.25rem;
-  margin-bottom: 1.25rem;
-  color: #4a5568;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+  font-size: 1.2rem;
 }
 
 .insight-card.large {
@@ -70,19 +56,14 @@
   grid-column: 1 / -1;
 }
 
-/* No Data State */
 .no-data {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 200px;
-  color: #a0aec0;
+  text-align: center;
+  padding: 2rem;
+  color: #7f8c8d;
   font-style: italic;
-  background-color: #f8fafc;
-  border-radius: 8px;
 }
 
-/* Activity List */
+/* Activity List Styles */
 .activity-list {
   display: flex;
   flex-direction: column;
@@ -94,13 +75,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background-color: #f8fafc;
+  background: #f8f9fa;
   border-radius: 8px;
-  transition: background-color 0.2s ease;
-}
-
-.activity-item:hover {
-  background-color: #edf2f7;
 }
 
 .activity-content {
@@ -108,41 +84,40 @@
 }
 
 .activity-title {
+  margin: 0;
   font-weight: 500;
-  margin-bottom: 0.25rem;
-  color: #2d3748;
 }
 
 .activity-meta {
   display: flex;
   gap: 1rem;
-  color: #718096;
-  font-size: 0.85rem;
+  color: #7f8c8d;
 }
 
 .activity-score {
-  font-weight: 600;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: bold;
+  min-width: 60px;
+  text-align: center;
 }
 
 .high-score {
-  background-color: #dcfce7;
-  color: #166534;
+  background: #d4edda;
+  color: #155724;
 }
 
 .medium-score {
-  background-color: #fef9c3;
-  color: #854d0e;
+  background: #fff3cd;
+  color: #856404;
 }
 
 .low-score {
-  background-color: #fee2e2;
-  color: #991b1b;
+  background: #f8d7da;
+  color: #721c24;
 }
 
-/* Top Topics */
+/* Top Topics Styles */
 .top-topics {
   display: flex;
   gap: 2rem;
@@ -153,49 +128,38 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1.25rem;
-  background-color: #f8fafc;
-  border-radius: 10px;
-  min-width: 200px;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
   flex: 1;
+  min-width: 200px;
 }
 
 .topic-icon {
   font-size: 1.5rem;
-  color: #4f46e5;
-  background-color: #e0e7ff;
-  padding: 0.75rem;
-  border-radius: 50%;
+  color: #4e73df;
 }
 
 .topic-info h4 {
+  margin: 0;
   font-size: 0.9rem;
-  color: #718096;
-  margin-bottom: 0.25rem;
-  font-weight: 500;
+  color: #7f8c8d;
 }
 
 .topic-info p {
-  font-weight: 600;
-  color: #2d3748;
+  margin: 0.25rem 0 0;
+  font-weight: 500;
+  color: #2c3e50;
 }
 
-/* Recommendations */
+/* Recommendations Styles */
 .recommendations {
-  margin-top: 2.5rem;
-  background-color: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  margin-top: 2rem;
 }
 
 .recommendations h2 {
-  font-size: 1.5rem;
-  margin-bottom: 1.5rem;
-  color: #4a5568;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  color: #2c3e50;
+  margin-bottom: 1rem;
 }
 
 .recommendation-list {
@@ -205,40 +169,49 @@
 }
 
 .recommendation {
-  padding: 1rem 1.25rem;
-  background-color: #f0f9ff;
-  border-left: 4px solid #3b82f6;
-  border-radius: 0 6px 6px 0;
-  color: #1e40af;
+  background: #e3f2fd;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  border-left: 4px solid #2196f3;
 }
 
 .recommendation p {
   margin: 0;
 }
 
-/* Chart Containers */
-.recharts-wrapper {
-  margin: 0 auto;
+/* Stats Card Colors */
+.blue {
+  background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+  color: white;
+}
+
+.purple {
+  background: linear-gradient(135deg, #6f42c1 0%, #4e2a8a 100%);
+  color: white;
+}
+
+.green {
+  background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%);
+  color: white;
+}
+
+.orange {
+  background: linear-gradient(135deg, #f6c23e 0%, #da9b00 100%);
+  color: white;
 }
 
 /* Responsive Adjustments */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
+  .insights-container {
+    padding: 1rem;
+  }
+  
   .insight-card.large {
     grid-column: span 1;
   }
   
-  .insights-container {
-    padding: 1.5rem;
-  }
-}
-
-@media (max-width: 768px) {
   .stats-grid {
     grid-template-columns: 1fr 1fr;
-  }
-  
-  .insights-header {
-    font-size: 1.75rem;
   }
 }
 
@@ -246,28 +219,4 @@
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
-  .insights-header {
-    font-size: 1.5rem;
-  }
-  
-  .topic-item {
-    min-width: 100%;
-  }
 }
-
-/* Animation for loading state */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.insight-card {
-  animation: fadeIn 0.3s ease-out forwards;
-}
-.green{background-color: green;}
-/* Delay animations for grid items */
-.insights-grid > *:nth-child(1) { animation-delay: 0.1s; }
-.insights-grid > *:nth-child(2) { animation-delay: 0.2s; }
-.insights-grid > *:nth-child(3) { animation-delay: 0.3s; }
-.insights-grid > *:nth-child(4) { animation-delay: 0.4s; }

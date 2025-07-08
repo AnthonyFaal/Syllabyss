@@ -55,6 +55,8 @@ export const verifyEmail = (token) => get(`/auth/verify/${token}`);
 
 export const updatePassword = (data) => put('/auth/update-password', data);
 
+export const forgotPassword = (data) => put('auth/forgot-password', data);
+
 export const updateUserBio = (userId, data) => put(`/users/${userId}/bio`, data);
 
 export const getUsers = () => get('/users');
@@ -144,7 +146,7 @@ export const getMessages = (chatId) => get(`/chats/${chatId}/messages`);
 
 // Member endpoints
 
-export const joinChat = (chatId, memberData) => post(`/chats/${chatId}/members`, memberData);
+export const joinChat = (chatId, userId) => post(`/chats/${chatId}/members`, {userId});
 export const addMember = (chatId, memberData) => post(`/chats/${chatId}/members`, memberData);
 export const removeMember = (chatId, userId) => del(`/chats/${chatId}/members/${userId}`);
 
@@ -158,7 +160,7 @@ export const acceptRecommendation = (recommendationId) => patch(`/recommendation
 
 
 // Leaderboard APIs
-export const getLeaderboard = (period = 'all') => get(`/leaderboard?period=${period}`);
+export const getLeaderboard = () => get(`/leaderboard`);
 export const getUserRank = (userId) => get(`/leaderboard/users/${userId}/rank`);
 export const updateUserXP = (userId, xpData) => patch(`/leaderboard/users/${userId}/xp`, xpData);
 

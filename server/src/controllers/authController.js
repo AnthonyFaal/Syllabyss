@@ -8,6 +8,7 @@ const {
   updateProfileImage,
   updateBio,
   loginUser
+  
 } = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -110,15 +111,51 @@ const login = async (req, res) => {
 const updatePasswordController = async (req, res) => {
   try {
     const { userId, newPassword } = req.body;
+
+    if (!userId || !newPassword) {
+      return res.status(400).json({ error: 'User ID and new password are required.' });
+    }
+
     const updatedUser = await updatePassword(userId, newPassword);
 
-    await sendPasswordUpdateEmail(updatedUser.email); // notify user
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
 
-    res.json({ message: 'Password updated successfully' });
+    await sendPasswordUpdateEmail(updatedUser.email);
+
+    res.json({ message: 'Password updated successfully.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
+const forgotPasswordController = async (req, res) => {
+  try {
+    console.log('Received data in forgotPasswordController:', req.body);
+
+    const { email, newPassword } = req.body;
+
+    if (!email || !newPassword) {
+      return res.status(400).json({ error: 'Email and new password are required.' });
+    }
+
+    const updatedUser = await updatePassword(email, newPassword);
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'No account found with the provided email address.' });
+    }
+
+    await sendPasswordUpdateEmail(updatedUser.email);
+
+    res.json({ message: 'Your password has been reset successfully. Please check your email for confirmation.' });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    res.status(500).json({ error: 'An unexpected error occurred. Please try again later.' });
+  }
+};
+
+
 
 const getUsers = async (req, res) => {
   try {
@@ -200,4 +237,4 @@ const updateBioController = async (req, res) => {
   }
 };
 
-module.exports = { register, login, verifyEmail, updatePasswordController, getUsers,  updateProfileImageController, getUser, updateBioController };
+module.exports = { register, login, verifyEmail, updatePasswordController, getUsers,  updateProfileImageController, getUser, updateBioController, forgotPasswordController };

@@ -4,10 +4,10 @@ const { miriamKnowledgeBot } = require('../Assitant/assistant');
 
 class ChatController {
   constructor() {
-    this.chatRepo = new BaseRepository('chats');
-    this.chatMessageRepo = new BaseRepository('chat_messages');
-    this.chatMemberRepo = new BaseRepository('chat_members');
-    this.userRepo  = new BaseRepository('users');
+    this.chatRepo = new BaseRepository('chats', 'chat_id');
+    this.chatMessageRepo = new BaseRepository('chat_messages', 'message_id');
+    this.chatMemberRepo = new BaseRepository('chat_members', 'chat_member_id');
+    this.userRepo  = new BaseRepository('users', 'user_id');
     this.userTypingMap = new Map(); // Track typing status { chatId: Set(userIds) }
 
     // Bind all methods using arrow functions
@@ -306,9 +306,29 @@ getMessages = async (req, res) => {
   // Add member to chat
 addMember = async (req, res) => {
   try {
-    const chatId = req.params.chatId;
-    const userIdToAdd = req.body.user_id;
+    const chatId = parseInt(req.params.chatId);
+    const userId = req.body.userId;         // ✅ Expecting camelCase from client
+    const isAdmin = req.body.isAdmin || false;
     const requesterId = req.user.id;
+
+    // 🔍 Print input for debug
+    console.log('Received:', req.body);
+
+    // 🔒 Validate input
+    if (!userId || typeof userId !== 'number') {
+      return res.status(400).json({ error: 'userId must be a number and is required.' });
+    }
+
+    if (typeof chatId !== 'number' || isNaN(chatId)) {
+      return res.status(400).json({ error: 'chatId must be a valid number.' });
+    }
+
+    // Reject extra fields
+    const allowed = ['userId', 'isAdmin'];
+    const extra = Object.keys(req.body).filter(k => !allowed.includes(k));
+    if (extra.length > 0) {
+      return res.status(400).json({ error: `Unexpected field(s): ${extra.join(', ')}` });
+    }
 
     // Get chat info
     const chat = await this.chatRepo.getById(chatId);
@@ -316,38 +336,38 @@ addMember = async (req, res) => {
       return res.status(404).json({ error: 'Chat not found' });
     }
 
-    // If chat is private, ensure requester is admin
+    // If chat is private, only admin can add
     if (chat.is_private) {
-      const isAdmin = await this.chatMemberRepo.getOne({
+      const isAdminRequester = await this.chatMemberRepo.getOne({
         chat_id: chatId,
         user_id: requesterId,
         is_admin: true,
       });
 
-      if (!isAdmin) {
+      if (!isAdminRequester) {
         return res.status(403).json({ error: 'Only admins can add members to private chats' });
       }
     }
 
-    // Check if user is already a member
-    const existingMember = await this.chatMemberRepo.getOne({
+    // Prevent duplicate membership
+    const existing = await this.chatMemberRepo.getOne({
       chat_id: chatId,
-      user_id: userIdToAdd,
+      user_id: userId,
     });
 
-    if (existingMember) {
+    if (existing) {
       return res.status(400).json({ error: 'User is already a member of this chat' });
     }
 
-    // Add member
+    // Add member (snake_case for DB)
     const member = await this.chatMemberRepo.create({
       chat_id: chatId,
-      user_id: userIdToAdd,
-      is_admin: req.body.is_admin || false,
+      user_id: userId,
+      is_admin: isAdmin,
       joined_at: new Date(),
     });
 
-  getIO.to(`chat_${chatId}`).emit('new_member', member);
+    getIO().to(`chat_${chatId}`).emit('new_member', member);
 
     res.status(201).json(member);
 
@@ -356,7 +376,6 @@ addMember = async (req, res) => {
     res.status(500).json({ error: 'Failed to add member' });
   }
 };
-
 
   // Remove member from chat
   removeMember = async (req, res) => {
@@ -386,7 +405,7 @@ addMember = async (req, res) => {
       }
 
       // Notify chat about removed member
-      getIO.to(`chat_${req.params.chatId}`).emit('member_removed', {
+      getIO().to(`chat_${req.params.chatId}`).emit('member_removed', {
         chat_id: req.params.chatId,
         user_id: req.params.userId,
       });

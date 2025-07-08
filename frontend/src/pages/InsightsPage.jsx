@@ -55,16 +55,16 @@ const Insights = () => {
     attempts: item.attempts || 0
   })).filter(item => item.score > 0); // Only show days with activity
 
-  const courseProgressData = kpis?.courses ? [
-    { name: 'Completed', value: kpis.courses.completed },
-    { name: 'In Progress', value: kpis.courses.inProgress },
-    { name: 'Not Started', value: kpis.courses.notStarted }
+  const courseProgressData = kpis?.data.courses ? [
+    { name: 'Completed', value: kpis.data.courses.completed },
+    { name: 'In Progress', value: kpis.data.courses.inProgress },
+    { name: 'Not Started', value: kpis.data.courses.notStarted }
   ] : [];
 
   const goalProgressData = kpis?.goals ? [
-    { name: 'Completed', value: kpis.goals.completed },
-    { name: 'In Progress', value: kpis.goals.inProgress },
-    { name: 'Not Started', value: kpis.goals.notStarted }
+    { name: 'Completed', value: kpis.data.goals.completed },
+    { name: 'In Progress', value: kpis.data.goals.inProgress },
+    { name: 'Not Started', value: kpis.data.goals.notStarted }
   ] : [];
 
   const topTopic = Array.isArray(recentActivity) 
@@ -82,36 +82,36 @@ const Insights = () => {
     <div className="insights-container">
       <h1 className="insights-header"><FaChartLine /> Learning Insights</h1>
       
-      <div className="stats-grid">
-        <StatsCard 
-          title="Quiz Performance" 
-          value={`${kpis?.data.avgQuizPercentage || 0}%`} 
-          change={`${kpis?.data.totalAttempts || 0} attempts`}
-          icon={<FaChartBar />}
-          color="blue"
-        />
-        <StatsCard 
-          title="Total XP" 
-          value={kpis?.data.totalXP || 0} 
-          change="Earned this month"
-          icon={<FaTrophy />}
-          color="purple"
-        />
-        <StatsCard 
-          title="Courses" 
-          value={`${kpis?.data.courses?.inProgress || 0} active`} 
-          change={`${kpis?.data.courses?.completed || 0} completed`}
-          icon={<FaBook />}
-          color="green"
-        />
-        <StatsCard 
-          title="Goals" 
-          value={`${kpis?.data.goals?.inProgress || 0} in progress`} 
-          change={`${kpis?.data.goals?.completed || 0} achieved`}
-          icon={<FaBullseye />}
-          color="orange"
-        />
-      </div>
+     <div className="stats-grid">
+  <StatsCard 
+    title="Quiz Performance" 
+    value={`${kpis?.data.avgQuizPercentage || 0}%`} 
+    change={`${kpis?.data.totalAttempts || 0} attempts`}
+    icon={<FaChartBar />}
+    color="blue"
+  />
+  <StatsCard 
+    title="Total XP" 
+    value={kpis?.data.totalXP || 0} 
+    change={`Rank #${kpis?.data.rank || 'N/A'}`}
+    icon={<FaTrophy />}
+    color="purple"
+  />
+  <StatsCard 
+    title="Courses" 
+    value={`${kpis?.data.courses?.inProgress || 0} active`} 
+    change={`${kpis?.data.courses?.completed || 0} completed`}
+    icon={<FaBook />}
+    color="green"
+  />
+  <StatsCard 
+    title="Goals" 
+    value={`${kpis?.data.goals?.inProgress || 0} in progress`} 
+    change={`${kpis?.data.goals?.completed || 0} achieved`}
+    icon={<FaBullseye />}
+    color="orange"
+  />
+</div>
 
       <div className="insights-grid">
         {/* Progress Over Time */}

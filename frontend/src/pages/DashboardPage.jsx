@@ -1,18 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { overview, timetable } from "../api/APIs";
+import { overview, timetable, getLeaderboard } from "../api/APIs";
 import PageLoader from "../components/Loader/pageLoader";
 import { getUserId } from "../utils/authToken";
 
+
 import { 
-  FiBook, FiAward, FiCalendar, FiClock, FiTarget, FiTrendingUp, 
+  FiBook,  FiAward, FiCalendar, FiClock, FiTarget, FiTrendingUp, 
   FiStar, FiCheckCircle, FiBarChart2, FiFlag, FiBookmark, FiUsers, FiCoffee
 } from 'react-icons/fi';
+import { FaMedal, FaAward } from 'react-icons/fa';
 import "./Dashboard.css";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState(null);
   const [timeTableData, setTimeTableData] = useState([]);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [leaderboardData, setLeaderboardData] = useState([]);
+
   const [error, setError] = useState(null);
 
 useEffect(() => {
@@ -85,6 +90,28 @@ useEffect(() => {
       </div>
     );
   };
+
+const handleShowLeaderboard = async () => {
+  if (!showLeaderboard) {
+    try {
+      console.log("📡 Fetching leaderboard data...");
+      const response = await getLeaderboard(); // Axios full response
+      console.log("✅ Raw leaderboard response:", response);
+
+      // Corrected structure access
+      if (response?.data?.success && Array.isArray(response.data.data)) {
+        setLeaderboardData(response.data.data);
+        console.log("🎯 Leaderboard data set:", response.data.data);
+      } else {
+        console.warn("⚠️ Unexpected leaderboard response structure:", response);
+        setLeaderboardData([]);
+      }
+    } catch (err) {
+      console.error("❌ Failed to load leaderboard:", err);
+    }
+  }
+  setShowLeaderboard(prev => !prev);
+};
 
   return (
     <div className="dashboard-container">
@@ -388,13 +415,14 @@ useEffect(() => {
           )}
         </section>
 
-      {/* Leaderboard Section */}
+     {/* Leaderboard Section */}
       <section className="leaderboard-section">
         <h2><FiUsers className="section-icon" /> Your Leaderboard Position</h2>
+
         <div className="leaderboard-card">
           <div className="trophy-icon">
             {leaderboardPosition <= 3 ? (
-              <div className={`trophy-${leaderboardPosition}`}>
+              <div className={`trophy trophy-${leaderboardPosition}`}>
                 {leaderboardPosition === 1 ? '🥇' : leaderboardPosition === 2 ? '🥈' : '🥉'}
               </div>
             ) : (
@@ -403,8 +431,45 @@ useEffect(() => {
           </div>
           <p className="leaderboard-position">#{leaderboardPosition}</p>
           <p className="leaderboard-message">Keep learning to improve your position!</p>
-          <button className="view-leaderboard">View Full Leaderboard</button>
+          <button className="view-leaderboard" onClick={handleShowLeaderboard}>
+            {showLeaderboard ? 'Hide Leaderboard' : 'View Full Leaderboard'}
+          </button>
         </div>
+
+        {showLeaderboard && (
+          <div className="leaderboard-list">
+            {leaderboardData.length > 0 ? (
+              leaderboardData.map((user) => {
+                let tagIcon = null;
+                if (user.position === 1) tagIcon = <FaMedal className="gold" />;
+                else if (user.position === 2) tagIcon = <FaMedal className="silver" />;
+                else if (user.position === 3) tagIcon = <FaMedal className="bronze" />;
+                else if (user.position <= 10) tagIcon = <FaAward className="top10" />;
+                else if (user.position <= 50) tagIcon = <FaAward className="top50" />;
+                else tagIcon = <FiUsers />;
+
+                return (
+                  <div key={user.user_id} className="leaderboard-user">
+                    <span className={`position-badge badge-${user.position <= 3 ? 'top' : user.position <= 10 ? 'top10' : 'default'}`}>
+                      #{user.position}
+                    </span>
+                    <img
+                      src={user.user_image}
+                      alt={user.user_name}
+                      className="leaderboard-avatar"
+                    />
+                    <div className="leaderboard-info">
+                      <p className="leaderboard-name">{user.user_name} {tagIcon}</p>
+                      <p className="leaderboard-xp">{user.xp_points} XP</p>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="no-data-message">No leaderboard data available.</p>
+            )}
+          </div>
+        )}
       </section>
     </div>
   );

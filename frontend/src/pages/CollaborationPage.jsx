@@ -15,7 +15,8 @@ import io from 'socket.io-client';
 
 const Collaboration = () => {
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('myGroups'); // 'myGroups' or 'generalChats'
+  const [activeTab, setActiveTab] = useState('myGroups'); 
+  const userId = getUserId();
   const [chatData, setChatData] = useState({
     myGroups: {
       success: true,
@@ -36,7 +37,7 @@ const Collaboration = () => {
 
   useEffect(() => {
     // Initialize socket connection
-    const newSocket = io('http://localhost:4000');
+    const newSocket = io('http://192.168.137.1:4000');
     setSocket(newSocket);
 
     return () => {
@@ -114,7 +115,7 @@ const Collaboration = () => {
     const fetchChats = async () => {
       try {
         const [myGroups, generalChats] = await Promise.all([
-          getUserChats(getUserId()),
+          getUserChats(userId),
           getPublicChats()
         ]);
         
@@ -145,7 +146,7 @@ const Collaboration = () => {
     };
 
     fetchChats();
-  }, []);
+  }, [userId]);
 
   const handleCreateChat = async () => {
     try {
@@ -190,11 +191,11 @@ const Collaboration = () => {
 
   const handleJoinChat = async (chatId) => {
     try {
-      await joinChat(chatId, getUserId());
+      await joinChat(chatId, userId);
       
       // Update the chat lists
       const [myGroups, generalChats] = await Promise.all([
-        getUserChats(getUserId()),
+        getUserChats(userId),
         getPublicChats()
       ]);
       
@@ -211,7 +212,7 @@ const Collaboration = () => {
 
       // Emit socket event for joining chat
       if (socket) {
-        socket.emit('joinChat', { chatId, userId: getUserId() });
+        socket.emit('joinChat', { chatId, userId: userId });
       }
     } catch (error) {
       console.error("Failed to join chat:", error);

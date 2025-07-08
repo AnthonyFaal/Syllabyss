@@ -108,14 +108,23 @@ const getUserById = async (userId) => {
   return user;
 };
 
-const updatePassword = async (userId, newPassword) => {
+const updatePassword = async (identifier, newPassword) => {
   const hashed = await bcrypt.hash(newPassword, 10);
-  const res = await pool.query(`
-    UPDATE users SET password = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2 RETURNING *`,
-    [hashed, userId]
+
+  const res = await pool.query(
+    `
+    UPDATE users
+    SET password = $1,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE user_id::text = $2 OR email = $2
+    RETURNING user_id, email, name;
+    `,
+    [hashed, identifier]
   );
-  return res.rows[0];
+
+  return res.rows[0] || null;
 };
+
 
 const updateProfileImage = async (userId, imageUrl) => {
   const res = await pool.query(

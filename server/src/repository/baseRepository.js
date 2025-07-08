@@ -225,24 +225,36 @@ class BaseRepository {
   }
 
   // Add this method to your BaseRepository class
-async upsert(data, conflictTarget, updateColumns) {
+async upsert(data, conflictTarget, updateColumns = []) {
   const keys = Object.keys(data);
   const values = Object.values(data);
   const placeholders = keys.map((_, i) => `$${i + 1}`).join(', ');
   const columns = keys.join(', ');
 
-  // Build the SET clause for the update part
-  const setClause = updateColumns
-    .map(col => `${col} = EXCLUDED.${col}`)
-    .join(', ');
+  let query;
 
-  const query = `
-    INSERT INTO ${this.tableName} (${columns})
-    VALUES (${placeholders})
-    ON CONFLICT (${conflictTarget}) DO UPDATE 
-    SET ${setClause}
-    RETURNING *;
-  `;
+  if (updateColumns.length === 0) {
+    // Insert and do nothing if conflict
+    query = `
+      INSERT INTO ${this.tableName} (${columns})
+      VALUES (${placeholders})
+      ON CONFLICT (${conflictTarget}) DO NOTHING
+      RETURNING *;
+    `;
+  } else {
+    // Insert and update on conflict
+    const setClause = updateColumns
+      .map(col => `${col} = EXCLUDED.${col}`)
+      .join(', ');
+
+    query = `
+      INSERT INTO ${this.tableName} (${columns})
+      VALUES (${placeholders})
+      ON CONFLICT (${conflictTarget}) DO UPDATE 
+      SET ${setClause}
+      RETURNING *;
+    `;
+  }
 
   const result = await db.query(query, values);
   return result.rows[0];
@@ -250,15 +262,24 @@ async upsert(data, conflictTarget, updateColumns) {
 
 // Add this method for increment operations
 async increment(id, increments) {
-  const setClause = Object.keys(increments)
-    .map((key, i) => `${key} = ${key} + $${i + 1}`)
-    .join(', ');
+  const keys = Object.keys(increments);
+  const values = [];
+  const clauses = [];
 
-  const values = Object.values(increments);
+  keys.forEach((key, i) => {
+    const value = increments[key];
+    // If value is a Date or ISO string, treat it as direct assignment
+    if (value instanceof Date || typeof value === 'string' && !isNaN(Date.parse(value))) {
+      clauses.push(`${key} = $${i + 1}`);
+    } else {
+      clauses.push(`${key} = ${key} + $${i + 1}`);
+    }
+    values.push(value);
+  });
 
   const query = `
     UPDATE ${this.tableName}
-    SET ${setClause}
+    SET ${clauses.join(', ')}
     WHERE ${this.Key} = $${values.length + 1}
     RETURNING *;
   `;
@@ -266,6 +287,18 @@ async increment(id, increments) {
   const result = await db.query(query, [...values, id]);
   return result.rows[0];
 }
+
+// Add this to your BaseRepository class
+async getWhereIn(column, values = []) {
+  if (!values || values.length === 0) return [];
+
+  const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
+  const query = `SELECT * FROM ${this.tableName} WHERE ${column} IN (${placeholders})`;
+
+  const result = await db.query(query, values);
+  return result.rows;
+}
+
 
   // In BaseRepository class
 async joinTables({

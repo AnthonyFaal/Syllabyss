@@ -15,7 +15,7 @@ import ChallengesPage from '../pages/ChallengesPage';
 import Terms from "../pages/Policies/TermsConditions";
 import UserInterest from "../pages/interest/InterestPage"
 import CollaborationPage from '../pages/CollaborationPage';
-
+import UpdatePasswordPage from '../pages/auth/UpdatePasswordPage';
 
 const AppRoutes = () => (
   <Routes>
@@ -25,6 +25,7 @@ const AppRoutes = () => (
     {/* Public / Standalone routes */}
     <Route path="/user-interest"  element = {<UserInterest/>}/>
     <Route path="/auth" element={<AuthPage />} />
+    <Route path="/forgot-password" element={<UpdatePasswordPage />} />
     <Route path="/terms" element={<Terms />} />
      <Route path="/app" element={<ProtectedRoute><SidebarLayout /></ProtectedRoute>}>
       <Route index element={<Navigate to="dashboard" replace />} />

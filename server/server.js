@@ -2,8 +2,7 @@ require("dotenv").config();
 const http = require('http');
 const app = require("./api");
 const { initializeSocket } = require('./src/config/socket');
-
-const PORT = process.env.PORT || 4000;
+const { HOST, PORT } = require('./port'); // Import host and port
 
 // Create HTTP server
 const server = http.createServer(app);
@@ -13,7 +12,7 @@ initializeSocket(server);
 
 // Start server
 server.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on http://${HOST}:${PORT}`);
 });
 
 // Error handling

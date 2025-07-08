@@ -4,7 +4,7 @@ const axios = require("axios");
 const openai = require("../config/openaiClient");
 const { OPEN_AI_MODEL } = require("../config/openaiClient");
 
-const CONTENT_GENERATION_API = "https://7483-34-16-248-165.ngrok-free.app/generate";
+const CONTENT_GENERATION_API = "https://ebeb-34-53-69-50.ngrok-free.app/generate";
 
 // 🔧 Generate Content URL
 const generateContentUrl = async (title, content, contentType) => {
@@ -52,29 +52,39 @@ async function generateCourseContent(userPrompt, userHistory = [], options = {})
   const messages = [
     {
       role: "system",
-      content: `You are an expert curriculum designer. Return JSON only. 
-           For article (PDF) materials, include rich and well-structured content (e.g., use headings, bullet points, numbered steps, examples, or key takeaways).
- Format: {
-        title,  // Professional title that doesn't simply repeat the prompt
-        description, 
-        difficulty_level, 
-        estimated_duration, 
-        modules:[
-          {
-          title, 
-          description, 
-          order_number, 
+      content: `
+    You are an expert curriculum designer. Return **only valid JSON** with unique, high-quality content per material. 
+    Ensure each learning material has **clear, non-repetitive, structured, and easy-to-learn** content.
 
-          learning_materials:[{
-            title, 
-            content_type, 
-            content, 
-            content_url
-            duration, 
-            order_number
-            }]
-        }]
-      }`,
+    📌 Article content should:
+    - Be easy to read and understand (target 6th–10th grade reading level)
+    - Use clear **headings**, **bullet points**, **numbered steps**
+    - Include real-world **examples**, **key takeaways**, and optionally **call-to-actions**
+
+    📌 Format:
+    {
+      title,
+      description,
+      difficulty_level, // lowercase
+      estimated_duration,
+      modules: [
+        {
+          title,
+          description,
+          order_number,
+          learning_materials: [
+            {
+              title,
+              content_type,
+              content, // Must be unique and readable
+              content_url,
+              duration,
+              order_number
+            }
+          ]
+        }
+      ]
+    }`
     },
     {
       role: "user",

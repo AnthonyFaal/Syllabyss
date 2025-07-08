@@ -53,6 +53,7 @@ static async getUserKPIs(req, res, next) {
     // Get XP points from leaderboard
     const xpRecord = await leaderboardRepo.getOne({ user_id: userId });
     const totalXP = xpRecord?.xp_points || 0;
+     const rank = xpRecord?.position || 0;
 
     // Get course progress statistics
     const userCourses = await coursesRepo.getWhere({ user_id: userId });
@@ -70,6 +71,7 @@ static async getUserKPIs(req, res, next) {
         avgQuizPercentage,
         totalAttempts,
         totalXP,
+        rank,
         goals: goalStats,
         courses: courseStats
       }

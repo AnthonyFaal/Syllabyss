@@ -7,64 +7,84 @@ class DashboardController {
     this.leaderboardRepo = new BaseRepository('leaderboard');
     this.streakRepo = new BaseRepository('user_streaks');
     this.recommendationRepo = new BaseRepository('ai_recommendations');
-    this.timetableRepo = new BaseRepository('timetable');  
+    this.timetableRepo = new BaseRepository('timetable');
+    this.moduleRepo = new BaseRepository('modules');  
+    this.materialRepo = new BaseRepository('learning_materials');
    
   } 
   
- async getOverview(userId) {
-    try {
-      // Get user
-      const users = await this.userRepo.getWhere({ user_id: userId });
-      if (!users || users.length === 0) {
-        throw new Error(`User not found with ID: ${userId}`);
-      }
-      const user = users[0];
-
-      // Parallel fetch
-      const [
-        activeCourses,
-        userGoals,
-        leaderboardData,
-        streakData,
-        recommendations
-      ] = await Promise.all([
-        this.courseRepo.getWhere({ user_id: userId, status: 'in_progress' }),
-        this.goalRepo.getWhere({ user_id: userId }),
-        this.leaderboardRepo.getWhere({ user_id: userId }),
-        this.streakRepo.getWhere({ user_id: userId }),
-        this.recommendationRepo.getWhere({ user_id: userId })
-      ]);
-
-      // Process data
-      const goalsCompleted = userGoals.filter(g => g.status === 'completed').length;
-      const streak = streakData[0] || {};
-      const leaderboard = leaderboardData[0] || {};
-
-      return {
-        user: {
-          name: user.name,
-          profileImage: user.profile_image,
-          role: user.role
-        },
-        stats: {
-          coursesInProgress: activeCourses.length,
-          goalsCompleted,
-          currentStreak: streak.streak_days || 0,
-          longestStreak: streak.longest_streak || 0,
-          xpPoints: leaderboard.xp_points || 0,
-          weeklyXp: leaderboard.weekly_xp || 0
-        },
-        activeCourses,
-        userGoals,
-        recommendations,
-        leaderboardPosition: leaderboard.position || 0 // Add position if your schema supports it
-      };
-
-    } catch (err) {
-      console.error(`[DashboardController] Failed to fetch overview for user ${userId}:`, err);
-      throw new Error('Dashboard overview failed. Please try again later.');
+async getOverview(userId) {
+  try {
+    // Get user
+    const users = await this.userRepo.getWhere({ user_id: userId });
+    if (!users || users.length === 0) {
+      throw new Error(`User not found with ID: ${userId}`);
     }
+    const user = users[0];
+
+    // Get user courses
+    const userCourses = await this.courseRepo.getWhere({ user_id: userId });
+    const courseIds = userCourses.map(course => course.course_id);
+
+    // Get all modules for these courses
+    const modules = await this.moduleRepo.getWhereIn('course_id', courseIds);
+    const moduleIds = modules.map(m => m.module_id);
+    const completedModuleIds = modules.filter(m => m.is_complete).map(m => m.module_id);
+
+    // Get all learning materials for these modules
+    const materials = await this.materialRepo.getWhereIn('module_id', moduleIds);
+    const materialsCompleted = materials.filter(m => completedModuleIds.includes(m.module_id)).length;
+    const totalMaterials = materials.length;
+    const completionPercentage = totalMaterials > 0
+      ? Math.round((materialsCompleted / totalMaterials) * 100)
+      : 0;
+
+    // Parallel fetch other stats
+    const [
+      activeCourses,
+      userGoals,
+      leaderboardData,
+      streakData,
+      recommendations
+    ] = await Promise.all([
+      this.courseRepo.getWhere({ user_id: userId, status: 'in_progress' }),
+      this.goalRepo.getWhere({ user_id: userId }),
+      this.leaderboardRepo.getWhere({ user_id: userId }),
+      this.streakRepo.getWhere({ user_id: userId }),
+      this.recommendationRepo.getWhere({ user_id: userId })
+    ]);
+
+    const goalsCompleted = userGoals.filter(g => g.status === 'completed').length;
+    const streak = streakData[0] || {};
+    const leaderboard = leaderboardData[0] || {};
+
+    return {
+      user: {
+        name: user.name,
+        profileImage: user.profile_image,
+        role: user.role
+      },
+      stats: {
+        coursesInProgress: activeCourses.length,
+        goalsCompleted,
+        currentStreak: streak.streak_days || 0,
+        longestStreak: streak.longest_streak || 0,
+        xpPoints: leaderboard.xp_points || 0,
+        weeklyXp: leaderboard.weekly_xp || 0,
+        materialsCompleted,
+        completionPercentage
+      },
+      activeCourses,
+      userGoals,
+      recommendations,
+      leaderboardPosition: leaderboard.position || 0 
+    };
+
+  } catch (err) {
+    console.error(`[DashboardController] Failed to fetch overview for user ${userId}:`, err);
+    throw new Error('Dashboard overview failed. Please try again later.');
   }
+}
 
  async getTimetable(userId) {
     try {

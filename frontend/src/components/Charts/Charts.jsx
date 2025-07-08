@@ -1,6 +1,6 @@
-// src/components/Charts.js
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, Legend
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+  PieChart, Pie, Cell, Legend, LineChart, Line, AreaChart, Area
 } from "recharts";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
@@ -43,6 +43,61 @@ export const PieChartComponent = ({ data, dataKey, nameKey, title }) => (
         <Tooltip />
         <Legend />
       </PieChart>
+    </ResponsiveContainer>
+  </div>
+);
+
+export const LineChartComponent = ({ data, xKey, yKey, title, color = '#4e73df' }) => (
+  <div className="chart-container">
+    {title && <h3>{title}</h3>}
+    <ResponsiveContainer width="100%" height={300}>
+      <LineChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey={xKey} />
+        <YAxis allowDecimals={false} />
+        <Tooltip />
+        <Line type="monotone" dataKey={yKey} stroke={color} strokeWidth={2} dot={false} />
+      </LineChart>
+    </ResponsiveContainer>
+  </div>
+);
+
+export const AreaChartComponent = ({ data, xKey, yKey, title, color = '#4e73df' }) => (
+  <div className="chart-container">
+    {title && <h3>{title}</h3>}
+    <ResponsiveContainer width="100%" height={300}>
+      <AreaChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey={xKey} />
+        <YAxis allowDecimals={false} />
+        <Tooltip />
+        <Area type="monotone" dataKey={yKey} stroke={color} fill={color} fillOpacity={0.3} />
+      </AreaChart>
+    </ResponsiveContainer>
+  </div>
+);
+
+export const CombinedChartComponent = ({ data, xKey, dataKeys, title, colors = COLORS }) => (
+  <div className="chart-container">
+    {title && <h3>{title}</h3>}
+    <ResponsiveContainer width="100%" height={300}>
+      <LineChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey={xKey} />
+        <YAxis allowDecimals={false} />
+        <Tooltip />
+        <Legend />
+        {dataKeys.map((key, index) => (
+          <Line
+            key={key}
+            type="monotone"
+            dataKey={key}
+            stroke={colors[index % colors.length]}
+            strokeWidth={2}
+            dot={false}
+          />
+        ))}
+      </LineChart>
     </ResponsiveContainer>
   </div>
 );
