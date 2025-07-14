@@ -37,7 +37,7 @@ const Collaboration = () => {
 
   useEffect(() => {
     // Initialize socket connection
-    const newSocket = io('http://192.168.137.1:4000');
+    const newSocket = io('http://localhost:4000');
     setSocket(newSocket);
 
     return () => {

@@ -27,3 +27,4 @@ export const clearAuthToken = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('userId');
 };
+

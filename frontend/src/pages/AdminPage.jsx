@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { 
   FaUserShield, FaChartBar, FaUsers, FaCog, FaTrashAlt, FaEdit, 
   FaSearch, FaFilter, FaBars, FaTimes, FaUserGraduate, 
-  FaBook, FaQuestionCircle, FaLayerGroup, FaComments, FaStar
+  FaBook, FaQuestionCircle, FaLayerGroup, FaComments, FaStar 
 } from "react-icons/fa";
 import { BarChartComponent, PieChartComponent, StatsCard } from "../components/Charts/Charts";
 import "./AdminPanel.css";
-import { getUsers, getAdminOverview } from "../api/APIs";
+import { getUserById, getUsers, getAdminOverview } from "../api/APIs";
+import { getUserId } from "../utils/authToken";
 import PageLoader from "../components/Loader/pageLoader";
+import { formatLastActiveTime } from '../utils/global';
 
 const AdminPanel = () => {
   const [userList, setUserList] = useState([]);
@@ -17,6 +19,8 @@ const AdminPanel = () => {
   const [roleFilter, setRoleFilter] = useState("all");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
     const handleResize = () => {
@@ -26,16 +30,35 @@ const AdminPanel = () => {
       }
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const checkAccess = async () => {
+      try {
+        const userId = getUserId();
+        const response = await getUserById(userId);
+        if (response.data.role === "admin") {
+          setIsAuthorized(true);
+        } else {
+          setIsAuthorized(false);
+        }
+      } catch (error) {
+        console.error("Authorization error:", error);
+        setIsAuthorized(false);
+      } finally {
+        setCheckingAuth(false);
+      }
+    };
+
+    checkAccess();
   }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
-        // Fetch users
         const usersResponse = await getUsers();
         setUserList(
           usersResponse.data.map(user => ({
@@ -43,18 +66,15 @@ const AdminPanel = () => {
             name: user.name,
             email: user.email,
             role: user.role.charAt(0).toUpperCase() + user.role.slice(1),
-            lastLogin: new Date(user.last_login || user.created_at).toLocaleDateString(),
+            lastLogin: formatLastActiveTime(user.last_login || user.created_at),
             profileImage: user.profile_image,
             specialization: user.selected_specialization || "—",
             experience: user.selected_experience || "—",
             field: user.selected_field || "—",
           }))
         );
-        
-        // Fetch system stats
         const statsResponse = await getAdminOverview();
         setSystemStats(statsResponse.data.systemStats);
-        
       } catch (error) {
         console.error("Failed to fetch data", error);
       } finally {
@@ -62,12 +82,14 @@ const AdminPanel = () => {
       }
     };
 
-    fetchData();
-  }, []);
+    if (isAuthorized) {
+      fetchData();
+    }
+  }, [isAuthorized]);
 
   const filteredUsers = userList.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === "all" || user.role.toLowerCase() === roleFilter;
     return matchesSearch && matchesRole;
   });
@@ -96,8 +118,22 @@ const AdminPanel = () => {
 
   const userRoles = [...new Set(userList.map(user => user.role.toLowerCase()))];
 
-  if (loading) {
+  if (checkingAuth || loading) {
     return <PageLoader />;
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div className="access-denied-container">
+        <div className="access-denied-card">
+          <FaUserShield className="access-icon" />
+          <h2>Access Denied</h2>
+          <p>Sorry, you do not have admin privileges to access this page.</p>
+          <p>If you believe this is a mistake, please contact the system administrator.</p>
+          <a href="mailto:support@example.com" className="contact-admin-btn">Contact Admin</a>
+        </div>
+      </div>
+    );
   }
 
   return (

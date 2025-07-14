@@ -1,6 +1,5 @@
 const { validateEntity, BaseRepository } = require('../utils/index');
 const { getIO } = require('../config/socket'); 
-const { miriamKnowledgeBot } = require('../Assitant/assistant');
 
 class ChatController {
   constructor() {

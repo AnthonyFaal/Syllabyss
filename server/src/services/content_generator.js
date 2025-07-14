@@ -4,7 +4,7 @@ const axios = require("axios");
 const openai = require("../config/openaiClient");
 const { OPEN_AI_MODEL } = require("../config/openaiClient");
 
-const CONTENT_GENERATION_API = "https://ebeb-34-53-69-50.ngrok-free.app/generate";
+const CONTENT_GENERATION_API = "https://1656ec6bb0b7.ngrok-free.app/generate";
 
 // 🔧 Generate Content URL
 const generateContentUrl = async (title, content, contentType) => {
@@ -88,8 +88,8 @@ async function generateCourseContent(userPrompt, userHistory = [], options = {})
     },
     {
       role: "user",
-      content: `Create a course on "${userPrompt}" with max 2 modules and 2 minutes total. Use ${defaultContentType} and ${defaultDifficulty} as defaults. 
-      Previous: ${JSON.stringify(userHistory.map(({ title, description, difficulty_level, estimated_duration }) => ({ title, description, difficulty_level, estimated_duration })))}`,
+      content: `Create a course on "${userPrompt}" with ${defaultContentType === "article" ? "1 module" : "max 2 modules"} and 2 minutes total. Use ${defaultContentType} and ${defaultDifficulty} as defaults. 
+      Previous: ${JSON.stringify(userHistory.map(({ title, description, difficulty_level, estimated_duration }) => ({ title, description, difficulty_level, estimated_duration })))}`
     },
   ];
 
@@ -127,6 +127,9 @@ async function generateCourseContent(userPrompt, userHistory = [], options = {})
 
 }
   }
+ if (defaultContentType === "article" && parsed.modules.length > 1) {
+  parsed.modules = [parsed.modules[0]];
+}
 
  const totalDuration = parsed.modules.reduce(
   (sum, mod) => sum + mod.learning_materials.reduce((s, m) => s + (m.duration || 0), 0),
@@ -141,93 +144,6 @@ return {
 
 }
 
-// 🧪 Generate Quiz Content
-/*async function generateQuizContent(courseTitle, learningMaterials = []) {
-  const messages = [
-    {
-      role: "system",
-      content: `You are a professional quiz creator. Output a JSON with:
-      {
-        title,
-        description,  
-        questions: [
-          {
-            question_text: string,
-            question_type: "multiple_choice" | "true_false",
-            options: [
-              { text: string (non-empty), is_correct: boolean }
-            ]
-          }
-        ],
-        passing_score: number,
-        max_attempts: number,
-        time_limit: number
-      }
-      Return only JSON. Do not include explanations or any text outside the JSON.`,
-    },
-    {
-      role: "user",
-      content: `Generate a 5-question quiz for the course "${courseTitle}" based on the materials: ${JSON.stringify(
-        learningMaterials.map((m) => m.title)
-      )}`,
-    },
-  ];
-
-  const response = await openai.chat.completions.create({
-    model: OPEN_AI_MODEL,
-    messages,
-    temperature: 0.7,
-    top_p: 0.95,
-  });
-
-  const content = response.choices?.[0]?.message?.content;
-  if (!content) throw new Error("No content returned from quiz generation");
-
-  const parsed = JSON.parse(content.trim());
-
-  // Determine difficulty based on question features
-  function determinePoints(question) {
-    const wordCount = question.question_text?.split(/\s+/).length || 0;
-    const optionCount = question.options?.length || 0;
-
-    // Basic heuristic: longer & more complex => higher points
-    if (wordCount > 20 || optionCount >= 5) return 20;
-    if (wordCount > 15) return 15;
-    if (wordCount > 10) return 10;
-    return 5;
-  }
-
-  // Process and validate questions and options
-  parsed.questions = (parsed.questions || [])
-    .slice(0, 5)
-    .map((q, idx) => {
-      const validOptions = (q.options || []).filter(
-        (opt) => typeof opt.text === "string" && opt.text.trim() !== ""
-      );
-
-      return {
-        question_text: q.question_text,
-        question_type: q.question_type,
-        points: determinePoints(q), // dynamically assigned
-        order_number: idx + 1,
-        options: validOptions.map((opt, i) => ({
-          option_text: opt.text.trim(),
-          is_correct: !!opt.is_correct,
-          order_number: i + 1,
-        })),
-      };
-    });
-
-  // Set defaults and finalize output
-  return {
-    title: parsed.title || `${courseTitle} Quiz`,
-    description: parsed.description || `Quiz for ${courseTitle}`,
-    passing_score: parsed.passing_score || 70,
-    max_attempts: parsed.max_attempts || 3,
-    time_limit: parsed.time_limit || 5,
-    questions: parsed.questions,
-  };
-}*/
 
 async function generateQuizContent(courseTitle, learningMaterials = []) {
   const messages = [

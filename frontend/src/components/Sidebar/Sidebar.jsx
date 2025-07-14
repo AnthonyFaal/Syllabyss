@@ -11,7 +11,6 @@ import {
   FaTimes,
   FaUser,
   FaSignOutAlt,
-  FaComment
 } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
@@ -71,7 +70,7 @@ const Sidebar = ({ children }) => {
         )}
 
         <div className="sidebar-title">
-          Learn<span>UP</span>
+          Sylla<span>byss</span>
         </div>
 
         <nav className="sidebar-nav">

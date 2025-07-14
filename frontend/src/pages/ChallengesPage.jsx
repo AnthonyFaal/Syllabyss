@@ -1,9 +1,11 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from 'react';
-import { getAllGoals, createGoal, grantGoal, getGoal, getUserGoals, markUserGoalAsSeen} from '../api/APIs';
-import { FaMedal, FaCheckCircle, FaStar } from 'react-icons/fa';
+import { getAllGoals } from '../api/APIs';
+import { FaMedal } from 'react-icons/fa';
 import './Challenges.css';
- 
+import { getUserId } from "../utils/authToken";
+import PageLoader from "../components/Loader/pageLoader";
+
 const Challenges = () => {
   const [challenges, setChallenges] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,10 +13,8 @@ const Challenges = () => {
   useEffect(() => {
     const fetchGoals = async () => {
       try {
-        const response = await getAllGoals(); // <- This is probably returning { data: [...] }
-        const goalsArray = Array.isArray(response)
-          ? response
-          : response.data; // fallback to `response.data`
+        const response = await getAllGoals();
+        const goalsArray = Array.isArray(response) ? response : response.data;
 
         if (Array.isArray(goalsArray)) {
           setChallenges(goalsArray);
@@ -31,7 +31,7 @@ const Challenges = () => {
     fetchGoals();
   }, []);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <PageLoader />; // ✅ Proper loader
 
   return (
     <div className="challenges-container">

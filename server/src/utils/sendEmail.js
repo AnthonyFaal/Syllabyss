@@ -12,16 +12,16 @@ const sendVerificationEmail = async (to, token) => {
   const url = `https://final-year-server.onrender.com/api/auth/verify/${token}`;
 
   await transporter.sendMail({
-    from: `"LearnUp" <${process.env.EMAIL_FROM}>`, // shows as "LearnUp"
+    from: `"Syllabyss" <${process.env.EMAIL_FROM}>`, 
     to,
-    subject: 'Welcome to LearnUp - Verify Your Email',
+    subject: 'Welcome to Syllabyss - Verify Your Email',
     html: `
       <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;">
         <div style="max-width: 600px; margin: auto; background: #fff; border-radius: 8px; overflow: hidden;">
           <div style="padding: 30px;">
             <h2 style="color: #333;">Hi there!</h2>
             <p style="font-size: 16px; color: #555;">
-              Thank you for signing up on <strong>LearnUp</strong>.
+              Thank you for signing up on <strong>Syllabyss</strong>.
               Please verify your email to activate your account.
             </p>
             <div style="text-align: center; margin: 30px 0;">
@@ -30,7 +30,7 @@ const sendVerificationEmail = async (to, token) => {
               </a>
             </div>
             <p style="font-size: 14px; color: #777;">
-              This link will expire in 24 hours. If you didn't sign up for LearnUp, you can safely ignore this email.
+              This link will expire in 24 hours. If you didn't sign up for Syllabyss, you can safely ignore this email.
             </p>
             <p style="font-size: 14px; color: #777; margin-top: 40px;">
               Need help? Contact us at <a href="mailto:nyongfaalanthony@gmail.com">nyongfaalanthony@gmail.com</a>
@@ -44,9 +44,9 @@ const sendVerificationEmail = async (to, token) => {
 
 const sendPasswordUpdateEmail = async (to) => {
   await transporter.sendMail({
-    from: `"LearnUp Security" <${process.env.EMAIL_FROM}>`,
+    from: `"Syllabyss Security" <${process.env.EMAIL_FROM}>`,
     to,
-    subject: 'Your LearnUp password has been updated',
+    subject: 'Your Syllabyss password has been updated',
     html: `
       <div style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;">
         <div style="max-width: 600px; margin: auto; background: #fff; border-radius: 8px; overflow: hidden;">
