@@ -300,7 +300,7 @@ getMessages = async (req, res) => {
     console.error('Error getting messages:', error);
     res.status(500).json({ error: 'Failed to get messages' });
   }
-}
+} 
 
   // Add member to chat
 addMember = async (req, res) => {
@@ -373,6 +373,50 @@ addMember = async (req, res) => {
   } catch (error) {
     console.error('Error adding member:', error);
     res.status(500).json({ error: 'Failed to add member' });
+  }
+};
+
+// Get chat members
+getChatMembers = async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const userId = req.user.id;
+
+    // Check if user is a member of this chat
+    const isMember = await this.chatMemberRepo.getOne({
+      chat_id: chatId,
+      user_id: userId,
+    });
+
+    if (!isMember) {
+      return res.status(403).json({ error: 'You are not a member of this chat' });
+    }
+
+    // Get all members of the chat
+    const members = await this.chatMemberRepo.getWhere({ chat_id: chatId });
+
+    // For each member, get user info
+    const membersWithUserInfo = await Promise.all(
+      members.map(async (member) => {
+        const user = await this.userRepo.getById(member.user_id, 'user_id');
+        return {
+          user_id: member.user_id,
+          name: user?.name || 'Unknown',
+          profile_image: user?.profile_image || null,
+          is_admin: member.is_admin,
+          joined_at: member.joined_at,
+        };
+      })
+    );
+
+    res.json({
+      success: true,
+      data: membersWithUserInfo,
+    });
+
+  } catch (error) {
+    console.error('Error getting chat members:', error);
+    res.status(500).json({ error: 'Failed to get chat members' });
   }
 };
 

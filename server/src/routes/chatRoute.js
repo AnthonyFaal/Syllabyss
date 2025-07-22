@@ -12,7 +12,7 @@ router.use(authenticate);
 
 // Chat routes
 router.post('/', chatController.createChat);
-router.get('/:chat_id', chatController.getChat);
+router.get('/:chat_id', chatController.getChat); 
 router.put('/:id', chatController.updateChat);
 router.delete('/:id', chatController.deleteChat);
 router.get('/user/:userId?', chatController.getUserChats); 
@@ -20,9 +20,10 @@ router.get('/user/:userId?', chatController.getUserChats);
 router.post('/:chatId/messages', chatController.sendMessage);
 router.get('/:chatId/messages', chatController.getMessages);
  
-// Member routes
+// Member routes 
 router.post('/:chatId/members', chatController.addMember);
 router.delete('/:chatId/members/:userId', chatController.removeMember);
+router.get('/:chatId/members', chatController.getChatMembers);
 
 // Typing indicators
 router.post('/:chatId/typing', chatController.setTyping);

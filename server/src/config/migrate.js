@@ -45,7 +45,8 @@ const createTables = async () => {
         created_at TIMESTAMP DEFAULT NOW()
      );
     `);
-  
+
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS courses (
         course_id SERIAL PRIMARY KEY,
@@ -165,8 +166,12 @@ const createTables = async () => {
         reason TEXT,                               -- why this was suggested
         confidence_score DECIMAL(5,2),             -- AI confidence
         is_accepted BOOLEAN,                       -- did the user accept this suggestion?
+        difficulty_level VARCHAR(20) 
+        CHECK (difficulty_level IN ('beginner', 'intermediate', 'advanced')),
+        content_type VARCHAR(20) 
+        CHECK (content_type IN ('article', 'video')),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
+      ); 
     `);
 
     await pool.query(`

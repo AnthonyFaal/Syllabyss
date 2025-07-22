@@ -149,6 +149,7 @@ export const getMessages = (chatId) => get(`/chats/${chatId}/messages`);
 export const joinChat = (chatId, userId) => post(`/chats/${chatId}/members`, {userId});
 export const addMember = (chatId, memberData) => post(`/chats/${chatId}/members`, memberData);
 export const removeMember = (chatId, userId) => del(`/chats/${chatId}/members/${userId}`);
+export const getMembers = (chatId) => get(`/chats/${chatId}/members`);
 
 // Typing indicators
 export const setTyping = (chatId) => post(`/chats/${chatId}/typing`);
