@@ -8,7 +8,10 @@ import {
   getMembers
 } from '../../api/APIs';
 import { getUserId } from '../../utils/authToken';
+import EventsTab from '../events/EventsTab';
+import ErrorBoundary from '../Error/ErrorBoundary';
 import './ChatPanel.css';
+import '../events/EventsTab.css'
 
 const ChatPanel = ({ activeChat }) => {
   const [messages, setMessages] = useState([]);
@@ -176,42 +179,54 @@ const ChatPanel = ({ activeChat }) => {
       {activeTab === 'chats' && (
         <>
           <div className="messages-container">
-            {messages.map(message => {
-              const isCurrentUser = message.chat_member_id === getUserId();
-              return (
-                <div
-                  key={message.message_id}
-                  className={`message ${isCurrentUser ? 'current-user' : ''}`}
-                >
-                  {!isCurrentUser && (
-                    <img
-                      src={message.profile_image || defaultAvatar}
-                      alt={message.user_name}
-                      className="message-avatar"
-                    />
-                  )}
-                  <div className="message-content-wrapper">
-                    {!isCurrentUser && (
-                      <div className="message-sender">
-                        {formatDisplayName(message.user_name)}
+              {messages.map(message => {
+                const isCurrentUser = message.is_current_user;
+                const isSystem = false;
+
+                return (
+                  <div 
+                    key={message.message_id}
+                    className={`message-wrapper ${isCurrentUser ? 'current-user' : 'other-user'}`}
+                  >
+                    {!isCurrentUser && !isSystem && (
+                      <div className="message-avatar-container">
+                        <img
+                          src={message.profile_image || defaultAvatar}
+                          alt={message.user_name}
+                          className="message-avatar"
+                        />
                       </div>
                     )}
-                    <div className="message-bubble">
-                      <div className="message-text">{message.message_text}</div>
-                      <div className="message-time">
-                        {new Date(message.timestamp).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </div>
+                    
+                    <div className={`message-bubble ${isSystem ? 'system' : isCurrentUser ? 'right' : 'left'}`}>
+                      {!isSystem && (
+                        <div className="message-meta">
+                          <span className="username">{message.user_name}</span>
+                          <span className="timestamp">
+                            {new Date(message.timestamp).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                        </div>
+                      )}
+                      <div className="message-content">{message.message_text}</div>
                     </div>
+                    
+                    {isCurrentUser && !isSystem && (
+                      <div className="message-avatar-container current-user-avatar">
+                        <img
+                          src={message.profile_image || defaultAvatar}
+                          alt={message.user_name}
+                          className="message-avatar"
+                        />
+                      </div>
+                    )}
                   </div>
-                </div>
-              );
-            })}
-            <div ref={messagesEndRef} />
-          </div>
-
+                );
+              })}
+              <div ref={messagesEndRef} />
+            </div>
           <div className="message-input-container">
             <input
               type="text"
@@ -237,11 +252,11 @@ const ChatPanel = ({ activeChat }) => {
         </>
       )}
 
-      {activeTab === 'events' && (
-        <div className="messages-container">
-          <p>📅 Upcoming Events will appear here...</p>
-        </div>
-      )}
+       {activeTab === 'events' && (
+          <ErrorBoundary>
+            <EventsTab chatId={activeChat?.chat_id} />
+          </ErrorBoundary>
+        )}
 
       {activeTab === 'members' && (
         <div className="messages-container">

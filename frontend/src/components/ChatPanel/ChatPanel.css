@@ -162,7 +162,6 @@ h3 {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: var(--secondary-color);
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -258,18 +257,19 @@ h3 {
   padding: 16px;
   display: flex;
   flex-direction: column;
-  background: #f2f0ed; /* WhatsApp-like chat background */
+  background: #f2f0ed; 
+  padding-right: 8px;
+  gap: 10px;
 }
 
-.message {
+.message-wrapper {
   display: flex;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+  position: relative;
   max-width: 80%;
-  align-self: flex-start;
-  flex-direction: row;
 }
 
-.message.current-user {
+.message-wrapper.current-user {
   align-self: flex-end;
   flex-direction: row-reverse;
 }
@@ -278,87 +278,43 @@ h3 {
   width: 32px;
   height: 32px;
   border-radius: 50%;
+  object-fit: cover;
 }
 
-.message-content-wrapper {
-  display: flex;
-  flex-direction: column;
-  margin: 0 8px;
+.message-avatar-container {
+  align-self: flex-end;
+  margin: 0 5px;
 }
 
-.message.current-user .message-content-wrapper {
-  align-items: flex-end;
+.username {
+  font-weight: bold;
+  margin-right: 8px;
 }
-
+.timestamp {
+  opacity: 0.7;
+}
 .message-bubble {
   position: relative;
   padding: 8px 12px;
   border-radius: 18px 18px 18px 4px;
-  background-color: #FFFFFF;
   border: 1px solid var(--border-color);
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
-}
-
-.message.current-user .message-bubble {
-  background-color: #DCF8C6;
-  color: #000;
-  border-color: #DCF8C6;
-  border-radius: 18px 18px 4px 18px;
-}
-
-.message-bubble::before {
-  content: '';
-  position: absolute;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  bottom: 0;
-}
-
-.message:not(.current-user) .message-bubble::before {
-  left: -7px;
-  border-width: 0 8px 8px 0;
-  border-color: transparent #FFFFFF transparent transparent;
-}
-
-.message.current-user .message-bubble::before {
-  right: -7px;
-  border-width: 8px 8px 0 0;
-  border-color: #DCF8C6 transparent transparent transparent;
-}
-
-.message-sender {
-  font-weight: 600;
-  font-size: 12px;
-  margin-bottom: 4px;
-  color: var(--muted-text-color);
-}
-
-.message.current-user .message-sender {
-  display: none;
-}
-
-.message-text {
-  font-size: 14px;
-  line-height: 1.4;
   word-wrap: break-word;
 }
 
-.message.current-user .message-text {
-  color: #000;
+
+.message-bubble.left {
+  align-self: flex-start;
+  background-color: #e9f0f7;
+  color: #333;
 }
 
-.message-time {
-  font-size: 10px;
-  text-align: right;
-  color: var(--muted-text-color);
-  margin-top: 4px;
-  opacity: 0.7;
+.message-bubble.right {
+  align-self: flex-end;
+  background: linear-gradient(135deg, #4a90e2, #007bff);
+  color: white;
 }
 
-.message.current-user .message-time {
-  color: rgba(0, 0, 0, 0.6);
-}
 
 .message-input-container {
   display: flex;
@@ -390,6 +346,7 @@ h3 {
 .send-button {
   background-color: var(--primary-color);
   border: none;
+  margin-right: 70px;
   margin-left: 10px;
   cursor: pointer;
   color: white;

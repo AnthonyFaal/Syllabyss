@@ -14,6 +14,8 @@ const MaterialViewer = ({ material, onComplete, onClose }) => {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [isCompleted, setIsCompleted] = useState(material.completed);
+  const [isSubmittingQuiz, setIsSubmittingQuiz] = useState(false);
+
   
   // Quiz-related states
   const [quizStarted, setQuizStarted] = useState(false);
@@ -102,11 +104,10 @@ const MaterialViewer = ({ material, onComplete, onClose }) => {
     }));
   };
 
-  const handleQuizSubmit = async (e) => {
+const handleQuizSubmit = async (e) => {
   e.preventDefault();
   if (!quiz) return;
 
-  // Validate that all required questions are answered
   const unansweredQuestions = quiz.questions.filter(question => {
     if (question.question_type === 'multiple_choice' || question.question_type === 'true_false') {
       return !quizAnswers[question.question_id];
@@ -119,11 +120,12 @@ const MaterialViewer = ({ material, onComplete, onClose }) => {
     return;
   }
 
+  setIsSubmittingQuiz(true); // ✅ Start loading
+
   try {
     const answersPayload = quiz.questions.map((question) => {
       const selectedOptionId = quizAnswers[question.question_id];
       const isTextAnswer = question.question_type === 'text_input' || question.question_type === 'short_answer';
-      
       return {
         question_id: question.question_id,
         selected_option_id: isTextAnswer ? null : selectedOptionId || null,
@@ -132,20 +134,19 @@ const MaterialViewer = ({ material, onComplete, onClose }) => {
     });
 
     const response = await submitQuizAnswers(quiz.quiz_id, answersPayload);
-    
-    // Add more defensive checks for the response structure
+
     if (response?.data?.success) {
       const responseData = response.data.data || {};
       const score = parseFloat(responseData.score || 0);
       const passed = Boolean(responseData.passed);
       const attempt = responseData.attempt || {};
-      
+
       setQuizScore(score);
       setQuizPassed(passed);
       setQuizSubmitted(true);
       setQuizStarted(false);
       setLatestAttempt(attempt);
-      
+
       const maxAttempts = quiz.max_attempts || 1;
       const attemptNumber = attempt.attempt_number || (latestAttempt?.attempt_number || 0) + 1;
       setAttemptsLeft(Math.max(0, maxAttempts - attemptNumber));
@@ -162,6 +163,8 @@ const MaterialViewer = ({ material, onComplete, onClose }) => {
   } catch (error) {
     console.error("Error submitting quiz:", error);
     toast.error(error.response?.data?.message || "An error occurred while submitting the quiz.");
+  } finally {
+    setIsSubmittingQuiz(false); // ✅ End loading
   }
 };
 
@@ -360,8 +363,8 @@ const MaterialViewer = ({ material, onComplete, onClose }) => {
                       )}
                     </div>
                   ))}
-                  <button type="submit" className="submit-quiz-button">
-                    Submit Quiz
+                  <button type="submit" className="submit-quiz-button" disabled={isSubmittingQuiz}>
+                    {isSubmittingQuiz ? "Submitting..." : "Submit Quiz"}
                   </button>
                 </form>
               </div>

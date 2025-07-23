@@ -213,11 +213,14 @@ async answerQuiz(req, res) {
 
     // Add XP to leaderboard using totalScore as XP, if first attempt and passed
     if (isFirstAttempt && passed) {
-      console.log(`🎉 Adding XP (${totalScore}) to leaderboard for user ${user_id}`);
-      await leaderboard.updateLeaderboardXP(user_id, totalScore);
-    } else {
-      console.log('ℹ️ No XP added to leaderboard');
-    }
+        console.log(`🎉 Adding XP (${totalScore}) to leaderboard for user ${user_id}`);
+        try {
+          await leaderboard.updateLeaderboardXP(user_id, totalScore);
+        } catch (error) {
+          console.error('Failed to update leaderboard XP:', error);
+          // Continue with the response even if leaderboard update fails
+        }
+      }
 
     return res.json({
       success: true,
@@ -235,7 +238,6 @@ async answerQuiz(req, res) {
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 }
-
 }
 
 module.exports = new UserQuizController();

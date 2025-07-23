@@ -16,7 +16,8 @@ const questionRepository = new BaseRepository('questions', 'question_id');
 const optionRepository = new BaseRepository('question_options', 'option_id');
 const attemptRepo = new BaseRepository('user_quiz_attempts', 'attempt_id');
 const answerRepo  = new BaseRepository('user_answers', 'answer_id');
- class CourseController {
+
+class CourseController {
  
 async createCourse(req, res, next) {
   try {

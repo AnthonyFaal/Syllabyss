@@ -51,46 +51,65 @@ async function generateCourseContent(userPrompt, userHistory = [], options = {})
 
   const messages = [
     {
-      role: "system",
-      content: `
-    You are an expert curriculum designer. Return **only valid JSON** with unique, high-quality content per material. 
-    Ensure each learning material has **clear, non-repetitive, structured, and easy-to-learn** content.
+        "role": "system",
+        "content": `
+      You are a professional curriculum designer and subject matter expert.  
+      Your task is to generate **high-quality, accurate, and structured educational course content** in **valid JSON format only**.  
 
-    📌 Article content should:
-    - Be easy to read and understand (target 6th–10th grade reading level)
-    - Use clear **headings**, **bullet points**, **numbered steps**
-    - Include real-world **examples**, **key takeaways**, and optionally **call-to-actions**
+      📝 **Course Content Rules:**  
+      - The content must be clear, factual, and logically structured  
+      - No generic statements, fluff, or placeholders — always teach with actionable information  
+      - Follow a structured teaching style suitable for real learners (no marketing tone)  
+      - Use correct grammar, no spelling mistakes  
 
-    📌 Format:
-    {
-      title,
-      description,
-      difficulty_level, // lowercase
-      estimated_duration,
-      modules: [
-        {
-          title,
-          description,
-          order_number,
-          learning_materials: [
-            {
-              title,
-              content_type,
-              content, // Must be unique and readable
-              content_url,
-              duration,
-              order_number
-            }
-          ]
-        }
-      ]
-    }`
-    },
+      📚 **Article Content Must Have:**  
+      - Clear headings and subheadings  
+      - Bullet points or numbered steps where applicable  
+      - Real-life examples to illustrate key concepts  
+      - Key takeaways at the end  
+      - Easy to read at a Grade 6–10 level  
+
+      📦 **JSON Format:**  
+      {
+        title, // Extract the course topic as-is from the user input. Example: "Web Programming"
+        description,
+        difficulty_level, // lowercase, e.g. "beginner", "intermediate", "advanced"
+        estimated_duration, // integer, minutes
+        modules: [
+          {
+            title,
+            description,
+            order_number,
+            learning_materials: [
+              {
+                title,
+                content_type, // article, video, etc.
+                content, // Clear, structured explanation. Must teach the topic, not just outline it.
+                content_url,
+                duration, // integer minutes, min 1
+                order_number
+              }
+            ]
+          }
+        ]
+      }
+
+      ⚠️ **Important:**  
+      - Only valid JSON in your response  
+      - The content must be fact-checked, correct, and error-free  
+      - Always provide structured, professional learning content  
+      `
+      },
+
     {
       role: "user",
-      content: `Create a course on "${userPrompt}" with ${defaultContentType === "article" ? "1 module" : "max 2 modules"} and 2 minutes total. Use ${defaultContentType} and ${defaultDifficulty} as defaults. 
-      Previous: ${JSON.stringify(userHistory.map(({ title, description, difficulty_level, estimated_duration }) => ({ title, description, difficulty_level, estimated_duration })))}`
-    },
+      content: `
+    Create a professional course on "${userPrompt}" using ${defaultContentType} with ${defaultContentType === "article" ? "1 module" : "maximum 2 modules"} and total estimated duration of 2 minutes.  
+    Default difficulty is "${defaultDifficulty}".  
+    Here is user history (do not repeat): ${JSON.stringify(userHistory.map(({ title, description, difficulty_level, estimated_duration }) => ({ title, description, difficulty_level, estimated_duration })))}
+    `
+    }
+
   ];
 
   const response = await openai.chat.completions.create({
@@ -266,52 +285,64 @@ async function generateQuizContent(courseTitle, learningMaterials = []) {
 }
 
 // 🌟 Generate Recommendation
-async function generateCourseRecommendation(userPrompt, userHistory = [], recommendationType = 'personalized') {
-  const messages = [
-    {
-      role: "system",
-      content: `You are a career guidance AI. Suggest a course idea in JSON only format like:
-      {
-        suggested_course_title, // short precise
-        suggested_course_description,  // short precise
-        suggested_difficulty_level, // 'beginner' | 'intermediate' | 'advanced'
-        suggested_estimated_duration, // integer in minutes less than from 2 and 5
-        recommendation_type, // 'personalized' | 'trending' | 'new_skill'
-        reason,  // short precise
-        confidence_score // between 0 and 100
-      }
-      Return only the JSON.`
-    },
-    {
-      role: "user",
-      content: `Suggest a course for the prompt "${userPrompt}".
-      User's history: ${JSON.stringify(userHistory.map(h => ({ title: h.title, level: h.difficulty_level })))}
-      Recommendation type: ${recommendationType}`
-    }
-  ];
+async function generateCourseRecommendation(
+    prompt, 
+    history, 
+    type = 'personalized',
+    currentDifficulty = 'intermediate',
+    currentContentType = 'article'
+) {
+    const messages = [
+        {
+            role: "system",
+            content: `Suggest ONE course in JSON format only:
+            {
+                "title": "string < 5 words",
+                "description": "string < 10 words",
+                "difficulty": "'beginner'|'intermediate'|'advanced'",
+                "duration": "number (minutes 5-120)",
+                "type": "'personalized'|'trending'|'new_skill'",
+                "contentType": "'article'|'video'",
+                "reason": "string < 15 words",
+                "confidence": "number 0-100"
+            }`
+        },
+        {
+            role: "user",
+            content: `Current: ${currentDifficulty} level, ${currentContentType} format.
+            History: ${history.length} past recommendations.
+            Prompt: ${prompt}`
+        }
+    ];
 
-  const response = await openai.chat.completions.create({
-    model: OPEN_AI_MODEL,
-    messages,
-    temperature: 0.7,
-    top_p: 0.9
-  });
+    const response = await openai.chat.completions.create({
+        model: OPEN_AI_MODEL,
+        messages,
+        temperature: 0.7,
+        response_format: { type: "json_object" }
+    });
 
-  const content = response.choices?.[0]?.message?.content;
-  if (!content) throw new Error("Empty response from OpenAI");
+    const content = response.choices?.[0]?.message?.content;
+    if (!content) throw new Error("Empty response");
 
-  const parsed = JSON.parse(content.trim());
-
-  // Fallbacks in case values are missing
-  return {
-    suggested_course_title: parsed.suggested_course_title || "Untitled Course",
-    suggested_course_description: parsed.suggested_course_description || "No description provided.",
-    suggested_difficulty_level: parsed.suggested_difficulty_level || "beginner",
-    suggested_estimated_duration: Math.max(1, parseInt(parsed.suggested_estimated_duration) || 5),
-    recommendation_type: parsed.recommendation_type || recommendationType,
-    reason: parsed.reason || "Based on your interests and activity history.",
-    confidence_score: Math.min(100, Math.max(0, parseFloat(parsed.confidence_score) || 70)),
-  };
+    const result = JSON.parse(content);
+    
+    return {
+        title: result.title || "Recommended Course",
+        description: result.description || "Next learning step",
+        difficulty: ['beginner','intermediate','advanced'].includes(result.difficulty) 
+            ? result.difficulty 
+            : currentDifficulty,
+        duration: Math.min(120, Math.max(5, result.duration || 30)),
+        type: ['personalized','trending','new_skill'].includes(result.type)
+            ? result.type
+            : type,
+        contentType: ['article','video'].includes(result.contentType)
+            ? result.contentType
+            : currentContentType,
+        reason: result.reason || "Recommended based on your progress",
+        confidence: Math.min(100, Math.max(0, result.confidence || 75))
+    };
 }
 
 // ✅ Export functions

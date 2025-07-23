@@ -15,6 +15,7 @@ const streakRoutes = require('./src/routes/streakRoutes');
 const recommendationRoutes = require('./src/routes/recommendationRoutes'); // Add this line
 const insightsRoutes = require('./src/routes/insightsRoutes');
 const leaderboardRoutes = require('./src/routes/leaderRoutes');
+const dialogflowRoutes = require('./src/routes/dialogflowRoutes');
 
 
 const app = express();
@@ -24,7 +25,7 @@ app.use(express.json());
 
 // Mount API routes
 app.use("/api", authRoutes);
-app.use("/api/chats", chatRoutes);
+app.use("/api", chatRoutes);
 app.use("/api/courses", courseRoutes);
 app.use('/api', achievementRoutes);
 app.use('/api/progress', userProgressRoutes);
@@ -37,5 +38,6 @@ app.use('/api/quizzes', quizRoutes);
 app.use('/api/insights', insightsRoutes);
 app.use('/api/recommendations', recommendationRoutes); // Add this line
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/dialogflow', dialogflowRoutes);
 
 module.exports = app;

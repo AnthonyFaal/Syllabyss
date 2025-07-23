@@ -286,11 +286,12 @@ getMessages = async (req, res) => {
     const messagesWithUsers = await Promise.all(
       messages.map(async (message) => {
         const user = await this.userRepo.getOne({ user_id: message.chat_member_id });
+        let currentUser= message.chat_member_id === userId;
         return {
           ...message,
-          user_name: user.name,
+          user_name: currentUser ? 'You' :user.name,
           profile_image: user.profile_image,
-          is_current_user: message.chat_member_id === userId
+          is_current_user: currentUser 
         };
       })
     );
@@ -300,7 +301,7 @@ getMessages = async (req, res) => {
     console.error('Error getting messages:', error);
     res.status(500).json({ error: 'Failed to get messages' });
   }
-} 
+}
 
   // Add member to chat
 addMember = async (req, res) => {

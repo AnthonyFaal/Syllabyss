@@ -1,7 +1,7 @@
 // config/socket.js
 const socketio = require('socket.io');
 
-let io;
+let io = null;
 
 function initializeSocket(server) {
   io = socketio(server, {

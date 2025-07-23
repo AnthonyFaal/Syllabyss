@@ -51,7 +51,9 @@ async getOverview(userId) {
       this.goalRepo.getWhere({ user_id: userId }),
       this.leaderboardRepo.getWhere({ user_id: userId }),
       this.streakRepo.getWhere({ user_id: userId }),
-      this.recommendationRepo.getWhere({ user_id: userId })
+      this.recommendationRepo.getWhere({ user_id: userId,
+        is_accepted: false
+       })
     ]);
 
     const goalsCompleted = userGoals.filter(g => g.status === 'completed').length;
@@ -85,6 +87,7 @@ async getOverview(userId) {
     throw new Error('Dashboard overview failed. Please try again later.');
   }
 }
+
 
  async getTimetable(userId) {
     try {

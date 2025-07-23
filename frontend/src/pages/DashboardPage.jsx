@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { overview, timetable, getLeaderboard } from "../api/APIs";
+import { overview, timetable, getLeaderboard , acceptRecommendation} from "../api/APIs";
 import PageLoader from "../components/Loader/pageLoader";
 import { getUserId } from "../utils/authToken";
 
@@ -16,6 +16,7 @@ const Dashboard = () => {
   const [timeTableData, setTimeTableData] = useState([]);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [leaderboardData, setLeaderboardData] = useState([]);
+  const [processingRecommendation, setProcessingRecommendation] = useState(null);
 
   const [error, setError] = useState(null);
 
@@ -110,6 +111,26 @@ const handleShowLeaderboard = async () => {
     }
   }
   setShowLeaderboard(prev => !prev);
+};
+
+const handleAcceptRecommendation = async (recommendationId) => {
+  try {
+    setProcessingRecommendation(recommendationId);
+    await acceptRecommendation(recommendationId);
+    
+    setDashboardData(prevData => ({
+      ...prevData,
+      recommendations: prevData.recommendations.filter(
+        rec => rec.recommendation_id !== recommendationId
+      )
+    }));
+    
+    console.log("Recommendation accepted successfully");
+  } catch (error) {
+    console.error("Failed to accept recommendation:", error);
+  } finally {
+    setProcessingRecommendation(null);
+  }
 };
 
   return (
@@ -363,56 +384,66 @@ const handleShowLeaderboard = async () => {
       </section>
 
       {/* Recommendations Section */}
-        <section className="recommendations-section">
-          <h2><FiStar className="section-icon" /> Recommended For You</h2>
-          {recommendations.length > 0 ? (
-            <div className="recommendations-grid">
-              {recommendations.map(rec => (
-                <div key={rec.recommendation_id} className="recommendation-card">
-                  <div className="rec-image-placeholder">
-                    <div className="confidence-badge">
-                      {rec.confidence_score}% Match
-                    </div>
-                  </div>
-                  <div className="rec-content">
-                    <div className="rec-header">
-                      <h3>{rec.suggested_course_title || "Untitled Recommendation"}</h3>
-                      <span className={`rec-type ${rec.recommendation_type}`}>
-                        {rec.recommendation_type}
-                      </span>
-                    </div>
-                    <p className="rec-description">
-                      {rec.suggested_course_description || "No description available."}
-                    </p>
-                    <div className="rec-meta">
-                      <span className={`rec-difficulty ${rec.suggested_difficulty_level}`}>
-                        {rec.suggested_difficulty_level || "Beginner"}
-                      </span>
-                      <span className="rec-duration">
-                        {Math.round(rec.suggested_estimated_duration / 60)} hours
-                      </span>
-                      <span className="rec-date">
-                        {new Date(rec.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="rec-reason">
-                      <strong>Why we recommend this:</strong> {rec.reason}
-                    </div>
-                    <div className="rec-actions">
-                      <button className="accept-button">Accept Recommendation</button>
-                      <button className="decline-button">Not Interested</button>
-                    </div>
+      <section className="recommendations-section">
+        <h2><FiStar className="section-icon" /> Recommended For You</h2>
+        {recommendations.length > 0 ? (
+          <div className="recommendations-grid">
+            {recommendations.map(rec => (
+              <div key={rec.recommendation_id} className="recommendation-card">
+                <div className="rec-image-placeholder">
+                  <div className="confidence-badge">
+                    {rec.confidence_score}% Match
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="empty-state">
-              <FiStar className="empty-icon" size={48} />
-              <p className="no-data-message">No recommendations available yet</p>
-            </div>
-          )}
-        </section>
+                <div className="rec-content">
+                  <div className="rec-header">
+                    <h3>{rec.suggested_course_title || "Untitled Recommendation"}</h3>
+                    <span className={`rec-type ${rec.recommendation_type}`}>
+                      {rec.recommendation_type}
+                    </span>
+                  </div>
+                  <p className="rec-description">
+                    {rec.suggested_course_description || "No description available."}
+                  </p>
+                  <div className="rec-meta">
+                    <span className={`rec-difficulty ${rec.suggested_difficulty_level}`}>
+                      {rec.suggested_difficulty_level || "Beginner"}
+                    </span>
+                    <span className="rec-duration">
+                      {Math.round(rec.suggested_estimated_duration / 60)} hours
+                    </span>
+                    <span className="rec-date">
+                      {new Date(rec.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="rec-reason">
+                    <strong>Why we recommend this:</strong> {rec.reason}
+                  </div>
+                  <div className="rec-actions">
+                    <button 
+                      className="accept-button"
+                      onClick={() => handleAcceptRecommendation(rec.recommendation_id)}
+                      disabled={processingRecommendation === rec.recommendation_id}
+                    >
+                      {processingRecommendation === rec.recommendation_id ? (
+                        "Processing..."
+                      ) : (
+                        "Accept Recommendation"
+                      )}
+                    </button>
+                    <button className="decline-button">Not Interested</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state">
+            <FiStar className="empty-icon" size={48} />
+            <p className="no-data-message">No recommendations available yet</p>
+          </div>
+        )}
+      </section>
 
      {/* Leaderboard Section */}
       <section className="leaderboard-section">

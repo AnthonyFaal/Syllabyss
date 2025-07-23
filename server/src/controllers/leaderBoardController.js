@@ -4,6 +4,7 @@ const {BaseRepository} = require('../utils/index');
 const leaderboardRepo = new BaseRepository('leaderboard', 'user_id');
 
 const leaderboardController = {
+
  async getLeaderboard(req, res) {
   try {
     const { period = 'all' } = req.query;
@@ -74,17 +75,14 @@ const leaderboardController = {
   }
 },
 
-async updateLeaderboardXP(req, res) {
+async updateLeaderboardXP(user_id, xp) {
+  if (!user_id || typeof xp !== 'number' || xp <= 0) {
+    throw new Error('Invalid parameters: user_id must exist and xp must be a positive number');
+  }
+
   try {
-    const { user_id, xp } = req.body;
-
-    if (!user_id || typeof xp !== 'number') {
-      return res.status(400).json({ error: 'Invalid user_id or xp' });
-    }
-
     const timestamp = new Date().toISOString();
 
-    // Step 1: Upsert the leaderboard row
     await leaderboardRepo.upsert(
       {
         user_id,
@@ -94,10 +92,9 @@ async updateLeaderboardXP(req, res) {
         last_updated: timestamp
       },
       'user_id',
-      [] // do not update on conflict
+      []
     );
 
-    // Step 2: Increment XP
     await leaderboardRepo.increment(user_id, {
       xp_points: xp,
       weekly_xp: xp,
@@ -105,7 +102,6 @@ async updateLeaderboardXP(req, res) {
       last_updated: timestamp
     });
 
-    // Step 3: Recalculate all positions using RANK() and update them
     await leaderboardRepo.rawQuery(`
       WITH ranked AS (
         SELECT user_id, RANK() OVER (ORDER BY xp_points DESC) AS position
@@ -117,12 +113,13 @@ async updateLeaderboardXP(req, res) {
       WHERE l.user_id = r.user_id
     `);
 
-    res.status(200).json({ message: 'XP and leaderboard position updated successfully' });
+    return { success: true, message: 'XP and leaderboard position updated successfully' };
   } catch (error) {
     console.error('XP Update Error:', error);
-    res.status(500).json({ error: 'Failed to update XP and position' });
+    throw new Error('Failed to update XP and position');
   }
 }
+
 
 };
 

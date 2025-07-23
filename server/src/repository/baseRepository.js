@@ -1,9 +1,9 @@
 const db = require('../config/db');
 
 class BaseRepository {
-  constructor(tableName, Key = 'id') {
+  constructor(tableName, key = 'id') {
     this.tableName = tableName;
-    this.Key = Key;
+    this.Key = key;
   }
  
   async create(data) {
@@ -128,11 +128,19 @@ class BaseRepository {
     return result.rows[0];
   }
   
-  async deleteWhere(column, values, extraConditions = {}) {
+async deleteWhere(column, values, extraConditions = {}) {
   if (!values || values.length === 0) {
-    console.log(`⚠️ deleteWhereIn called with empty values`);
+    console.log(`⚠️ deleteWhere called with empty values`);
     return [];
   }
+
+  // Debug: Log the actual parameters
+  console.log('DELETE PARAMS:', {
+    table: this.tableName,
+    column,
+    values,
+    extraConditions
+  });
 
   const baseIndex = Object.keys(extraConditions).length;
   const inPlaceholders = values.map((_, i) => `$${i + 1}`).join(", ");
@@ -155,7 +163,15 @@ class BaseRepository {
 
   query += ' RETURNING *;';
 
+  // Debug: Log the final query
+  console.log('FINAL DELETE QUERY:', query);
+  console.log('QUERY PARAMS:', queryParams);
+
   const result = await db.query(query, queryParams);
+  
+  // Debug: Log the actual database response
+  console.log('DELETE RESULT:', result.rows);
+  
   return result.rows;
 }
 
@@ -181,23 +197,6 @@ class BaseRepository {
     const result = await db.query(query, values);
     return result.rows;
   }
-
-  async  deleteWhereFieldsMissing(fields = []) {
-  if (!fields.length) {
-    throw new Error("At least one field must be provided to check for missing values");
-  }
-
-  // Build WHERE clause dynamically
-  const conditions = fields.map(field => `${field} IS NULL`).join(' OR ');
-
-  const query = `
-    DELETE FROM timetable
-    WHERE ${conditions};
-  `;
-
-  console.log(`🗑️ Deleting timetable rows where: ${conditions}`);
-  return pool.query(query);
-}
 
   async count(conditions = {}) {
     let query = `SELECT COUNT(*) FROM ${this.tableName}`;

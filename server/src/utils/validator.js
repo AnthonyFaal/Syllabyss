@@ -40,6 +40,27 @@ validate.validators.passwordComplexity = function(value) {
   return null;
 };
 
+// Custom validator for end_time being after start_time
+validate.validators.validateEndTime = function(value, options, key, attributes) {
+  if (!value) return null; // end_time is optional
+  
+  const startTime = attributes.start_time;
+  if (!startTime) return "must have start_time to validate end_time";
+  
+  if (moment(value).isSameOrBefore(moment(startTime))) {
+    return "must be after start_time";
+  }
+  
+  return null;
+};
+
+// Custom validator for recurring events
+validate.validators.validateRecurrence = function(value, options, key, attributes) {
+  if (attributes.is_recurring && !value) {
+    return "must provide recurrence_pattern for recurring events";
+  }
+  return null;
+};
 // Common reusable rules
 const commonRules = {
   id: {
@@ -583,6 +604,153 @@ userGoal: {
       is_read: { ...commonRules.boolean, presence: false }
     }
   },
+
+ // Add this to your validationRules object (around line 400 where other entity validations are)
+event: {
+  create: {
+    chat_id: commonRules.id,
+    created_by: commonRules.id,
+    title: {
+      presence: true,
+      length: { minimum: 3, maximum: 255 }
+    },
+    description: commonRules.description,
+    event_type: {
+      presence: true,
+      inclusion: { 
+        within: [
+          'study_session', 
+          'group_project', 
+          'quiz_competition',
+          'brainstorming',
+          'pair_programming',
+          'code_review',
+          'qna_session',
+          'other'
+        ] 
+      }
+    },
+    start_time: {
+      presence: true,
+      datetime: true,
+      futureDate: true
+    },
+    end_time: {
+      datetime: true,
+      validateEndTime: true // Custom validator below
+    },
+    max_participants: {
+      numericality: { 
+        onlyInteger: true, 
+        greaterThan: 0 
+      },
+      presence: false
+    },
+    is_recurring: commonRules.boolean,
+    recurrence_pattern: {
+      inclusion: { 
+        within: ['daily', 'weekly', 'monthly', 'custom'],
+        presence: function(value, attributes) {
+          return attributes.is_recurring === true;
+        }
+      }
+    },
+    status: {
+      inclusion: { 
+        within: ['upcoming', 'ongoing', 'completed', 'cancelled'] 
+      },
+      presence: false // Defaults to 'upcoming'
+    }
+  },
+  update: {
+    title: { 
+      length: { minimum: 3, maximum: 255 },
+      presence: false
+    },
+    description: { ...commonRules.description, presence: false },
+    event_type: {
+      inclusion: { 
+        within: [
+          'study_session', 
+          'group_project', 
+          'quiz_competition',
+          'brainstorming',
+          'pair_programming',
+          'code_review',
+          'qna_session',
+          'other'
+        ],
+        presence: false
+      }
+    },
+    start_time: {
+      datetime: true,
+      presence: false
+    },
+    end_time: {
+      datetime: true,
+      validateEndTime: true,
+      presence: false
+    },
+    max_participants: {
+      numericality: { 
+        onlyInteger: true, 
+        greaterThan: 0 
+      },
+      presence: false
+    },
+    is_recurring: { ...commonRules.boolean, presence: false },
+    recurrence_pattern: {
+      inclusion: { 
+        within: ['daily', 'weekly', 'monthly', 'custom'],
+        presence: false
+      }
+    },
+    status: {
+      inclusion: { 
+        within: ['upcoming', 'ongoing', 'completed', 'cancelled'] 
+      },
+      presence: false
+    }
+  }
+},
+
+eventParticipant: {
+  create: {
+    event_id: commonRules.id,
+    user_id: commonRules.id,
+    chat_member_id: commonRules.id,
+    status: {
+      inclusion: { 
+        within: ['registered', 'attended', 'declined', 'left', 'waitlisted'] 
+      },
+      presence: false // Defaults to 'registered'
+    }
+  },
+  update: {
+    status: {
+      inclusion: { 
+        within: ['registered', 'attended', 'declined', 'left', 'waitlisted'] 
+      },
+      presence: true
+    }
+  }
+},
+
+eventMessage: {
+  create: {
+    event_id: commonRules.id,
+    chat_member_id: {
+      ...commonRules.id,
+      presence: false // Optional if is_system_message is true
+    },
+    is_system_message: commonRules.boolean,
+    content: {
+      presence: true,
+      length: { minimum: 1, maximum: 5000 }
+    }
+  }
+} 
 
 };
 
