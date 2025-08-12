@@ -35,7 +35,6 @@ router.get('/dashboard/:user_id/timetable', async (req, res) => {
 
 router.get('/admin/overview', async (req, res) => {
   try {
-    // Here you'd normally verify that req.user.role === 'admin'
     const overview = await dashboardController.getAdminOverview();
     res.json({ success: true, data: overview });
   } catch (error) {

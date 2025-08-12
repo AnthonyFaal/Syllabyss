@@ -4,9 +4,10 @@ const {
   generateDeadline,   
 } = require('../utils/index');
 const {updateUserStreakLogic} = require("../utils/streakUpdater");
-
+ 
 const {createTimetable} = require('../utils/timetableHelper');
 const recommendationController = require('./recommendationController');
+const { trackProgressForUser } = require('../services/goalService'); 
 const { generateCourseContent, generateQuizContent } = require('../services/content_generator');
 const courseRepository = new BaseRepository('courses', 'course_id');
 const moduleRepository = new BaseRepository('modules', 'module_id');
@@ -16,6 +17,9 @@ const questionRepository = new BaseRepository('questions', 'question_id');
 const optionRepository = new BaseRepository('question_options', 'option_id');
 const attemptRepo = new BaseRepository('user_quiz_attempts', 'attempt_id');
 const answerRepo  = new BaseRepository('user_answers', 'answer_id');
+const goalRepo = new BaseRepository('goals', 'goal_id');
+const goalProgressRepo = new BaseRepository('user_goal_progress', 'progress_id');
+const userGoalRepo = new BaseRepository('user_goals', 'user_goal_id');
 
 class CourseController {
  
@@ -605,6 +609,25 @@ async updateModule(req, res, next) {
       console.log(`🔥 Streak update for user ${user_id}:`, streakResult.message);
     } catch (streakErr) {
       console.error(`❌ Failed to update streak for user ${user_id}: ${streakErr.message}`);
+    }
+
+     // 🆕 🎯 Track module completion goal
+    try {
+      await trackProgressForUser({
+        user_id,
+        event_type: 'module_completed',
+        goalRepo,
+        goalProgressRepo,
+        userGoalRepo,
+        data: {
+          module_id: moduleId,
+          completed: is_complete,
+          completed_at: new Date()
+        }
+      });
+      console.log(`🏆 Goal tracking triggered for user ${user_id} for module completion`);
+    } catch (trackingError) {
+      console.error(`❌ Goal tracking failed for user ${user_id}: ${trackingError.message}`);
     }
 
     // ⏳ Rebuild timetable

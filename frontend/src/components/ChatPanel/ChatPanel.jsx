@@ -5,7 +5,8 @@ import {
   sendMessage, 
   setTyping, 
   getTypingUsers,
-  getMembers
+  getMembers,
+  defaultAvatar
 } from '../../api/APIs';
 import { getUserId } from '../../utils/authToken';
 import EventsTab from '../events/EventsTab';
@@ -13,7 +14,7 @@ import ErrorBoundary from '../Error/ErrorBoundary';
 import './ChatPanel.css';
 import '../events/EventsTab.css'
 
-const ChatPanel = ({ activeChat }) => {
+const ChatPanel = ({ activeChat, socket}) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [typingUsers, setTypingUsers] = useState([]);
@@ -21,21 +22,46 @@ const ChatPanel = ({ activeChat }) => {
   const [activeTab, setActiveTab] = useState('chats');
   const messagesEndRef = useRef(null);
 
-  const defaultAvatar = 'https://cdn-icons-png.flaticon.com/512/565/565547.png';
+ useEffect(() => {
+  if (!activeChat) {
+    setMessages([]);
+    setTypingUsers([]);
+    setMembers([]);
+    return;
+  }
 
-  useEffect(() => {
-    if (activeChat) {
-      setActiveTab('chats');
-      loadMessages();
-      const typingInterval = setupTypingListener();
+  setActiveTab('chats');
+  loadMessages();
 
-      return () => clearInterval(typingInterval);
-    } else {
-      setMessages([]);
-      setTypingUsers([]);
-      setMembers([]);
-    }
-  }, [activeChat]);
+  const typingInterval = setupTypingListener();
+
+  // Add socket listener for new messages
+const handleNewMessage = (message) => {
+  if (message.chat_id === activeChat.chat_id) {
+    // Format the incoming message properly
+    const formattedMessage = {
+      ...message,
+      is_current_user: message.user_id === getUserId(),
+      // Ensure all required fields are present
+      profile_image: message.profile_image || defaultAvatar,
+      user_name: message.user_name || 'Unknown User',
+      timestamp: message.timestamp || new Date().toISOString()
+    };
+    
+    setMessages(prev => [...prev, formattedMessage]);
+    scrollToBottom();
+  }
+};
+
+  socket?.on('new_message', handleNewMessage);
+
+  // Cleanup
+  return () => {
+    clearInterval(typingInterval);
+    socket?.off('new_message', handleNewMessage);
+  };
+}, [activeChat, socket]);
+
 
   const loadMessages = async () => {
     try {

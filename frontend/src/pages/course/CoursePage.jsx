@@ -473,6 +473,7 @@ const Courses = () => {
         <div className="material-viewer-container">
           <MaterialViewer
             material={currentMaterial}
+            courseId={selectedCourse?.course_id} 
             onComplete={handleMaterialComplete}
             onClose={() => setCurrentMaterial(null)}
           />

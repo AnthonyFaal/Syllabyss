@@ -16,8 +16,8 @@ function getLocalIPAddress() {
   return 'localhost'; 
 }
 
-const HOST = "localhost";
-//const HOST = getLocalIPAddress();
+//const HOST = "localhost";
+const HOST = getLocalIPAddress();
 const PORT = process.env.PORT || 4000;
 
 module.exports = { HOST, PORT };

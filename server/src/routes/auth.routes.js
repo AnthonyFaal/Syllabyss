@@ -44,4 +44,12 @@ router.get('/users/:userId', getUser);
 router.put('/users/:userId/profile-image', upload.single('image'), updateProfileImageController);
 router.put('/users/:userId/bio', updateBioController);
 
+// Example route to send the logged-in user's role
+router.get('/me', (req, res) => {
+  res.json({
+    id: req.user.id,
+    role: req.user.role
+  });
+});
+
 module.exports = router;

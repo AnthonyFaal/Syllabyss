@@ -9,10 +9,8 @@ class DashboardController {
     this.recommendationRepo = new BaseRepository('ai_recommendations');
     this.timetableRepo = new BaseRepository('timetable');
     this.moduleRepo = new BaseRepository('modules');  
-    this.materialRepo = new BaseRepository('learning_materials');
-   
+    this.materialRepo = new BaseRepository('learning_materials');  
   } 
-  
 async getOverview(userId) {
   try {
     // Get user
@@ -42,21 +40,47 @@ async getOverview(userId) {
     // Parallel fetch other stats
     const [
       activeCourses,
-      userGoals,
       leaderboardData,
       streakData,
-      recommendations
+      recommendations,
+      userGoals // ⬅️ New way of fetching user goals joined with goal info
     ] = await Promise.all([
       this.courseRepo.getWhere({ user_id: userId, status: 'in_progress' }),
-      this.goalRepo.getWhere({ user_id: userId }),
       this.leaderboardRepo.getWhere({ user_id: userId }),
       this.streakRepo.getWhere({ user_id: userId }),
-      this.recommendationRepo.getWhere({ user_id: userId,
-        is_accepted: false
-       })
+      this.recommendationRepo.getWhere({ user_id: userId, is_accepted: false }),
+
+      // JOIN user_goals with goals table using BaseRepository’s joinTables
+      this.goalRepo.joinTables({
+        mainTableAlias: 'ug',
+        joinTables: [
+          {
+            table: 'goals',
+            alias: 'g',
+            on: 'ug.goal_id = g.goal_id',
+            type: 'INNER'
+          }
+        ],
+        selectFields: [
+          'ug.user_goal_id',
+          'ug.status',
+          'ug.started_at',
+          'ug.completed_at',
+          'g.goal_id',
+          'g.title',
+          'g.description',
+          'g.reward_type',
+          'g.reward_value',
+          'g.icon'
+        ],
+        conditions: {
+          'ug.user_id': userId,
+          'ug.status': { $ne: 'completed' }
+        }
+      })
     ]);
 
-    const goalsCompleted = userGoals.filter(g => g.status === 'completed').length;
+    const goalsCompletedCount = userGoals.filter(g => g.status === 'completed').length;
     const streak = streakData[0] || {};
     const leaderboard = leaderboardData[0] || {};
 
@@ -68,7 +92,7 @@ async getOverview(userId) {
       },
       stats: {
         coursesInProgress: activeCourses.length,
-        goalsCompleted,
+        goalsCompleted: goalsCompletedCount,
         currentStreak: streak.streak_days || 0,
         longestStreak: streak.longest_streak || 0,
         xpPoints: leaderboard.xp_points || 0,
@@ -77,7 +101,7 @@ async getOverview(userId) {
         completionPercentage
       },
       activeCourses,
-      userGoals,
+      userGoals, // only active goals with details
       recommendations,
       leaderboardPosition: leaderboard.position || 0 
     };
@@ -87,6 +111,7 @@ async getOverview(userId) {
     throw new Error('Dashboard overview failed. Please try again later.');
   }
 }
+
 
 
  async getTimetable(userId) {
@@ -135,7 +160,7 @@ async getOverview(userId) {
       totalCourses,
       totalGoals,
       totalXP,
-      totalQuizzes,
+      totalQuizzes, 
       totalModules,
       totalFeedback
     ] = await Promise.all([

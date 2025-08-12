@@ -1,10 +1,13 @@
+/* Container for the entire section */
 .challenges-container {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1rem;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Header Title */
 .challenges-container h1 {
   font-size: 2rem;
   text-align: center;
@@ -12,12 +15,15 @@
   color: #333;
 }
 
+/* Responsive Grid Layout */
 .challenges-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
+  width: 100%;
 }
 
+/* Each challenge card */
 .challenge-card {
   background-color: #fff;
   border-radius: 16px;
@@ -27,12 +33,15 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  min-height: 300px;
 }
 
+/* Card hover effect */
 .challenge-card:hover {
   transform: scale(1.02);
 }
 
+/* Card header layout */
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -41,11 +50,13 @@
   flex-wrap: wrap;
 }
 
+/* Challenge icon */
 .challenge-icon {
   width: 40px;
   height: 40px;
 }
 
+/* Category badge */
 .challenge-category {
   font-size: 0.85rem;
   background-color: #e0f7fa;
@@ -55,6 +66,7 @@
   margin: 0.5rem 0;
 }
 
+/* XP badge */
 .xp-badge {
   font-size: 0.85rem;
   background-color: #fff9c4;
@@ -64,6 +76,7 @@
   margin: 0.5rem 0;
 }
 
+/* Challenge title and description */
 .challenge-content h3 {
   font-size: 1.1rem;
   color: #2c3e50;
@@ -76,6 +89,7 @@
   margin-bottom: 0.8rem;
 }
 
+/* Reward info section */
 .reward-info {
   display: flex;
   align-items: center;
@@ -84,6 +98,7 @@
   color: #607d8b;
 }
 
+/* Medal and reward icon colors */
 .reward-icon {
   color: #fbc02d;
 }
@@ -92,11 +107,13 @@
   color: #4caf50;
 }
 
+/* Footer with button */
 .challenge-footer {
   text-align: right;
   margin-top: 1rem;
 }
 
+/* Start challenge button */
 .start-btn {
   background-color: #007bff;
   color: white;
@@ -108,6 +125,23 @@
   transition: background-color 0.3s ease;
 }
 
+/* Hover and disabled states */
 .start-btn:hover {
   background-color: #0056b3;
+}
+
+.start-btn.started {
+  background-color: #28a745;
+  cursor: default;
+}
+
+/* Mobile responsiveness fallback */
+@media screen and (max-width: 480px) {
+  .challenges-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .challenge-card {
+    padding: 1rem;
+  }
 }

@@ -11,16 +11,15 @@ const AuthPage = () => {
   const [message, setMessage] = useState({ text: '', type: '' });
   const [agree, setAgree] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  // On component mount, check if user is already logged in & rememberMe is true
   useEffect(() => {
     const token = getAuthToken();
     const remember = localStorage.getItem('rememberMe') === 'true';
 
     if (token && remember) {
-      // Auto-login and navigate to dashboard
       navigate('/app/dashboard', { replace: true });
     }
   }, [navigate]);
@@ -39,8 +38,14 @@ const AuthPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (loading) return;
+    setLoading(true);
+    setMessage({ text: '', type: '' });
+
     try {
       if (!isLogin && !agree) {
+        setLoading(false);
         return setMessage({ text: 'You must agree to the Terms & Conditions', type: 'error' });
       }
 
@@ -48,40 +53,44 @@ const AuthPage = () => {
         const res = await loginUser(formData);
         const { token, userId } = res.data;
 
-        // Store token and userId persistently
         setAuthToken(token, userId);
 
         if (rememberMe) {
           localStorage.setItem('rememberMe', 'true');
         } else {
           localStorage.removeItem('rememberMe');
-          // Optionally clear token if user does not want to be remembered on refresh
-          // setAuthToken(null, null);
         }
 
         setMessage({ text: 'Login successful!', type: 'success' });
         navigate('/app/dashboard', { replace: true });
+
       } else {
         const res = await registerUser(formData);
-        setMessage({
-          text: res.message || 'Registered! Check your email to verify.',
-          type: 'success'
-        });
+
+        // Properly access res.data.message
+        const successMessage = res.data?.message || 'Registered! Check your email to verify.';
+        setMessage({ text: successMessage, type: 'success' });
+
         setIsLogin(true);
         setFormData(prev => ({ name: '', email: prev.email, password: '' }));
         setAgree(false);
       }
+
     } catch (error) {
-      let errorMessage = 'Something went wrong';
-      if (error.response?.status === 422 && error.response.data.errors) {
-        errorMessage = error.response.data.errors[0].msg;
-      } else if (error.response?.data?.error) {
+      // Extract human-readable error
+      let errorMessage = 'Something went wrong.';
+
+      if (error.response?.data?.error) {
         errorMessage = error.response.data.error;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
       } else if (error.message) {
         errorMessage = error.message;
       }
 
       setMessage({ text: errorMessage, type: 'error' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -156,25 +165,14 @@ const AuthPage = () => {
               </div>
             </div>
 
-            <button type="submit" className="submit-btn">
-              {isLogin ? 'Log In' : 'Sign Up'}
+            <button type="submit" className="submit-btn" disabled={loading}>
+              {loading ? (isLogin ? 'Logging in...' : 'Signing up...') : (isLogin ? 'Log In' : 'Sign Up')}
             </button>
 
             {message.text && (
               <div className={`message ${message.type}`}>{message.text}</div>
             )}
           </form>
-
-         {/* <div className="divider"><span>or continue with</span></div>
-
-          <div className="social-auth">
-            <button className="social-btn google-btn">
-              <span className="social-icon">G</span> Google
-            </button>
-            <button className="social-btn facebook-btn">
-              <span className="social-icon">f</span> Facebook
-            </button>
-          </div>*/}
 
           <p className="toggle-form">
             {isLogin ? "Don't have an account? " : "Already have an account? "}

@@ -14,12 +14,15 @@ function initializeSocket(server) {
   io.on('connection', (socket) => {
     console.log('New client connected:', socket.id);
     
-    // Join chat rooms based on user's memberships
-    socket.on('join_chats', (chatIds) => {
+    // In socket.js connection handler:
+  socket.on('join_chats', (chatIds) => {
+    if (Array.isArray(chatIds)) {
       chatIds.forEach(chatId => {
         socket.join(`chat_${chatId}`);
+        console.log(`User joined chat_${chatId}`); // Debug log
       });
-    });
+    }
+  });
     
     socket.on('disconnect', () => {
       console.log('Client disconnected:', socket.id);

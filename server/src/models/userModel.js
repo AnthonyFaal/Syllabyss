@@ -51,6 +51,13 @@ const getAllUsers = async () => {
   return res.rows;
 };
 
+const updateVerificationToken = async (email, token, tokenExpiresAt) => {
+  const res = await pool.query(
+    `UPDATE users SET verification_token = $1, token_expires_at = $2 WHERE email = $3 RETURNING *`,
+    [token, tokenExpiresAt, email]
+  );
+  return res.rows[0];
+};
 
 const getUserById = async (userId) => {
   const userRes = await pool.query(`
@@ -163,5 +170,6 @@ module.exports = {
   updatePassword, 
   getUserById,
   updateProfileImage,
-  updateBio
+  updateBio,
+  updateVerificationToken
 };

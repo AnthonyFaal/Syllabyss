@@ -7,6 +7,7 @@ const quizAttemptRepo = new BaseRepository('user_quiz_attempts', 'attempt_id');
 const userGoalsRepo = new BaseRepository('user_goals', 'user_goal_id');
 const coursesRepo = new BaseRepository('courses', 'course_id');
 const quizzesRepo = new BaseRepository('quizzes', 'quiz_id');
+const userActivityRepo = new BaseRepository('user_activity_log', 'activity_id');
 
 class InsightsController {
   /**
@@ -14,22 +15,12 @@ class InsightsController {
    */
 static async getUserKPIs(req, res, next) {
   try {
-    const { userId } = req.params;
-    const authUserId = req.user.id;
-    
-    // Authorization check
-    if (parseInt(userId) !== authUserId) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Access denied' 
-      });
-    }
+     const  userId  = req.user.id;
 
     // Get quiz attempts with proper filtering - modified to work with your getWhere
     const quizAttempts = await quizAttemptRepo.getWhere({ 
       user_id: userId, 
-      status: 'completed',
-      score: null // This will need to be handled differently
+      status: 'completed'
     });
 
     // Filter out null scores in JavaScript instead of SQL
@@ -39,7 +30,7 @@ static async getUserKPIs(req, res, next) {
     const totalAttempts = validQuizAttempts.length;
     const avgQuizPercentage = totalAttempts > 0
         ? parseFloat((validQuizAttempts.reduce((acc, cur) => acc + parseFloat(cur.score), 0) / (totalAttempts * 100) * 100).toFixed(2)) // Assuming scores are out of 100
-        : 0;
+        : 0; 
 
 
     // Get user goals statistics
@@ -86,15 +77,7 @@ static async getUserKPIs(req, res, next) {
    */
   static async getUserQuizTrends(req, res, next) {
     try {
-      const { userId } = req.params;
-      
-      // Authorization check
-      if (parseInt(userId) !== req.user.id) {
-        return res.status(403).json({ 
-          success: false, 
-          message: 'Forbidden' 
-        });
-      }
+       const  userId  = req.user.id;
 
       // Calculate date range (last 14 days)
       const fourteenDaysAgo = new Date();
@@ -198,16 +181,7 @@ static async getUserKPIs(req, res, next) {
    */
  static async getUserGoalProgress(req, res, next) {
   try {
-    const { userId } = req.params;
-
-    // Authorization: ensure the requesting user matches the userId param
-    if (parseInt(userId) !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'Forbidden'
-      });
-    }
-
+     const  userId  = req.user.id;
     // Fetch all user goals joined with goal details
     const allGoals = await userGoalsRepo.joinTables({
       mainTableAlias: 'ug',
@@ -288,16 +262,8 @@ static async getUserKPIs(req, res, next) {
    */
   static async getUserRecentActivity(req, res, next) {
     try {
-      const { userId } = req.params;
-      
-      // Authorization check
-      if (parseInt(userId) !== req.user.id) {
-        return res.status(403).json({ 
-          success: false, 
-          message: 'Forbidden' 
-        });
-      }
-
+      const  userId  = req.user.id;
+    
       const activities = await analyticsRepo.joinTables({
                 mainTableAlias: 'sa',
                 joinTables: [
@@ -377,15 +343,7 @@ static async getUserKPIs(req, res, next) {
    */
   static async getUserXPBreakdown(req, res, next) {
     try {
-      const { userId } = req.params;
-      
-      // Authorization check
-      if (parseInt(userId) !== req.user.id) {
-        return res.status(403).json({ 
-          success: false, 
-          message: 'Forbidden' 
-        });
-      }
+      const  userId  = req.user.id;
 
       // Get all XP-related activities
       const xpActivities = await analyticsRepo.getWhere({
@@ -434,6 +392,106 @@ static async getUserKPIs(req, res, next) {
       next(err);
     }
   }
+
+  /**
+ * Get user activity log (latest first)
+ */
+static async getUserActivityLog(req, res, next) {
+  try {
+    const userId  = req.user.id;
+
+    // Fetch latest activity logs with course/module/quiz context
+    const logs = await userActivityRepo.joinTables({
+      mainTableAlias: 'ua',
+      joinTables: [
+        {
+          table: 'courses',
+          alias: 'c',
+          on: 'ua.reference_id = c.course_id',
+          type: 'LEFT'
+        },
+        {
+          table: 'quizzes',
+          alias: 'q',
+          on: 'ua.reference_id = q.quiz_id',
+          type: 'LEFT'
+        }
+      ],
+      selectFields: [
+        'ua.*',
+        'c.title as course_title',
+        'q.title as quiz_title'
+      ],
+      conditions: { 'ua.user_id': userId },
+      orderBy: 'ua.created_at DESC',
+      limit: 50
+    });
+
+    res.json({ success: true, data: logs });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * Get user's best performing course based on average quiz score
+ */
+static async getBestPerformingCourse(req, res, next) {
+  try {
+    const userId  = req.user.id;
+
+    // Join user_quiz_attempts -> quizzes -> learning_materials -> modules -> courses
+    const quizData = await quizAttemptRepo.joinTables({
+      mainTableAlias: 'qa',
+      joinTables: [
+        { table: 'quizzes', alias: 'q', on: 'qa.quiz_id = q.quiz_id' },
+        { table: 'learning_materials', alias: 'lm', on: 'q.material_id = lm.material_id' },
+        { table: 'modules', alias: 'm', on: 'lm.module_id = m.module_id' },
+        { table: 'courses', alias: 'c', on: 'm.course_id = c.course_id' }
+      ],
+      selectFields: [
+        'c.course_id',
+        'c.title as course_title',
+        'qa.score'
+      ],
+      conditions: {
+        'qa.user_id': userId,
+        'qa.status': 'completed'
+      }
+    });
+
+    if (quizData.length === 0) {
+      return res.json({ success: true, data: null });
+    }
+
+    // Group by course and compute average score
+    const courseScores = {};
+    quizData.forEach(row => {
+      if (!row.course_id || row.score === null) return;
+      if (!courseScores[row.course_id]) {
+        courseScores[row.course_id] = { title: row.course_title, scores: [] };
+      }
+      courseScores[row.course_id].scores.push(parseFloat(row.score));
+    });
+
+    let bestCourse = null;
+    let bestAvg = -Infinity;
+
+    for (const [courseId, { title, scores }] of Object.entries(courseScores)) {
+      const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+      if (avg > bestAvg) {
+        bestAvg = avg;
+        bestCourse = { courseId: parseInt(courseId), title, avgScore: parseFloat(avg.toFixed(2)) };
+      }
+    }
+
+    res.json({ success: true, data: bestCourse });
+  } catch (err) {
+    next(err);
+  }
+}
+
+
 }
 
 module.exports = InsightsController;

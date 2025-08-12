@@ -3,19 +3,18 @@ import { Document, Page } from 'react-pdf';
 import ReactPlayer from 'react-player';
 import { 
   FaChevronLeft, FaChevronRight, FaFilePdf, FaVideo, FaFileAlt, 
-  FaCheck, FaTimes, FaEye, FaRedo 
+  FaCheck, FaTimes, FaRedo, FaStar 
 } from 'react-icons/fa';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { submitQuizAnswers } from "../../api/APIs";
+import { submitQuizAnswers, createFeedback, getFeedbackByCourse } from "../../api/APIs";
 import './MaterialViewer.css';
 
-const MaterialViewer = ({ material, onComplete, onClose }) => {
+const MaterialViewer = ({ material, courseId, onComplete, onClose }) => {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [isCompleted, setIsCompleted] = useState(material.completed);
   const [isSubmittingQuiz, setIsSubmittingQuiz] = useState(false);
-
   
   // Quiz-related states
   const [quizStarted, setQuizStarted] = useState(false);
@@ -23,12 +22,14 @@ const MaterialViewer = ({ material, onComplete, onClose }) => {
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
   const [quizPassed, setQuizPassed] = useState(false);
-  const [showAnswers, setShowAnswers] = useState(false);
   const [attemptsLeft, setAttemptsLeft] = useState(0);
   const [latestAttempt, setLatestAttempt] = useState(null);
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const [existingFeedback, setExistingFeedback] = useState(null);
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
 
   const quiz = material.quizzes && material.quizzes.length > 0 ? material.quizzes[0] : null;
-  
   
   useEffect(() => {
     if (quiz) {
@@ -54,6 +55,12 @@ const MaterialViewer = ({ material, onComplete, onClose }) => {
       }
     }
   }, [quiz]);
+  
+  useEffect(() => {
+    if (courseId) {
+      loadFeedback(courseId);
+    }
+  }, [courseId]);
 
   const onDocumentLoadSuccess = ({ numPages }) => {
     setNumPages(numPages);
@@ -94,7 +101,6 @@ const MaterialViewer = ({ material, onComplete, onClose }) => {
     setQuizScore(0);
     setQuizPassed(false);
     setQuizAnswers({});
-    setShowAnswers(false);
   };
 
   const handleAnswerChange = (questionId, optionId) => {
@@ -104,69 +110,69 @@ const MaterialViewer = ({ material, onComplete, onClose }) => {
     }));
   };
 
-const handleQuizSubmit = async (e) => {
-  e.preventDefault();
-  if (!quiz) return;
+  const handleQuizSubmit = async (e) => {
+    e.preventDefault();
+    if (!quiz) return;
 
-  const unansweredQuestions = quiz.questions.filter(question => {
-    if (question.question_type === 'multiple_choice' || question.question_type === 'true_false') {
-      return !quizAnswers[question.question_id];
-    }
-    return false;
-  });
-
-  if (unansweredQuestions.length > 0) {
-    toast.error(`Please answer all required questions (${unansweredQuestions.length} unanswered)`);
-    return;
-  }
-
-  setIsSubmittingQuiz(true); // ✅ Start loading
-
-  try {
-    const answersPayload = quiz.questions.map((question) => {
-      const selectedOptionId = quizAnswers[question.question_id];
-      const isTextAnswer = question.question_type === 'text_input' || question.question_type === 'short_answer';
-      return {
-        question_id: question.question_id,
-        selected_option_id: isTextAnswer ? null : selectedOptionId || null,
-        answer_text: isTextAnswer ? quizAnswers[question.question_id] || '' : null,
-      };
+    const unansweredQuestions = quiz.questions.filter(question => {
+      if (question.question_type === 'multiple_choice' || question.question_type === 'true_false') {
+        return !quizAnswers[question.question_id];
+      }
+      return false;
     });
 
-    const response = await submitQuizAnswers(quiz.quiz_id, answersPayload);
-
-    if (response?.data?.success) {
-      const responseData = response.data.data || {};
-      const score = parseFloat(responseData.score || 0);
-      const passed = Boolean(responseData.passed);
-      const attempt = responseData.attempt || {};
-
-      setQuizScore(score);
-      setQuizPassed(passed);
-      setQuizSubmitted(true);
-      setQuizStarted(false);
-      setLatestAttempt(attempt);
-
-      const maxAttempts = quiz.max_attempts || 1;
-      const attemptNumber = attempt.attempt_number || (latestAttempt?.attempt_number || 0) + 1;
-      setAttemptsLeft(Math.max(0, maxAttempts - attemptNumber));
-
-      if (passed) {
-        toast.success(`Quiz passed with score ${score}!`);
-        handleComplete();
-      } else {
-        toast.warning(`Quiz score ${score} - please try again.`);
-      }
-    } else {
-      toast.error(response?.data?.message || "Quiz submission failed. Please try again.");
+    if (unansweredQuestions.length > 0) {
+      toast.error(`Please answer all required questions (${unansweredQuestions.length} unanswered)`);
+      return;
     }
-  } catch (error) {
-    console.error("Error submitting quiz:", error);
-    toast.error(error.response?.data?.message || "An error occurred while submitting the quiz.");
-  } finally {
-    setIsSubmittingQuiz(false); // ✅ End loading
-  }
-};
+
+    setIsSubmittingQuiz(true);
+
+    try {
+      const answersPayload = quiz.questions.map((question) => {
+        const selectedOptionId = quizAnswers[question.question_id];
+        const isTextAnswer = question.question_type === 'text_input' || question.question_type === 'short_answer';
+        return {
+          question_id: question.question_id,
+          selected_option_id: isTextAnswer ? null : selectedOptionId || null,
+          answer_text: isTextAnswer ? quizAnswers[question.question_id] || '' : null,
+        };
+      });
+
+      const response = await submitQuizAnswers(quiz.quiz_id, answersPayload);
+
+      if (response?.data?.success) {
+        const responseData = response.data.data || {};
+        const score = parseFloat(responseData.score || 0);
+        const passed = Boolean(responseData.passed);
+        const attempt = responseData.attempt || {};
+
+        setQuizScore(score);
+        setQuizPassed(passed);
+        setQuizSubmitted(true);
+        setQuizStarted(false);
+        setLatestAttempt(attempt);
+
+        const maxAttempts = quiz.max_attempts || 1;
+        const attemptNumber = attempt.attempt_number || (latestAttempt?.attempt_number || 0) + 1;
+        setAttemptsLeft(Math.max(0, maxAttempts - attemptNumber));
+
+        if (passed) {
+          toast.success(`Quiz passed with score ${score}!`);
+          handleComplete();
+        } else {
+          toast.warning(`Quiz score ${score} - please try again.`);
+        }
+      } else {
+        toast.error(response?.data?.message || "Quiz submission failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error submitting quiz:", error);
+      toast.error(error.response?.data?.message || "An error occurred while submitting the quiz.");
+    } finally {
+      setIsSubmittingQuiz(false);
+    }
+  };
 
   const calculatePercentage = () => {
     if (!quiz || !quiz.questions) return 0;
@@ -174,29 +180,84 @@ const handleQuizSubmit = async (e) => {
     return totalPoints > 0 ? Math.round((quizScore / totalPoints) * 100) : 0;
   };
 
-  const getQuestionResult = (question) => {
-    if (!quizSubmitted) return null;
-    const isCorrect = question.is_correct;
-    const earnedPoints = parseFloat(question.points_earned || 0);
-    
-    return (
-      <span className={`question-result ${isCorrect ? 'correct' : 'incorrect'}`}>
-        {isCorrect ? '✓' : '✗'} ({earnedPoints}/{question.points} pts)
-      </span>
-    );
-  };
-
-  const getCorrectAnswer = (question) => {
-    if (!question.options) return null;
-    const correctOption = question.options.find(opt => opt.is_correct);
-    return correctOption ? correctOption.option_text : "No correct answer specified";
-  };
-
   useEffect(() => {
     if (material.completed && !isCompleted) {
       setIsCompleted(true);
     }
-  }, [material.completed]);
+  }, [isCompleted, material.completed]);
+
+  const loadFeedback = async (courseId) => {
+    try {
+      const res = await getFeedbackByCourse(courseId);
+
+      if (res?.data?.success) {
+        const userFeedback = res.data.data.find(f => f.is_user_feedback);
+        if (userFeedback) {
+          setExistingFeedback(userFeedback);
+          setFeedbackRating(userFeedback.rating);
+          setFeedbackComment(userFeedback.comment || "");
+        }
+      }
+    } catch (err) {
+      console.error("Error loading feedback:", err);
+    }
+  };
+
+  useEffect(() => {
+  if (courseId) {
+    loadFeedback(courseId);
+  }
+}, [courseId]);
+
+// ...
+
+const handleFeedbackSubmit = async () => {
+  if (feedbackRating < 1 || feedbackRating > 5) {
+    toast.error("Please select a star rating between 1 and 5.");
+    return;
+  }
+  if (!feedbackComment.trim()) {
+    toast.error("Please write a comment.");
+    return;
+  }
+
+  setIsSubmittingFeedback(true);
+  try {
+    const payload = {
+      course_id: courseId, // ✅ use the passed courseId
+      rating: feedbackRating,
+      comment: feedbackComment.trim(),
+    };
+    const res = await createFeedback(payload);
+    if (res?.data?.success) {
+      toast.success("Thank you for your feedback!");
+      setExistingFeedback(payload);
+    } else {
+      toast.error(res?.data?.message || "Failed to submit feedback.");
+    }
+  } catch (err) {
+    console.error(err);
+    toast.error("Error submitting feedback.");
+  } finally {
+    setIsSubmittingFeedback(false);
+  }
+};
+
+  const renderStars = () => {
+    return (
+      <div className="star-rating">
+        {[1, 2, 3, 4, 5].map(star => (
+          <FaStar
+            key={star}
+            className={star <= feedbackRating ? "star filled" : "star"}
+            onClick={() => {
+              if (!existingFeedback) setFeedbackRating(star);
+            }}
+          />
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="inline-material-viewer">
@@ -310,15 +371,6 @@ const handleQuizSubmit = async (e) => {
               </button>
             )}
 
-            {quizSubmitted && !quizStarted && (
-              <button 
-                className="show-answers-button" 
-                onClick={() => setShowAnswers(!showAnswers)}
-              >
-                <FaEye /> {showAnswers ? "Hide Answers" : "Show Answers"}
-              </button>
-            )}
-
             {quizStarted && (
               <div className="quiz-container">
                 <h4>{quiz.title}</h4>
@@ -330,37 +382,27 @@ const handleQuizSubmit = async (e) => {
                 </p>
                 <form onSubmit={handleQuizSubmit}>
                   {quiz.questions.map((question) => (
-                    <div key={question.question_id} className={`quiz-question ${showAnswers && quizSubmitted ? (question.is_correct ? 'correct-question' : 'incorrect-question') : ''}`}>
+                    <div key={question.question_id} className="quiz-question">
                       <p className="question-text">
                         {question.order_number}. {question.question_text}
-                        {showAnswers && quizSubmitted && getQuestionResult(question)}
                       </p>
                       <div className="options-container">
                         {question.options.map((option) => (
-                          <label key={option.option_id} className={`option-label ${showAnswers && quizSubmitted ? (option.is_correct ? 'correct-option' : '') : ''}`}>
+                          <label key={option.option_id} className="option-label">
                             <input
                               type={question.question_type === 'multiple_choice' || question.question_type === 'true_false' ? 'radio' : 'checkbox'}
                               name={`question_${question.question_id}`}
                               value={option.option_id}
                               checked={quizAnswers[question.question_id] === option.option_id}
                               onChange={() => handleAnswerChange(question.question_id, option.option_id)}
-                              disabled={showAnswers && quizSubmitted}
                               required={question.question_type === 'multiple_choice' || question.question_type === 'true_false' 
                                 ? !quizAnswers[question.question_id] 
                                 : false}
                             />
                             <span className="option-text">{option.option_text}</span>
-                            {showAnswers && quizSubmitted && option.is_correct && (
-                              <span className="correct-answer-indicator">✓</span>
-                            )}
                           </label>
                         ))}
                       </div>
-                      {showAnswers && quizSubmitted && !question.is_correct && (
-                        <div className="correct-answer-explanation">
-                          <strong>Correct Answer:</strong> {getCorrectAnswer(question)}
-                        </div>
-                      )}
                     </div>
                   ))}
                   <button type="submit" className="submit-quiz-button" disabled={isSubmittingQuiz}>
@@ -393,6 +435,36 @@ const handleQuizSubmit = async (e) => {
           </div>
         )}
       </div>
+
+      {/* Feedback Section */}
+      {isCompleted && (
+        <div className="feedback-section">
+          <h4>Course Feedback</h4>
+          {existingFeedback ? (
+            <div className="feedback-display">
+              <div className="feedback-stars">{renderStars()}</div>
+              <p>{feedbackComment}</p>
+              <small>You have already submitted feedback for this course.</small>
+            </div>
+          ) : (
+            <div className="feedback-form">
+              {renderStars()}
+              <textarea
+                value={feedbackComment}
+                onChange={(e) => setFeedbackComment(e.target.value)}
+                placeholder="Write your feedback..."
+              />
+              <button
+                className="submit-feedback-button"
+                onClick={handleFeedbackSubmit}
+                disabled={isSubmittingFeedback}
+              >
+                {isSubmittingFeedback ? "Submitting..." : "Submit Feedback"}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

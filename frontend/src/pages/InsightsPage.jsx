@@ -1,39 +1,52 @@
+/* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react';
-import { FaChartLine, FaChartBar, FaRegStar, FaTrophy, FaBook, FaBullseye } from "react-icons/fa";
+import { 
+  FaChartLine, FaChartBar, 
+  FaRegStar, FaTrophy, FaBook, FaBullseye,
+  FaRegClock, FaRegCheckCircle, FaPlay, FaAward, 
+  FaBookOpen, FaExclamationTriangle, FaInbox } from 'react-icons/fa';
+import { HiOutlineAcademicCap } from 'react-icons/hi';
 import { BarChartComponent, PieChartComponent, StatsCard } from "../components/Charts/Charts";
 import './Insights.css';
 import {
   getUserKPIs,
   getUserQuizTrends,
-  getUserRecentActivity,
   getUserXPBreakdown,
+  getBestPerformingCourse,
+  getUserActivityLog
 } from "../api/APIs";
 import PageLoader from "../components/Loader/pageLoader";
-import { getUserId } from "../utils/authToken";
 
 const Insights = () => {
   const [loading, setLoading] = useState(true);
   const [kpis, setKpis] = useState(null);
   const [quizTrends, setQuizTrends] = useState([]);
-  const [recentActivity, setRecentActivity] = useState([]);
   const [xpBreakdown, setXpBreakdown] = useState([]);
-  const userId = getUserId();
+  const [bestCourse, setBestCourse] = useState(null);
+  const [activityLog, setActivityLog] = useState([]);
 
   useEffect(() => {
    const fetchData = async () => {
   try {
     setLoading(true);
-    const [kpisData, trendsData, activityData, xpData] = await Promise.all([
-      getUserKPIs(userId),
-      getUserQuizTrends(userId),
-      getUserRecentActivity(userId),
-      getUserXPBreakdown(userId)
+    const [kpisData, 
+      trendsData, 
+      xpData,
+      bestCourseData,
+      activityLogData
+    ] = await Promise.all([
+      getUserKPIs(),
+      getUserQuizTrends(),
+      getUserXPBreakdown(),
+      getBestPerformingCourse(),
+      getUserActivityLog()
     ]);
     
     setKpis(kpisData.data);
     setQuizTrends(trendsData.data);
-    setRecentActivity(Array.isArray(activityData?.data) ? activityData.data : []);
     setXpBreakdown(Array.isArray(xpData?.data) ? xpData.data : []);
+    setBestCourse(bestCourseData?.data || null);
+    setActivityLog(Array.isArray(activityLogData?.data) ? activityLogData.data : []);
   } catch (error) {
     console.error("Error fetching insights data:", error);
   } finally {
@@ -42,7 +55,7 @@ const Insights = () => {
 };
 
     fetchData();
-  }, [userId]);
+  }, []);
 
   if (loading) {
     return <PageLoader />;
@@ -61,23 +74,13 @@ const Insights = () => {
     { name: 'Not Started', value: kpis.data.courses.notStarted }
   ] : [];
 
-  const goalProgressData = kpis?.goals ? [
+  const goalProgressData = kpis?.data.goals ? [
     { name: 'Completed', value: kpis.data.goals.completed },
     { name: 'In Progress', value: kpis.data.goals.inProgress },
     { name: 'Not Started', value: kpis.data.goals.notStarted }
   ] : [];
 
-  const topTopic = Array.isArray(recentActivity) 
-  ? recentActivity.reduce((acc, activity) => {
-      if (activity?.course) {
-        acc[activity.course] = (acc[activity.course] || 0) + 1;
-      }
-      return acc;
-    }, {})
-  : {};
-
-  const mostActiveTopic = Object.entries(topTopic).sort((a, b) => b[1] - a[1])[0]?.[0] || 'No activity';
-
+ 
   return (
     <div className="insights-container">
       <h1 className="insights-header"><FaChartLine /> Learning Insights</h1>
@@ -157,57 +160,107 @@ const Insights = () => {
             <div className="no-data">No goal data available</div>
           )}
         </div>
-
+        
         {/* Recent Activity */}
-        <div className="insight-card large">
-          <h3>Recent Activity</h3>
-          {recentActivity.length > 0 ? (
-            <div className="activity-list">
-              {recentActivity.slice(0, 5).map((activity, index) => (
-                <div key={index} className="activity-item">
-                  <div className="activity-content">
-                    <p className="activity-title">{activity.quizId ? `Quiz: ${activity.title}` : activity.description || 'Completed activity'}</p>
-                    <small className="activity-meta">
-                      {activity.course && <span>{activity.course}</span>}
-                      {activity.date && <span>{new Date(activity.date).toLocaleDateString()}</span>}
-                    </small>
+     <div className="insight-card large">
+  <h3><HiOutlineAcademicCap className="section-icon" /> Activity Log</h3>
+  {activityLog.length > 0 ? (
+    <ul className="activity-log">
+      {activityLog.slice(0, 5).map((log) => (
+        <li key={log.activity_id} className="activity-item">
+          <div className="activity-content">
+            <div className="activity-icon">
+              {log.activity_type === "quiz_completed" && <FaRegCheckCircle className="quiz-icon" />}
+              {log.activity_type === "course_started" && <FaPlay className="course-icon" />}
+              {log.activity_type === "course_completed" && <FaAward className="complete-icon" />}
+              {!["quiz_completed", "course_started", "course_completed"].includes(log.activity_type) && 
+                <FaExclamationTriangle className="default-icon" />}
+            </div>
+            <div className="activity-text">
+              {log.activity_type === "quiz_completed" && (
+                <>
+                  <div className="activity-type">Completed quiz</div>
+                  <div className="activity-title">
+                    <FaBook className="title-icon" /> {log.quiz_title}
                   </div>
-                  {activity.score && (
-                    <div className={`activity-score ${activity.score >= 80 ? 'high-score' : activity.score >= 50 ? 'medium-score' : 'low-score'}`}>
-                      {activity.score}%
+                  {log.description && (
+                    <div className="activity-detail">
+                      <FaChartBar className="detail-icon" />
+                      Score: {log.description.match(/score (\d+\.?\d*)/)?.[1]}%
                     </div>
                   )}
+                </>
+              )}
+              {log.activity_type === "course_started" && (
+                <>
+                  <div className="activity-type">Started course</div>
+                  <div className="activity-title">
+                    <FaBookOpen className="title-icon" /> {log.course_title}
+                  </div>
+                </>
+              )}
+              {log.activity_type === "course_completed" && (
+                <>
+                  <div className="activity-type">Completed course</div>
+                  <div className="activity-title">
+                    <FaBook className="title-icon" /> {log.course_title}
+                  </div>
+                </>
+              )}
+              {!["quiz_completed", "course_started", "course_completed"].includes(log.activity_type) && (
+                <div className="activity-title">
+                  <FaExclamationTriangle className="title-icon" />
+                  {log.description || log.activity_type.replace(/_/g, ' ')}
                 </div>
-              ))}
+              )}
             </div>
-          ) : (
-            <div className="no-data">No recent activity</div>
-          )}
-        </div>
-      </div>
-
-      {/* Top Topics */}
-      <div className="insight-card full-width">
-        <h3>Top Performing Topics</h3>
-        <div className="top-topics">
-          <div className="topic-item">
-            <FaRegStar className="topic-icon" />
-            <div className="topic-info">
-              <h4>Most Active</h4>
-              <p>{mostActiveTopic}</p>
+            <div className="activity-time">
+              <FaRegClock className="time-icon" />
+              {new Date(log.created_at).toLocaleString(undefined, {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
             </div>
           </div>
-          {xpBreakdown.length > 0 && (
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <div className="no-data">
+      <FaInbox className="no-data-icon" />
+      No recent activity
+    </div>
+  )}
+</div>
+        </div>
+
+      {/* performance */}
+   <div className="insight-card">
+      <h3>Best Performing Course</h3>
+      {bestCourse ? (
+        <div>
+          <div className="top-topics">
+            <div className="topic-item">
+              <FaRegStar className="topic-icon" />
+              <div className="topic-info">
+                <h4>{bestCourse.title}</h4>
+              </div>
+            </div>
             <div className="topic-item">
               <FaChartBar className="topic-icon" />
               <div className="topic-info">
-                <h4>Highest XP</h4>
-                <p>{xpBreakdown.reduce((max, item) => item.xp > max.xp ? item : max, xpBreakdown[0])?.topic}</p>
+                <h4>Score</h4>
+                <p>{bestCourse.avgScore}%</p>
               </div>
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="no-data">No best course data available</div>
+      )}
+    </div>
 
       {/* Recommendations */}
       <div className="recommendations">
@@ -223,7 +276,7 @@ const Insights = () => {
               <p>You have many courses in progress. Consider focusing on completing one at a time.</p>
             </div>
           )}
-          {recentActivity.length === 0 && (
+          {activityLog.length === 0 && (
             <div className="recommendation">
               <p>Start a new course or quiz to begin tracking your learning progress.</p>
             </div>

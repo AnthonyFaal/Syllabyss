@@ -4,7 +4,7 @@ const axios = require("axios");
 const openai = require("../config/openaiClient");
 const { OPEN_AI_MODEL } = require("../config/openaiClient");
 
-const CONTENT_GENERATION_API = "https://1656ec6bb0b7.ngrok-free.app/generate";
+const CONTENT_GENERATION_API = "https://c694cdd91ed6.ngrok-free.app/generate";
 
 // 🔧 Generate Content URL
 const generateContentUrl = async (title, content, contentType) => {

@@ -6,8 +6,7 @@ import {
 } from "react-icons/fa";
 import { BarChartComponent, PieChartComponent, StatsCard } from "../components/Charts/Charts";
 import "./AdminPanel.css";
-import { getUserById, getUsers, getAdminOverview } from "../api/APIs";
-import { getUserId } from "../utils/authToken";
+import { getUsers, getAdminOverview, getAllFeedback } from "../api/APIs";
 import PageLoader from "../components/Loader/pageLoader";
 import { formatLastActiveTime } from '../utils/global';
 
@@ -19,8 +18,7 @@ const AdminPanel = () => {
   const [roleFilter, setRoleFilter] = useState("all");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [feedbackList, setFeedbackList] = useState([]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -32,27 +30,6 @@ const AdminPanel = () => {
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  useEffect(() => {
-    const checkAccess = async () => {
-      try {
-        const userId = getUserId();
-        const response = await getUserById(userId);
-        if (response.data.role === "admin") {
-          setIsAuthorized(true);
-        } else {
-          setIsAuthorized(false);
-        }
-      } catch (error) {
-        console.error("Authorization error:", error);
-        setIsAuthorized(false);
-      } finally {
-        setCheckingAuth(false);
-      }
-    };
-
-    checkAccess();
   }, []);
 
   useEffect(() => {
@@ -75,6 +52,10 @@ const AdminPanel = () => {
         );
         const statsResponse = await getAdminOverview();
         setSystemStats(statsResponse.data.systemStats);
+
+          // 📌 Fetch feedback
+      const feedbackResponse = await getAllFeedback();
+      setFeedbackList(feedbackResponse?.data.data);
       } catch (error) {
         console.error("Failed to fetch data", error);
       } finally {
@@ -82,10 +63,8 @@ const AdminPanel = () => {
       }
     };
 
-    if (isAuthorized) {
-      fetchData();
-    }
-  }, [isAuthorized]);
+    fetchData();
+  }, []);
 
   const filteredUsers = userList.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -118,22 +97,8 @@ const AdminPanel = () => {
 
   const userRoles = [...new Set(userList.map(user => user.role.toLowerCase()))];
 
-  if (checkingAuth || loading) {
+  if (loading) {
     return <PageLoader />;
-  }
-
-  if (!isAuthorized) {
-    return (
-      <div className="access-denied-container">
-        <div className="access-denied-card">
-          <FaUserShield className="access-icon" />
-          <h2>Access Denied</h2>
-          <p>Sorry, you do not have admin privileges to access this page.</p>
-          <p>If you believe this is a mistake, please contact the system administrator.</p>
-          <a href="mailto:support@example.com" className="contact-admin-btn">Contact Admin</a>
-        </div>
-      </div>
-    );
   }
 
   return (
@@ -151,7 +116,7 @@ const AdminPanel = () => {
         </div>
       )}
 
-      <div className={`dashboard-container ${isMobileMenuOpen ? 'mobile-menu-open' : ''}`}>
+      <div className={`admin-dashboard-container ${isMobileMenuOpen ? 'mobile-menu-open' : ''}`}>
         {/* Desktop Header */}
         {windowWidth > 768 && (
           <div className="admin-header">
@@ -239,12 +204,7 @@ const AdminPanel = () => {
             <div className="controls">
               <div className="search-box">
                 <FaSearch className="search-icon" />
-                <input 
-                  type="text" 
-                  placeholder="Search users..." 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+                <input type="text" placeholder="Search users..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               </div>
               <div className="filter-dropdown">
                 <FaFilter className="filter-icon" />
@@ -259,131 +219,99 @@ const AdminPanel = () => {
           </div>
 
           <div className="responsive-table-container">
-            <div className="responsive-table">
-              <table>
-                <thead>
-                  <tr>
-                    <th>User</th>
-                    {windowWidth > 600 && <th>Contact</th>}
-                    <th>Role</th>
-                    {windowWidth > 768 && <th>Field</th>}
-                    {windowWidth > 992 && <th>Specialization</th>}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUsers.length > 0 ? (
-                    filteredUsers.map((user) => (
-                      <tr key={user.id}>
-                        <td>
-                          <div className="user-info">
-                            {user.profileImage ? (
-                              <img src={user.profileImage} alt={user.name} className="user-avatar" />
-                            ) : (
-                              <div className="avatar-placeholder">{user.name.charAt(0)}</div>
-                            )}
-                            <div>
-                              <strong>{user.name}</strong>
-                              {windowWidth <= 600 && <small>{user.email}</small>}
-                              <small>Last active: {user.lastLogin}</small>
-                            </div>
-                          </div>
-                        </td>
-                        {windowWidth > 600 && (
-                          <td>
-                            <div className="contact-info">
-                              <a href={`mailto:${user.email}`}>{user.email}</a>
-                              {windowWidth > 768 && <small>Exp: {user.experience}</small>}
-                            </div>
-                          </td>
-                        )}
-                        <td><span className={`role-badge ${user.role.toLowerCase()}`}>{user.role}</span></td>
-                        {windowWidth > 768 && <td>{user.field}</td>}
-                        {windowWidth > 992 && <td>{user.specialization}</td>} 
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={windowWidth > 992 ? 6 : windowWidth > 768 ? 5 : windowWidth > 600 ? 4 : 3} className="no-results">
-                        No users found matching your criteria
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Last Active</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredUsers.length > 0 ? (
+                  filteredUsers.map(user => (
+                    <tr key={user.id}>
+                      <td>
+                        <div className="user-info">
+                          {user.profileImage ? (
+                            <img src={user.profileImage} alt={user.name} className="user-avatar" />
+                          ) : (
+                            <div className="avatar-placeholder">{user.name.charAt(0)}</div>
+                          )}
+                          <strong>{user.name}</strong>
+                        </div>
                       </td>
+                      <td><a href={`mailto:${user.email}`}>{user.email}</a></td>
+                      <td><span className={`role-badge ${user.role.toLowerCase()}`}>{user.role}</span></td>
+                      <td>{user.lastLogin}</td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="no-results">No users found</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+       
+       {/* Feedback Management */}
+       <section className="dashboard-section">
+          <h2><FaComments /> User Feedback</h2>
+          <div style={{ overflowX: "auto" }}>
+            <table className="feedback-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Course</th>
+                  <th>Rating</th>
+                  <th>Comment</th>
+                  <th>Submitted</th>
+                </tr>
+              </thead>
+              <tbody>
+                {feedbackList.length > 0 ? (
+                  feedbackList.map(feedback => (
+                    <tr key={feedback.feedback_id}>
+                      <td className="user-info">
+                        {feedback.profile_image ? (
+                          <img
+                            src={feedback.profile_image}
+                            alt={feedback.name}
+                            className="user-avatar"
+                          />
+                        ) : (
+                          <div className="avatar-placeholder">{feedback.name.charAt(0)}</div>
+                        )}
+                        {feedback.name}
+                      </td>
+                      <td>{feedback.course_title}</td>
+                      <td>
+                        {[...Array(5)].map((_, i) => (
+                          <FaStar
+                            key={i}
+                            color={i < feedback.rating ? "#ffc107" : "#e4e5e9"}
+                          />
+                        ))}
+                      </td>
+                      <td>{feedback.comment}</td>
+                      <td>{new Date(feedback.submitted_at).toLocaleString()}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} style={{ textAlign: "center" }}>
+                      No feedback found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </section>
 
-        {/* System Settings */}
-        <section className="dashboard-section">
-          <h2><FaCog /> System Settings</h2>
-          <div className="settings-grid">
-            <div className="settings-card">
-              <h3>Platform Status</h3>
-              <div className="setting-item">
-                <label>
-                  <input type="checkbox" />
-                  Maintenance Mode
-                </label>
-                <p className="setting-description">When enabled, only admins can access the platform</p>
-              </div>
-              <div className="setting-item">
-                <label>
-                  <input type="checkbox" defaultChecked />
-                  User Registration
-                </label>
-                <p className="setting-description">Allow new users to register accounts</p>
-              </div>
-            </div>
-
-            <div className="settings-card">
-              <h3>Content Settings</h3>
-              <div className="setting-item">
-                <label>
-                  <input type="checkbox" defaultChecked />
-                  Enable Comments
-                </label>
-                <p className="setting-description">Allow users to comment on courses</p>
-              </div>
-              <div className="setting-item">
-                <label>
-                  <input type="checkbox" defaultChecked />
-                  Enable Ratings
-                </label>
-                <p className="setting-description">Allow users to rate courses</p>
-              </div>
-            </div>
-
-            {windowWidth > 600 && (
-              <div className="settings-card">
-                <h3>Analytics</h3>
-                <div className="setting-item">
-                  <label>
-                    Data Retention
-                    <select defaultValue="30">
-                      <option value="7">7 days</option>
-                      <option value="30">30 days</option>
-                      <option value="90">90 days</option>
-                      <option value="365">1 year</option>
-                    </select>
-                  </label>
-                </div>
-                <div className="setting-item">
-                  <label>
-                    <input type="checkbox" defaultChecked />
-                    Collect Anonymous Usage Data
-                  </label>
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="settings-actions">
-            <button className="save-btn">Save All Settings</button>
-            {windowWidth > 480 && (
-              <button className="reset-btn">Reset to Defaults</button>
-            )}
-          </div>
-        </section>
       </div>
     </div>
   );

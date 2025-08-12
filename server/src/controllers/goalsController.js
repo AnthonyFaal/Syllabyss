@@ -1,7 +1,21 @@
-const {BaseRepository, validateEntity, grantGoalToUser } = require('../utils/index');
+const {BaseRepository, validateEntity} = require('../utils/index');
+const goalRepo = new BaseRepository('goals', 'goal_id');
+const goalProgressRepo = new BaseRepository('user_goal_progress', 'progress_id');
+const userGoalRepo = new BaseRepository('user_goals', 'user_goal_id');
 
-const goalRepo = new BaseRepository('goals');
-const userGoalRepo = new BaseRepository('user_goals');
+async function initializeProgressForUserGoal(user_id, goal_id) {
+  const existingProgress = await goalProgressRepo.getOne({ user_id, goal_id });
+
+  if (!existingProgress) {
+    await goalProgressRepo.create({
+      user_id,
+      goal_id,
+      progress_data: {},
+      last_updated: new Date(),
+    });
+  }
+}
+
 
 const achievementController = {
 
@@ -46,15 +60,6 @@ async createGoal(req, res) {
       // Create the goal
       const createdGoal = await goalRepo.create(goalData);
       createdGoals.push(createdGoal);
-
-      // Grant goal if personal
-      if (createdGoal.created_by) {
-        try {
-          await grantGoalToUser(createdGoal.created_by, createdGoal.goal_id);
-        } catch (grantError) {
-          console.error(`⚠️ Failed to grant goal (goal_id: ${createdGoal.goal_id}) to user:`, grantError);
-        }
-      }
     }
 
     if (createdGoals.length === 0) {
@@ -81,17 +86,42 @@ async createGoal(req, res) {
   }
 },
 
-  // User Goals
- async grantGoal(req, res) {
+async grantGoal(req, res) {
   try {
-    const { user_id, goal_id } = req.body;
-    const userGoal = await grantGoalToUser(user_id, goal_id);
-    res.status(201).json(userGoal);
+    const user_id = req.user?.id;
+    const { goal_id } = req.body;
+
+    if (!user_id || !goal_id) {
+      return res.status(400).json({ error: 'User ID and Goal ID are required.' });
+    }
+
+    // Check if user already has this goal
+    const existing = await userGoalRepo.getOne({ user_id, goal_id });
+    if (existing) {
+      return res.status(200).json({ message: 'Goal already granted to user.', goal: existing });
+    }
+
+    // Grant goal
+    const userGoal = await userGoalRepo.create({
+      user_id,
+      goal_id
+    });
+
+    // Initialize goal progress
+    const progress = await initializeProgressForUserGoal(user_id, goal_id);
+
+    return res.status(201).json({
+      message: 'Goal successfully granted to user.',
+      goal: userGoal,
+      progress
+    });
+
   } catch (error) {
+    console.error('🚨 Error granting goal:', error);
     res.status(error.statusCode || 500).json({ error: error.message });
   }
 },
-  
+
  async markAsSeen(req, res) {
     try {
       const { user_goal_id } = req.params;
@@ -151,24 +181,22 @@ async createGoal(req, res) {
     }
   },
 
-  async getUserGoals(req, res) {
+  async getUserGoals (req, res) {
     try {
-      const { user_id } = req.params;
-      // Using raw query for complex join
-      const result = await db.query(`
-        SELECT g.*, ug.earned_date, ug.is_seen 
-        FROM user_goals ug
-        JOIN goals g ON ug.goal_id = g.id
-        WHERE ug.user_id = $1
-        ORDER BY ug.earned_date DESC
-      `, [user_id]);
-      res.json(result.rows);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+      const userId = req.user?.id;
+      console.log(userId)
+      if (!userId) {
+        return res.status(400).json({ error: 'User not authenticated.' });
+      }
+
+      const userGoals = await userGoalRepo.getAll({ user_id: userId });
+      res.json(userGoals);
+    } catch (err) {
+      console.error('Error fetching user goals:', err);
+      res.status(500).json({ error: 'Server error: ' + err.message });
     }
   },
 
-  
 };
 
 module.exports = achievementController;

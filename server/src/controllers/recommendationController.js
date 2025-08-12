@@ -129,11 +129,15 @@ async createRecommendation(req, res) {
 
         // Extract primary content type from course modules
         const contentTypes = new Set();
-        course.modules.forEach(module => {
-            module.learning_materials.forEach(material => {
-                contentTypes.add(material.content_type);
+       if (Array.isArray(course.modules)) {
+            course.modules.forEach(module => {
+                if (Array.isArray(module.learning_materials)) {
+                    module.learning_materials.forEach(material => {
+                        contentTypes.add(material.content_type);
+                    });
+                }
             });
-        });
+        }
         const primaryContentType = contentTypes.size > 0 
             ? Array.from(contentTypes)[0] 
             : 'mixed';

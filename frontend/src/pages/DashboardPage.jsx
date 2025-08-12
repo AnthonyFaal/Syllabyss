@@ -48,7 +48,7 @@ useEffect(() => {
 
   const stats = dashboardData.stats || {};
   const activeCourses = dashboardData.activeCourses || [];
-  const progressData = dashboardData.progressData || [];
+  //const progressData = dashboardData.progressData || [];
   const userGoals = dashboardData.userGoals || [];
   const recommendations = dashboardData.recommendations || [];
   const leaderboardPosition = dashboardData.leaderboardPosition ?? "N/A";
@@ -209,12 +209,7 @@ const handleAcceptRecommendation = async (recommendationId) => {
             value={stats.weeklyXp ?? 0} 
             color="#858796" 
           />
-          <StatCard 
-            icon={FiClock} 
-            title="Time Spent Today" 
-            value={formatTime(stats.timeSpentToday)} 
-            color="#f8f9fc" 
-          />
+          
           <StatCard 
             icon={FiBookmark} 
             title="Materials Completed" 
@@ -335,7 +330,7 @@ const handleAcceptRecommendation = async (recommendationId) => {
         )}
       </section>
 
-      {/* Progress Data Section */}
+      {/* Progress Data Section 
       <section className="progress-section">
         <h2><FiTrendingUp className="section-icon" /> Your Progress</h2>
         {progressData.length > 0 ? (
@@ -348,7 +343,7 @@ const handleAcceptRecommendation = async (recommendationId) => {
             <p className="no-data-message">No progress data available yet</p>
           </div>
         )}
-      </section>
+      </section>*/}
 
       {/* User Goals Section */}
       <section className="goals-section">
@@ -356,7 +351,7 @@ const handleAcceptRecommendation = async (recommendationId) => {
         {userGoals.length > 0 ? (
           <ul className="goals-list">
             {userGoals.map(goal => (
-              <li key={goal.id} className="goal-item">
+              <li key={goal.user_goal_id} className="goal-item">
                 <div className="goal-checkbox">
                   {goal.status === 'completed' ? (
                     <FiCheckCircle className="completed-icon" />
@@ -365,11 +360,17 @@ const handleAcceptRecommendation = async (recommendationId) => {
                   )}
                 </div>
                 <div className="goal-content">
-                  <h4>{goal.title || "Untitled Goal"}</h4>
-                  <p className="goal-due-date">Due: {formatDate(goal.due_date)}</p>
+                  <div className="goal-header">
+                    <img src={goal.icon || '/goal-icon.svg'} alt="Goal Icon" className="goal-icon" />
+                    <h4>{goal.title || "Untitled Goal"}</h4>
+                  </div>
+                  <p className="goal-description">{goal.description || "No description provided."}</p>
+                  <p className="goal-started">Started: {formatDate(goal.started_at)}</p>
+                  {goal.completed_at && <p className="goal-completed">Completed: {formatDate(goal.completed_at)}</p>}
+                  {goal.earned_date && <p className="goal-reward">Reward Earned: {formatDate(goal.earned_date)}</p>}
                 </div>
                 <span className={`goal-status ${goal.status}`}>
-                  {goal.status || "N/A"}
+                  {goal.status.replace('_', ' ')}
                 </span>
               </li>
             ))}
@@ -378,7 +379,6 @@ const handleAcceptRecommendation = async (recommendationId) => {
           <div className="empty-state">
             <FiTarget className="empty-icon" size={48} />
             <p className="no-data-message">You haven't set any goals yet</p>
-            <button className="add-goal-button">+ Add Goal</button>
           </div>
         )}
       </section>

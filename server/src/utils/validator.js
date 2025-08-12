@@ -347,6 +347,16 @@ userAnswer: {
       comment: {
         length: { maximum: 1000 }
       }
+    },
+    update: {
+      rating: {
+        presence: false,
+        numericality: { onlyInteger: true, greaterThanOrEqualTo: 1, lessThanOrEqualTo: 5 }
+      },
+      comment: {
+        presence: false,
+        length: { maximum: 1000 }
+      }
     }
   },
 

@@ -1,4 +1,7 @@
 const nodemailer = require('nodemailer');
+const { HOST, PORT } = require('../../port'); // Import host and port
+
+
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -9,7 +12,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendVerificationEmail = async (to, token) => {
-  const url = `https://final-year-server.onrender.com/api/auth/verify/${token}`;
+  const url = `http://${HOST}:4000/api/auth/verify/${token}`;
 
   await transporter.sendMail({
     from: `"Syllabyss" <${process.env.EMAIL_FROM}>`, 

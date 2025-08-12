@@ -1,16 +1,38 @@
-/* AdminPanel.css */
 .admin-dashboard {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  width: 100%;
   background-color: #f8f9fc;
 }
 
-.dashboard-container {
+.admin-dashboard-container {
   flex: 1;
   padding: 20px;
   transition: margin-left 0.3s;
+  display: flex;
+  flex-direction: column;
 }
+
+.dashboard-section {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+  width: 100%;
+  flex: 1; /* This lets it expand to fill remaining space */
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+}
+
 
 .admin-header {
   background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
@@ -32,14 +54,6 @@
 .header-content p {
   margin: 0.5rem 0 0;
   opacity: 0.9;
-}
-
-.dashboard-section {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  margin-bottom: 20px;
 }
 
 .dashboard-section h2 {
@@ -99,14 +113,6 @@
 .metric-card.info { background: linear-gradient(135deg, #36b9cc 0%, #258391 100%); }
 .metric-card.secondary { background: linear-gradient(135deg, #858796 0%, #60616f 100%); }
 .metric-card.tertiary { background: linear-gradient(135deg, #e74a3b 0%, #be2617 100%); }
-
-/* Chart Grid */
-.chart-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
-}
 
 .chart-container {
   background: white;
@@ -429,4 +435,54 @@ td {
   .save-btn, .reset-btn {
     width: 100%;
   }
+}
+
+/* Feedback table styling */
+.feedback-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.feedback-table thead {
+  background-color: #f5f5f5;
+}
+
+.feedback-table th,
+.feedback-table td {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+}
+
+.feedback-table tbody tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.feedback-table tbody tr:hover {
+  background-color: #f0f0f0;
+}
+
+.feedback-table .user-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.feedback-table .user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.feedback-table .avatar-placeholder {
+  width: 28px;
+  height: 28px;
+  background: #bbb;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  border-radius: 50%;
 }

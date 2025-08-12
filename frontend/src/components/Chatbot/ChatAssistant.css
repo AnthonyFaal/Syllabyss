@@ -51,7 +51,7 @@
 }
 
 .chat-close:hover {
-  color: #fbbf24; /* Orange accent color on hover */
+  color: #fbbf24;
 }
 
 .chat-body {
@@ -68,11 +68,13 @@
 
 .chat-message {
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* changed from flex-end */
   gap: 0.75rem;
-  max-width: 85%;
+  max-width: 100%;
   word-wrap: break-word;
+  padding-right: 0; /* remove any extra space */
 }
+
 
 .chat-message.user {
   justify-content: flex-end;
@@ -99,14 +101,14 @@
 }
 
 .avatar {
-  width: 60px !important;  /* Reduced size */
-  height: 60px !important; /* Reduced size */
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #1e3a8a;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0; 
 }
-
 
 .chat-input {
   display: flex;
@@ -148,3 +150,37 @@
 .chat-input button:active {
   background-color: #1d4ed8;
 }
+
+.typing-indicator-alt {
+  display: inline-block;
+  font-weight: 500;
+  color: #555;
+  font-size: 14px;
+}
+
+.typing-indicator-alt .dot {
+  animation: blink 1s infinite;
+  font-weight: bold;
+  display: inline-block;
+  font-size: 18px;
+}
+
+.typing-indicator-alt .dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.typing-indicator-alt .dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes blink {
+  0%, 20% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.2;
+  }
+}
+

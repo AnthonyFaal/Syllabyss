@@ -1,5 +1,6 @@
 const { validateEntity, BaseRepository } = require('../utils/index');
 const { getIO } = require('../config/socket'); 
+const { trackProgressForUser } = require('../services/goalService'); 
 
 class ChatController {
   constructor() {
@@ -7,7 +8,10 @@ class ChatController {
     this.chatMessageRepo = new BaseRepository('chat_messages', 'message_id');
     this.chatMemberRepo = new BaseRepository('chat_members', 'chat_member_id');
     this.userRepo  = new BaseRepository('users', 'user_id');
-    this.userTypingMap = new Map(); // Track typing status { chatId: Set(userIds) }
+    this.goalRepo = new BaseRepository('goals', 'goal_id');
+    this.goalProgressRepo = new BaseRepository('user_goal_progress', 'progress_id');
+    this.userGoalRepo = new BaseRepository('user_goals', 'user_goal_id');
+    this.userTypingMap = new Map(); 
 
     // Bind all methods using arrow functions
     this.createChat = this.createChat.bind(this);
@@ -97,9 +101,9 @@ class ChatController {
   }
 
 sendMessage = async (req, res) => {
+  const user_id = req.user.id;
   try {
-    const {
-      user_id,         // Provided by user
+    const {       // Provided by user
       message_text,
       intent,
       confidence_score
@@ -108,10 +112,10 @@ sendMessage = async (req, res) => {
     const chat_id = parseInt(req.params.chatId, 10);
 
     // Validate required fields
-    if (!user_id || !chat_id) {
+    if (!chat_id) {
       return res.status(400).json({
         success: false,
-        error: "Missing user_id or chat_id"
+        error: "Missing  chat_id"
       });
     }
 
@@ -159,10 +163,23 @@ sendMessage = async (req, res) => {
     }); 
 
     // Emit via socket
-    getIO().to(`chat_${chat_id}`).emit('new_message', savedMessage);
+    getIO().to(`chat_${chat_id}`).emit('newMessage', savedMessage);
 
     // Clear typing
     this.clearTyping(chat_id, user_id);
+
+    // Track progress for goals triggered by sending a message
+    await trackProgressForUser({
+      user_id,
+      event_type: 'forum_posts',
+      metadata: {
+        quality: 'meaningful'  // You could adjust this with better logic
+      },
+      goalRepo: this.goalRepo,
+      goalProgressRepo: this.goalProgressRepo,
+      userGoalRepo: this.userGoalRepo
+    });
+
 
     res.status(201).json({
       success: true,
@@ -307,40 +324,34 @@ getMessages = async (req, res) => {
 addMember = async (req, res) => {
   try {
     const chatId = parseInt(req.params.chatId);
-    const userId = req.body.userId;         // ✅ Expecting camelCase from client
+    const userId = req.user.id;           // ✅ Get userId from authenticated user
     const isAdmin = req.body.isAdmin || false;
-    const requesterId = req.user.id;
 
-    // 🔍 Print input for debug
     console.log('Received:', req.body);
 
-    // 🔒 Validate input
-    if (!userId || typeof userId !== 'number') {
-      return res.status(400).json({ error: 'userId must be a number and is required.' });
-    }
-
+    // 🔒 Validate chatId
     if (typeof chatId !== 'number' || isNaN(chatId)) {
       return res.status(400).json({ error: 'chatId must be a valid number.' });
     }
 
-    // Reject extra fields
-    const allowed = ['userId', 'isAdmin'];
+    // Reject extra fields (only isAdmin allowed)
+    const allowed = ['isAdmin'];
     const extra = Object.keys(req.body).filter(k => !allowed.includes(k));
     if (extra.length > 0) {
       return res.status(400).json({ error: `Unexpected field(s): ${extra.join(', ')}` });
     }
 
-    // Get chat info
+    // Get chat
     const chat = await this.chatRepo.getById(chatId);
     if (!chat) {
       return res.status(404).json({ error: 'Chat not found' });
     }
 
-    // If chat is private, only admin can add
+    // Only admins can add to private chats
     if (chat.is_private) {
       const isAdminRequester = await this.chatMemberRepo.getOne({
         chat_id: chatId,
-        user_id: requesterId,
+        user_id: req.user.id,
         is_admin: true,
       });
 
@@ -349,7 +360,7 @@ addMember = async (req, res) => {
       }
     }
 
-    // Prevent duplicate membership
+    // Check for existing membership
     const existing = await this.chatMemberRepo.getOne({
       chat_id: chatId,
       user_id: userId,
@@ -359,7 +370,7 @@ addMember = async (req, res) => {
       return res.status(400).json({ error: 'User is already a member of this chat' });
     }
 
-    // Add member (snake_case for DB)
+    // Add user to chat
     const member = await this.chatMemberRepo.create({
       chat_id: chatId,
       user_id: userId,
@@ -376,6 +387,7 @@ addMember = async (req, res) => {
     res.status(500).json({ error: 'Failed to add member' });
   }
 };
+
 
 // Get chat members
 getChatMembers = async (req, res) => {

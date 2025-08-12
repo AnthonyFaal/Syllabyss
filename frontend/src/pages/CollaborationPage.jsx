@@ -5,13 +5,15 @@ import {
   getPublicChats,
   getUserChats,
   createChat,
-  joinChat
+  joinChat,
+  defaultAvatar
 } from '../api/APIs';
 import PageLoader from "../components/Loader/pageLoader";
 import ChatPanel from "../components/ChatPanel/ChatPanel";
 import { getUserId } from "../utils/authToken";
 import { formatLastActiveTime } from '../utils/global';
 import io from 'socket.io-client';
+import { API_BASE_URL } from '../api/axiosInstance';
 
 const Collaboration = () => {
   const [loading, setLoading] = useState(true);
@@ -25,7 +27,7 @@ const Collaboration = () => {
     generalChats: {
       success: true,
       data: []
-    }
+    } 
   });
   const [activeChat, setActiveChat] = useState(null);
   const [showCreateChat, setShowCreateChat] = useState(false);
@@ -33,17 +35,25 @@ const Collaboration = () => {
   const [newChatAvatar, setNewChatAvatar] = useState('');
   const [socket, setSocket] = useState(null);
 
-  const defaultAvatar = 'https://cdn-icons-png.flaticon.com/512/565/565547.png';
+ useEffect(() => {
+  const newSocket = io(API_BASE_URL, {
+    reconnectionAttempts: 5, 
+  });
 
-  useEffect(() => {
-    // Initialize socket connection
-    const newSocket = io('http://localhost:4000');
-    setSocket(newSocket);
+  newSocket.on('connect', () => {
+    console.log('Socket connected');
+  });
 
-    return () => {
-      newSocket.disconnect();
-    };
-  }, []);
+  newSocket.on('disconnect', () => {
+    console.log('Socket disconnected');
+  });
+
+  setSocket(newSocket);
+
+  return () => {
+    newSocket.disconnect();
+  };
+}, []);
 
   useEffect(() => {
     if (!socket) return;
@@ -191,7 +201,7 @@ const Collaboration = () => {
 
   const handleJoinChat = async (chatId) => {
     try {
-      await joinChat(chatId, userId);
+      await joinChat(chatId);
       
       // Update the chat lists
       const [myGroups, generalChats] = await Promise.all([
@@ -303,7 +313,7 @@ const Collaboration = () => {
                         ? chat.last_message.message_text.slice(0, 20) + '...'
                         : chat.last_message.message_text
                       : 'No messages yet'}
-
+ 
                     </p>
                     <p className="last-active">
                        {formatLastActiveTime(chat.last_message?.timestamp || chat.joined_at)}
