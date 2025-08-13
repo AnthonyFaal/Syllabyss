@@ -3,7 +3,7 @@ uvicorn
 pydantic
 Pillow
 gTTS
-moviepy
+moviepy==1.0.3
 reportlab
 cloudinary
 python-dotenv
