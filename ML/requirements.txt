@@ -6,3 +6,5 @@ gTTS
 moviepy
 reportlab
 cloudinary
+python-dotenv
+tqdm
