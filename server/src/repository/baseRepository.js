@@ -48,8 +48,32 @@ class BaseRepository {
     }
 
     const result = await db.query(query, values);
-    return result.rows;
+    return result.rows; 
   }
+
+   async getAll1(conditions = {}, orderBy = '') {
+  let query = `SELECT * FROM ${this.tableName}`;
+  const values = [];
+  const whereClauses = [];
+
+  Object.entries(conditions).forEach(([key, value], index) => {
+    if (value !== undefined && value !== null) {
+      whereClauses.push(`${key} = $${index + 1}`);
+      values.push(value); 
+    }
+  });
+
+  if (whereClauses.length > 0) {
+    query += ` WHERE ${whereClauses.join(' AND ')}`;
+  }
+
+  if (orderBy) {
+    query += ` ORDER BY ${orderBy}`;
+  }
+
+  const result = await db.query(query, values);
+  return result.rows;
+}
 
   async getByName(name) {
     const query = `

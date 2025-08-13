@@ -53,12 +53,12 @@ const handleNewMessage = (message) => {
   }
 };
 
-  socket?.on('new_message', handleNewMessage);
+  socket?.on('newMessage', handleNewMessage);
 
   // Cleanup
   return () => {
     clearInterval(typingInterval);
-    socket?.off('new_message', handleNewMessage);
+    socket?.off('newMessage', handleNewMessage);
   };
 }, [activeChat, socket]);
 

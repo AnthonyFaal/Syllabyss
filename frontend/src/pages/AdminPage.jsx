@@ -3,10 +3,10 @@ import {
   FaUserShield, FaChartBar, FaUsers, FaCog, FaTrashAlt, FaEdit, 
   FaSearch, FaFilter, FaBars, FaTimes, FaUserGraduate, 
   FaBook, FaQuestionCircle, FaLayerGroup, FaComments, FaStar 
-} from "react-icons/fa";
-import { BarChartComponent, PieChartComponent, StatsCard } from "../components/Charts/Charts";
+} from "react-icons/fa";import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { PieChartComponent, StatsCard , FieldDistributionChart} from "../components/Charts/Charts";
 import "./AdminPanel.css";
-import { getUsers, getAdminOverview, getAllFeedback } from "../api/APIs";
+import { getUsers, getAdminOverview, getAllFeedback, getInterstStats} from "../api/APIs";
 import PageLoader from "../components/Loader/pageLoader";
 import { formatLastActiveTime } from '../utils/global';
 
@@ -19,6 +19,7 @@ const AdminPanel = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [feedbackList, setFeedbackList] = useState([]);
+  const [interestStats, setInterestStats] = useState([]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -50,12 +51,15 @@ const AdminPanel = () => {
             field: user.selected_field || "—",
           }))
         );
+        
         const statsResponse = await getAdminOverview();
         setSystemStats(statsResponse.data.systemStats);
 
-          // 📌 Fetch feedback
-      const feedbackResponse = await getAllFeedback();
-      setFeedbackList(feedbackResponse?.data.data);
+        const feedbackResponse = await getAllFeedback();
+        setFeedbackList(feedbackResponse?.data.data);
+
+        const interestResponse = await getInterstStats();
+        setInterestStats(interestResponse.data);
       } catch (error) {
         console.error("Failed to fetch data", error);
       } finally {
@@ -72,17 +76,6 @@ const AdminPanel = () => {
     const matchesRole = roleFilter === "all" || user.role.toLowerCase() === roleFilter;
     return matchesSearch && matchesRole;
   });
-
-  const fieldDistribution = userList.reduce((acc, user) => {
-    const field = user.field || "Unspecified";
-    acc[field] = (acc[field] || 0) + 1;
-    return acc;
-  }, {});
-
-  const fieldChartData = Object.keys(fieldDistribution).map(field => ({
-    field,
-    count: fieldDistribution[field],
-  }));
 
   const roleDistribution = userList.reduce((acc, user) => {
     const role = user.role;
@@ -179,12 +172,7 @@ const AdminPanel = () => {
 
           <div className="chart-grid">
             <div className="chart-item">
-              <BarChartComponent 
-                data={fieldChartData} 
-                xKey="field" 
-                yKey="count" 
-                title="User Field Distribution" 
-              />
+              <FieldDistributionChart data={interestStats} />
             </div>
             <div className="chart-item">
               <PieChartComponent 
@@ -311,7 +299,6 @@ const AdminPanel = () => {
             </table>
           </div>
         </section>
-
       </div>
     </div>
   );

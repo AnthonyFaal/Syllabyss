@@ -126,13 +126,7 @@ const login = async (req, res) => {
 
     res.json({ 
       token, 
-      userId: user.user_id,
-      user: {
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        profile_image: user.profile_image
-      }
+      userId: user.user_id, 
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -193,12 +187,16 @@ const forgotPasswordController = async (req, res) => {
 
 const getUsers = async (req, res) => {
   try {
-    const users = await userRepo.getAll();
+    const users = await userRepo.getAll1(
+      {},
+      `CASE WHEN role = 'admin' THEN 0 ELSE 1 END, name ASC`
+    );
     res.status(200).json(users);
   } catch (err) {
     res.status(500).json({ error: 'Server error: ' + err.message });
   }
 };
+
 
 const updateProfileImageController = async (req, res) => {
   try {

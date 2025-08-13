@@ -64,11 +64,11 @@ export const getMe = () => get('/me').then(res => res.data);
 // ==============================================
 // // Interest flow API calls
 // ==============================================
-
+ 
 export const createInterestFlow = (data) => post('/interest-flow', data);
 export const getInterestFlowsByUserId = (userId) => get(`/interest-flow/user/${userId}`);
 export const updateInterestFlow = (interestFlowId, data) => put(`/interest-flow/${interestFlowId}`, data);
-
+export const getInterstStats = ()=> get('/interest-flow')
 
 // ==============================================
 // // Course

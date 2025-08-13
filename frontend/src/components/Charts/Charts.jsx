@@ -113,3 +113,63 @@ export const StatsCard = ({ title, value, change, icon, color }) => (
     </div>
   </div>
 );
+
+export const FieldDistributionChart = ({ data }) => {
+  // Process data: convert to integers
+  const chartData = data
+    .map(item => ({
+      field: item.selected_field,
+      users: parseInt(item.user_count, 10)
+    }))
+    .sort((a, b) => b.users - a.users);
+
+  // Custom color palette
+  const COLORS = ['#8884d8', '#83a6ed', '#8dd1e1', '#82ca9d', '#a4de6c', '#d0ed57'];
+
+  return (
+    <div className="chart-container">
+      <h3>User Field Distribution</h3>
+      <div style={{ height: '400px', overflowX: 'auto' }}>
+        <ResponsiveContainer width={Math.max(chartData.length * 80, 500)} height="100%">
+          <BarChart
+            data={chartData}
+            margin={{ top: 20, right: 20, left: 20, bottom: 60 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis 
+              dataKey="field" 
+              interval={0} 
+              angle={-45} 
+              textAnchor="end"
+              height={60}
+            />
+            <YAxis allowDecimals={false} />
+            <Tooltip formatter={(value) => [`${value} users`, '']} />
+            <Bar dataKey="users" name="Users" barSize={40}>
+              {chartData.map((entry, index) => (
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={COLORS[index % COLORS.length]} 
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Legend for small screens */}
+      <div className="mobile-legend">
+        {chartData.map((item, index) => (
+          <div key={item.field} className="legend-item">
+            <span 
+              className="legend-color" 
+              style={{ backgroundColor: COLORS[index % COLORS.length] }}
+            />
+            <span>{item.field}: {item.users} users</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+

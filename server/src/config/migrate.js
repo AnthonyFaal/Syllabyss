@@ -251,7 +251,6 @@ const createTables = async () => {
         confidence_score DECIMAL(5,2)
       );
     `);
-    
     await pool.query(`
       CREATE TABLE IF NOT EXISTS chat_events (
         event_id SERIAL PRIMARY KEY,
@@ -283,7 +282,7 @@ const createTables = async () => {
       );
     `);
   
-   //await pool.query(`DROP TABLE IF EXISTS event_messages;`);
+   
     await pool.query(`
       CREATE TABLE IF NOT EXISTS event_messages (
         message_id SERIAL PRIMARY KEY,

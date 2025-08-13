@@ -169,30 +169,25 @@ async function getInterestFlowsByUserIdHandler(req, res) {
 
 async function getAllInterestFlowsHandler(req, res) {
   try {
-    // Get all interest flows
-    const interestFlows = await interestFlowRepo.getAll();
+    // Get all interest flows with a count of users per field
+    const query = `
+      SELECT 
+        selected_field,
+        COUNT(DISTINCT user_id) as user_count
+      FROM user_interest_flows
+      GROUP BY selected_field
+      ORDER BY user_count DESC;
+    `;
+
+    const result = await interestFlowRepo.rawQuery(query);
     
-    if (interestFlows.length === 0) return res.json([]);
-
-    // Get all related skills
-    const interestFlowIds = interestFlows.map(flow => flow.interest_flow_id);
-    const skills = await userSkillsRepo.getWhereIn('interest_flow_id', interestFlowIds);
-
-    // Map skills to flows
-    const skillsMap = {};
-    skills.forEach(skill => {
-      if (!skillsMap[skill.interest_flow_id]) skillsMap[skill.interest_flow_id] = {};
-      skillsMap[skill.interest_flow_id][skill.skill_group] = skill.skill;
-    });
-
-    const result = interestFlows.map(flow => ({
-      ...flow,
-      selectedSkills: skillsMap[flow.interest_flow_id] || {}
-    }));
-
     res.json(result);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch interest flows' });
+    console.error('Error in getAllInterestFlowsHandler:', err);
+    res.status(500).json({ 
+      error: 'Failed to fetch interest flows statistics',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
   }
 }
 
@@ -266,153 +261,3 @@ module.exports = {
   deleteInterestFlowHandler,
 };
 
-/*const {
-  createInterestFlow,
-  getInterestFlowsByUserId,
-  updateInterestFlow,
-  getAllInterestFlows,
-  deleteInterestFlow,
-} = require('../models/interactionsModel');
-const CourseController = require('./courseController');
-
-// Updated validation helper
-function validateInterestFlowData(data) {
-  const { userId, selectedField, selectedExperience, selectedSpecialization, selectedSkills } = data;
-  const experiences = ['beginner', 'intermediate', 'advanced', 'expert'];
- 
-  if (!userId || typeof userId !== 'string') return 'Invalid or missing userId';
-  if (!selectedField || typeof selectedField !== 'string') return 'Invalid or missing selectedField';
-  if (!selectedExperience || !experiences.includes(selectedExperience.toLowerCase()))
-    return 'Invalid or missing selectedExperience';
-  if (!selectedSpecialization || typeof selectedSpecialization !== 'string')
-    return 'Invalid or missing selectedSpecialization';
-  if (!selectedSkills || typeof selectedSkills !== 'object' || Array.isArray(selectedSkills))
-    return 'Invalid or missing selectedSkills';
-
-  return null;
-}
-
-async function createInterestFlowHandler(req, res) {
-  const data = req.body;
-
-  const error = validateInterestFlowData(data);
-  if (error) return res.status(400).json({ error });
-
-  try {
-    // Check if user already has an interest flow
-    const existingFlows = await getInterestFlowsByUserId(data.userId);
-    if (existingFlows.length > 0) {
-      // Do not proceed with course creation
-      return res.status(400).json({
-        error: 'User already has an interest flow. Please update instead.',
-      });
-    }
-
-    // Create the interest flow
-    const interestFlowId = await createInterestFlow(data);
-
-    // Format selected skills
-    const skillsList = Object.entries(data.selectedSkills)
-      .map(([category, skill]) => `${category}: ${skill}`)
-      .join(', ');
-
-    // Compose prompt for course generation
-    const prompt = `Create a ${data.selectedField} course about ${data.selectedSpecialization} for ${data.selectedExperience} level learners. Focus on these skills: ${skillsList}.`;
-
-    // Simulate request/response for course controller
-    const mockReq = {
-      body: {
-        prompt,
-        user_id: data.userId,
-        content_type: 'video',
-        difficulty_level: data.selectedExperience,
-      },
-    };
-
-    const mockRes = {
-      status(code) {
-        this.statusCode = code;
-        return this;
-      },
-      json(response) {
-        this.response = response;
-        return this;
-      },
-    };
-
-    // Call course creation logic
-    await CourseController.createCourse(mockReq, mockRes, (err) => {
-      if (err) {
-        console.error('Error creating course from interest flow:', err);
-      }
-    });
-
-    return res.status(201).json({
-      message: 'Interest flow created and course generation initiated',
-      interestFlowId,
-      course: mockRes.response?.data || null,
-    });
-  } catch (err) {
-    console.error('Error in createInterestFlowHandler:', err);
-    return res.status(500).json({ error: 'Failed to create interest flow' });
-  }
-}
-
-async function getInterestFlowsByUserIdHandler(req, res) {
-  const { userId } = req.params;
-  if (!userId) return res.status(400).json({ error: 'Missing userId param' });
-
-  try {
-    const data = await getInterestFlowsByUserId(userId);
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch interest flows' });
-  }
-}
- 
-async function getAllInterestFlowsHandler(req, res) {
-  try {
-    const flows = await getAllInterestFlows();
-    res.json(flows);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch interest flows' });
-  }
-}
-
-async function updateInterestFlowHandler(req, res) {
-  const { interestFlowId } = req.params;
-  const data = req.body;
-
-  if (!interestFlowId) return res.status(400).json({ error: 'Missing interestFlowId param' });
-
-  const error = validateInterestFlowData(data);
-  if (error) return res.status(400).json({ error });
-
-  try {
-    await updateInterestFlow(parseInt(interestFlowId, 10), data);
-    res.json({ message: 'Interest flow updated' });
-  } catch (err) { 
-    res.status(500).json({ error: 'Failed to update interest flow' });
-  }
-}
-
-async function deleteInterestFlowHandler(req, res) {
-  const { interestFlowId } = req.params;
-  if (!interestFlowId) return res.status(400).json({ error: 'Missing interestFlowId param' });
-
-  try {
-    await deleteInterestFlow(parseInt(interestFlowId, 10));
-    res.json({ message: 'Interest flow deleted' });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to delete interest flow' });
-  }
-}
-
-module.exports = {
-  createInterestFlowHandler,
-  getInterestFlowsByUserIdHandler,
-  updateInterestFlowHandler,
-  getAllInterestFlowsHandler,
-  deleteInterestFlowHandler,
-};
-*/
