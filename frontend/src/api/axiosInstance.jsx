@@ -2,9 +2,7 @@
 import axios from 'axios';
 import { clearAuthToken } from '../utils/authToken';
 
-export const API_BASE_URL = 'http://10.236.236.203:4000';
-// export const API_BASE_URL = 'http://localhost:4000/';
-// export const API_BASE_URL = 'https://final-year-server.onrender.com';
+export const API_BASE_URL = 'https://final-year-server.onrender.com';
 
 const axiosInstance = axios.create({
   baseURL: `${API_BASE_URL}/api`,
