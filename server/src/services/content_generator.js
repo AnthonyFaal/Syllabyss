@@ -4,11 +4,13 @@ const axios = require("axios");
 const https = require("https");
 const openai = require("../config/openaiClient");
 const { OPEN_AI_MODEL } = require("../config/openaiClient");
+const dotenv = require('dotenv');
+dotenv.config();
 
 const { jsonrepair } = require("jsonrepair");
 
-const CONTENT_GENERATION_API = "https://f50549258b78.ngrok-free.app/generate";
-
+const CONTENT_GENERATION_API =`${process.env.CONTENT_GENERATOR_URL}/generate`;
+ 
 
 // Create HTTPS agent to avoid TLS keep-alive issues
 const httpsAgent = new https.Agent({

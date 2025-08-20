@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 4000;
 
 // Determine host dynamically
 const HOST = process.env.RENDER_EXTERNAL_URL
-  ? `https://${process.env.RENDER_EXTERNAL_URL}` // Render deployment URL
+  ? process.env.RENDER_EXTERNAL_URL // Render deployment URL
   : `http://localhost:${PORT}`; // Local development
 
 // Create HTTP server
