@@ -21,13 +21,24 @@ class TutorService {
 
     const isGeneral = await this.isGeneralQuestion(message);
 
-    const reply = await this.generateResponseWithOpenAI(message, isGeneral ? null : userContext);
+    if (isGeneral) {
+      // 🎯 User asked something non-educational
+      return {
+        query: message,
+        reply: "📘 I'm here to help with your learning journey. That question seems unrelated to your studies. Try asking me about your lessons, courses, skills, or progress!",
+        source: 'system',
+        usedContext: false
+      };
+    }
+
+    // Otherwise generate a contextual education-focused reply
+    const reply = await this.generateResponseWithOpenAI(message, userContext);
 
     return {
       query: message,
       reply,
       source: 'openai',
-      usedContext: !isGeneral
+      usedContext: true
     };
   }
 
@@ -41,11 +52,11 @@ class TutorService {
         messages: [
           {
             role: 'system',
-            content: 'You are a classifier that only responds with "yes" or "no". Determine if this question is general and unrelated to academic progress or personal learning.'
+            content: 'You are a strict classifier. Respond only with "yes" or "no". Answer "yes" if the question is NOT related to education, learning, courses, skills, or academic progress. Otherwise answer "no".'
           },
           {
             role: 'user',
-            content: `Is this question general? "${message}"`
+            content: `Is this question unrelated to education? "${message}"`
           }
         ],
         temperature: 0,
@@ -55,7 +66,7 @@ class TutorService {
       const reply = response.choices?.[0]?.message?.content?.toLowerCase().trim();
       const result = reply.includes('yes');
 
-      console.log(`[TutorService] Classified as general question: ${result}`);
+      console.log(`[TutorService] Classified as off-topic/general: ${result}`);
       return result;
     } catch (err) {
       console.error('[TutorService] Classification failed:', err);
@@ -64,14 +75,14 @@ class TutorService {
   }
 
   /**
-   * Generates a GPT response with or without context.
+   * Generates a GPT response with context (always education-focused).
    */
   async generateResponseWithOpenAI(message, context = null) {
     let prompt = '';
 
     if (context) {
       prompt = `
-You are a smart and helpful AI tutor. The user asked: "${message}".
+The user asked: "${message}".
 
 Here is the user's learning context:
 - Name: ${context.user.name || 'N/A'}
@@ -81,11 +92,9 @@ Here is the user's learning context:
 - Recent Course: ${context.recentCourse?.title || 'N/A'}
 - Latest Quiz Score: ${context.latestQuiz?.score || 'N/A'}
 
-Based on this context, provide a helpful learning recommendation, tip, or explanation related to the user's query. Be supportive, clear, and friendly.`;
+Based on this, provide a clear and supportive educational explanation, tip, or recommendation. Keep it focused on learning.`;
     } else {
-      prompt = `
-You are a helpful and friendly AI assistant. The user asked: "${message}".
-Give a clear, factual, or motivational response. Do not mention or assume any user-specific history.`;
+      prompt = `The user asked: "${message}". Provide a helpful educational explanation or tip.`;
     }
 
     try {
@@ -94,9 +103,7 @@ Give a clear, factual, or motivational response. Do not mention or assume any us
         messages: [
           {
             role: 'system',
-            content: context
-              ? 'You are a helpful AI tutor who gives personalized learning advice.'
-              : 'You are a helpful AI assistant that answers general questions.'
+            content: 'You are a helpful AI tutor who only gives educational advice. Always keep responses relevant to learning, courses, or skills.'
           },
           {
             role: 'user',

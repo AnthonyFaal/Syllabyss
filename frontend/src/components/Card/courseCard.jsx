@@ -26,7 +26,7 @@ const CourseCard = ({ course, onClick }) => {
     return { text: `Due: ${formatDate(course.deadline)}`, color: "#10b981" };
   };
 
-  const getStatusText = () => {
+  const getStatusText = () => { 
     switch (course.status) {
       case "completed":
         return "Completed";
@@ -44,7 +44,10 @@ const CourseCard = ({ course, onClick }) => {
   const completedModules = course.completed_module_count ?? 0;
 
   return (
-    <div className="course-card" onClick={onClick}>
+    <div
+      className="course-card"
+      onClick={() => onClick(course)} // pass the course object to parent
+    >
       <div className="course-card-content">
         <div className="course-card-header">
           <h3 className="course-card-title">{course.title}</h3>
@@ -85,7 +88,13 @@ const CourseCard = ({ course, onClick }) => {
           )}
         </div>
 
-        <button className="course-card-btn">
+        <button
+          className="course-card-btn"
+          onClick={(e) => {
+            e.stopPropagation(); // prevent double triggering
+            onClick(course); // open modal
+          }}
+        >
           <FaPlay className="btn-icon" />
           {course.status === "completed"
             ? "View Course"

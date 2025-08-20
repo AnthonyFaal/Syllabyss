@@ -26,11 +26,20 @@ async getOverview(userId) {
 
     // Get all modules for these courses
     const modules = await this.moduleRepo.getWhereIn('course_id', courseIds);
-    const moduleIds = modules.map(m => m.module_id);
-    const completedModuleIds = modules.filter(m => m.is_complete).map(m => m.module_id);
+
+    // Map modules by course_id for easier counting
+    const modulesByCourse = {};
+    modules.forEach(m => {
+      if (!modulesByCourse[m.course_id]) modulesByCourse[m.course_id] = [];
+      modulesByCourse[m.course_id].push(m);
+    });
 
     // Get all learning materials for these modules
+    const moduleIds = modules.map(m => m.module_id);
     const materials = await this.materialRepo.getWhereIn('module_id', moduleIds);
+
+    // Compute materials completed
+    const completedModuleIds = modules.filter(m => m.is_complete).map(m => m.module_id);
     const materialsCompleted = materials.filter(m => completedModuleIds.includes(m.module_id)).length;
     const totalMaterials = materials.length;
     const completionPercentage = totalMaterials > 0
@@ -43,42 +52,39 @@ async getOverview(userId) {
       leaderboardData,
       streakData,
       recommendations,
-      userGoals // ⬅️ New way of fetching user goals joined with goal info
+      userGoals
     ] = await Promise.all([
       this.courseRepo.getWhere({ user_id: userId, status: 'in_progress' }),
       this.leaderboardRepo.getWhere({ user_id: userId }),
       this.streakRepo.getWhere({ user_id: userId }),
       this.recommendationRepo.getWhere({ user_id: userId, is_accepted: false }),
-
-      // JOIN user_goals with goals table using BaseRepository’s joinTables
       this.goalRepo.joinTables({
         mainTableAlias: 'ug',
         joinTables: [
-          {
-            table: 'goals',
-            alias: 'g',
-            on: 'ug.goal_id = g.goal_id',
-            type: 'INNER'
-          }
+          { table: 'goals', alias: 'g', on: 'ug.goal_id = g.goal_id', type: 'INNER' }
         ],
         selectFields: [
-          'ug.user_goal_id',
-          'ug.status',
-          'ug.started_at',
-          'ug.completed_at',
-          'g.goal_id',
-          'g.title',
-          'g.description',
-          'g.reward_type',
-          'g.reward_value',
-          'g.icon'
+          'ug.user_goal_id', 'ug.status', 'ug.started_at', 'ug.completed_at',
+          'g.goal_id', 'g.title', 'g.description', 'g.reward_type', 'g.reward_value', 'g.icon'
         ],
-        conditions: {
-          'ug.user_id': userId,
-          'ug.status': { $ne: 'completed' }
-        }
+        conditions: { 'ug.user_id': userId, 'ug.status': { $ne: 'completed' } }
       })
     ]);
+
+    // Enhance activeCourses with module counts
+    const enhancedActiveCourses = await Promise.all(
+      activeCourses.map(async (course) => {
+        const courseModules = modulesByCourse[course.course_id] || [];
+        const total_module_count = courseModules.length;
+        const completed_module_count = courseModules.filter(m => m.is_complete).length;
+
+        return {
+          ...course,
+          total_module_count,
+          completed_module_count
+        };
+      })
+    );
 
     const goalsCompletedCount = userGoals.filter(g => g.status === 'completed').length;
     const streak = streakData[0] || {};
@@ -91,7 +97,7 @@ async getOverview(userId) {
         role: user.role
       },
       stats: {
-        coursesInProgress: activeCourses.length,
+        coursesInProgress: enhancedActiveCourses.length,
         goalsCompleted: goalsCompletedCount,
         currentStreak: streak.streak_days || 0,
         longestStreak: streak.longest_streak || 0,
@@ -100,10 +106,10 @@ async getOverview(userId) {
         materialsCompleted,
         completionPercentage
       },
-      activeCourses,
-      userGoals, // only active goals with details
+      activeCourses: enhancedActiveCourses, // now with module counts
+      userGoals,
       recommendations,
-      leaderboardPosition: leaderboard.position || 0 
+      leaderboardPosition: leaderboard.position || 0
     };
 
   } catch (err) {
@@ -111,7 +117,6 @@ async getOverview(userId) {
     throw new Error('Dashboard overview failed. Please try again later.');
   }
 }
-
 
 
  async getTimetable(userId) {

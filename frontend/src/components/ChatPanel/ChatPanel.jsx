@@ -12,7 +12,7 @@ import { getUserId } from '../../utils/authToken';
 import EventsTab from '../events/EventsTab';
 import ErrorBoundary from '../Error/ErrorBoundary';
 import './ChatPanel.css';
-import '../events/EventsTab.css'
+import '../events/EventsTab.css' 
 
 const ChatPanel = ({ activeChat, socket}) => {
   const [messages, setMessages] = useState([]);

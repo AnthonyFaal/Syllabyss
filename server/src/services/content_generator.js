@@ -1,166 +1,202 @@
 // courseGenerator.js
 
 const axios = require("axios");
+const https = require("https");
 const openai = require("../config/openaiClient");
 const { OPEN_AI_MODEL } = require("../config/openaiClient");
 
-const CONTENT_GENERATION_API = "https://c694cdd91ed6.ngrok-free.app/generate";
+const { jsonrepair } = require("jsonrepair");
 
-// 🔧 Generate Content URL
-const generateContentUrl = async (title, content, contentType) => {
+const CONTENT_GENERATION_API = "https://f50549258b78.ngrok-free.app/generate";
+
+
+// Create HTTPS agent to avoid TLS keep-alive issues
+const httpsAgent = new https.Agent({
+  keepAlive: false,          // disable connection reuse (fixes bad record mac)
+  minVersion: "TLSv1.2",     // force TLS 1.2+ (ngrok sometimes breaks on TLS1.3)
+});
+
+const generateContentUrl = async (title, structuredContent, outputFormat, voice) => {
   const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] 📡 [START] Generating content URL for: "${title}" (${contentType})`);
-  console.log(`[${timestamp}] 📝 Content length: ${content?.length} characters`);
+  console.log(`[${timestamp}] 📡 [START] Generating content URL for: "${title}" (${outputFormat})`);
 
   try {
-    const apiContentType = contentType === "video" ? "video" : "pdf";
-    console.log(`[${timestamp}] 🔧 Sending to API as type: ${apiContentType}`);
+    const apiFormat = outputFormat === "article" ? "pdf" : outputFormat;
 
-    const response = await axios.post(CONTENT_GENERATION_API, {
+    const normalizedContent = structuredContent.map(block => ({
+      type: block.type,
+      content: block.content,
+      ...(apiFormat !== "pdf" ? { narration: block.narration || block.content } : {})
+    }));
+
+    const payload = {
       title,
-      content,
-      output_format: apiContentType,
+      output_format: apiFormat,
+      voice: voice || "Ava",
+      structured_content: normalizedContent
+    };
+
+    const response = await axios.post(CONTENT_GENERATION_API, payload, {
+      headers: { 
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      httpsAgent, // ✅ add the custom agent here
     });
 
-    console.log(`[${timestamp}] ✅ API responded. Status: ${response.status}`);
-    console.log(`[${timestamp}] 📦 API Response:`, response.data);
+    console.log("📡 API response:", response.data);
 
-    if (response.data?.url && response.data?.type === apiContentType) {
-      console.log(`[${timestamp}] 🌐 Generated URL: ${response.data.url}`);
-      return response.data.url;
+    if (!response.data?.url) {
+      console.warn(`[${timestamp}] ⚠️ API did not return a URL. Returning placeholder.`);
+      return "about:blank";
     }
 
-    console.error(`[${timestamp}] ❌ Unexpected structure in response`, response.data);
-    return null;
+    return response.data.url;
 
   } catch (error) {
-    console.error(`[${timestamp}] ❌ Error generating content URL: ${error.message}`);
-    console.error(`[${timestamp}] 🔍 Debug Info:`, {
-      title: title,
-      contentLength: content?.length,
-      type: contentType,
-    });
-    return null;
+    console.error(`[${new Date().toISOString()}] ❌ Error generating content URL: ${error.message}`);
+    throw error;
   }
 };
 
-
 // 🧠 Generate Course Content
 async function generateCourseContent(userPrompt, userHistory = [], options = {}) {
-  const { defaultContentType = "article", defaultDifficulty = "beginner" } = options;
+  // Use passed values if provided, otherwise default
+  const content_type = options.content_type ?? "article"; // fallback only if undefined or null
+  const difficulty_level = options.difficulty_level ?? "beginner";
+  const voice = options.voice ?? "Ava";
+  
+   console.log(`📌 Received content type in generateCourseContent: ${content_type}`);
+  console.log(`📌 Received difficulty in generateCourseContent: ${difficulty_level}`);
+  console.log(`📌 Received voice in generateCourseContent: ${voice}`);
 
-  const messages = [
-    {
-        "role": "system",
-        "content": `
-      You are a professional curriculum designer and subject matter expert.  
-      Your task is to generate **high-quality, accurate, and structured educational course content** in **valid JSON format only**.  
+  const isArticle = content_type === "article";
 
-      📝 **Course Content Rules:**  
-      - The content must be clear, factual, and logically structured  
-      - No generic statements, fluff, or placeholders — always teach with actionable information  
-      - Follow a structured teaching style suitable for real learners (no marketing tone)  
-      - Use correct grammar, no spelling mistakes  
+  // ---- LLM Call (same as before) ----
+const messages = [
+  {
+    role: "system",
+    content: `
+      You are a professional curriculum designer. Return ONLY valid JSON (never include markdown, HTML, or explanatory text if the format is video).
+      Produce structured course content matching this JSON schema:
 
-      📚 **Article Content Must Have:**  
-      - Clear headings and subheadings  
-      - Bullet points or numbered steps where applicable  
-      - Real-life examples to illustrate key concepts  
-      - Key takeaways at the end  
-      - Easy to read at a Grade 6–10 level  
-
-      📦 **JSON Format:**  
       {
-        title, // Extract the course topic as-is from the user input. Example: "Web Programming"
-        description,
-        difficulty_level, // lowercase, e.g. "beginner", "intermediate", "advanced"
-        estimated_duration, // integer, minutes
-        modules: [
+        "title": string, // Extract the course topic as-is from the user input
+        "description": string,
+        "difficulty_level": "beginner" | "intermediate" | "advanced",
+        "estimated_duration": integer, // minutes
+        "output_format": "article" | "video",
+        "voice": string | null,
+        "modules": [
           {
-            title,
-            description,
-            order_number,
-            learning_materials: [
+            "title": string,
+            "description": string,
+            "bloom_level": "Remember" | "Understand" | "Apply" | "Analyze" | "Evaluate" | "Create",
+            "order_number": integer,
+            "learning_materials": [
               {
-                title,
-                content_type, // article, video, etc.
-                content, // Clear, structured explanation. Must teach the topic, not just outline it.
-                content_url,
-                duration, // integer minutes, min 1
-                order_number
+                "title": string,
+                "content_type": "article" | "video",
+                "structured_content": [
+                  { 
+                    "type": "text" | "code" | "diagram" | "quote" | "list", // strictly these only
+                    "header": string | null, // meaningful mini-header, null if plain text
+                    "content": string, // no HTML, only plain text; lists must be newline-separated
+                    "narration": string (required if video, forbidden if article)
+                  }
+                ],
+                "content_url": string | null,
+                "duration": integer, // minutes, min 1
+                "order_number": integer
               }
             ]
           }
         ]
       }
 
-      ⚠️ **Important:**  
-      - Only valid JSON in your response  
-      - The content must be fact-checked, correct, and error-free  
-      - Always provide structured, professional learning content  
-      `
-      },
+      Rules:
+      - Each module must follow Bloom's Taxonomy progression:
+        1. Module 1: Remember & Understand
+        2. Module 2: Apply & Analyze
+        3. Module 3: Evaluate & Create (skip if video with only 2 modules)
+      - For video: EVERY content block MUST include a 'narration' field
+      - For article: NEVER include 'narration'
+      - "voice" is required if video, null if article
+      - Article content must be detailed and self-contained (≈3–5 pages), including:
+        * Clear explanations
+        * Step-by-step examples
+        * Code snippets
+        * Diagrams, lists, or quotes as needed
+      - Lists must be **newline-separated text**, NOT HTML or markdown
+      - Video content: 30–90 seconds narration per block with visuals
+      - Avoid placeholders or minimal text; every block must be meaningful
+      - Each module can have max 2 materials for PDF, 1 for video
+    `.trim()
+  },
+  {
+    role: "user",
+    content: `
+      Generate a professional course on "\${userPrompt}".
+      Type: \${content_type}, Difficulty: \${difficulty_level}.
+      User history (do not repeat): \${JSON.stringify(userHistory.map(h => ({ title: h.title, description: h.description })))}
+      Ensure the content is rich, detailed, readable, and modules progress through Bloom's Taxonomy levels.
+    `.trim()
+  }
+];
 
-    {
-      role: "user",
-      content: `
-    Create a professional course on "${userPrompt}" using ${defaultContentType} with ${defaultContentType === "article" ? "1 module" : "maximum 2 modules"} and total estimated duration of 2 minutes.  
-    Default difficulty is "${defaultDifficulty}".  
-    Here is user history (do not repeat): ${JSON.stringify(userHistory.map(({ title, description, difficulty_level, estimated_duration }) => ({ title, description, difficulty_level, estimated_duration })))}
-    `
-    }
-
-  ];
-
-  const response = await openai.chat.completions.create({
+   const resp = await openai.chat.completions.create({
     model: OPEN_AI_MODEL,
     messages,
-    temperature: 0.7,
-    top_p: 0.95
+    temperature: 0.3,
+    max_tokens: 1400,
   });
 
-  const content = response.choices?.[0]?.message?.content;
-  if (!content) throw new Error("Empty response from OpenAI");
+  const raw = resp.choices?.[0]?.message?.content;
+  if (!raw) throw new Error("Empty response from LLM");
 
-  const parsed = JSON.parse(content.trim());
+  let parsed;
+  try { parsed = JSON.parse(raw.trim()); } 
+  catch (e) {
+    console.warn("⚠️ Raw JSON invalid, attempting repair...");
+    try { parsed = JSON.parse(jsonrepair(raw)); } 
+    catch (repairErr) { throw repairErr; }
+  }
 
-  // Post-process modules
+  // Use the values as-is if provided; fallback only if missing
+  parsed.output_format = content_type;
+  parsed.voice = isArticle ? null : voice;
+
+  // ---- Post-process modules ----
   for (const [modIdx, mod] of parsed.modules.entries()) {
     mod.order_number = modIdx + 1;
 
-   for (const [matIdx, mat] of mod.learning_materials.entries()) {
-  mat.order_number = matIdx + 1;
-  mat.content_type = mat.content_type || defaultContentType;
+    for (const [matIdx, mat] of mod.learning_materials.entries()) {
+      mat.order_number = matIdx + 1;
+      mat.content_type = mat.content_type ?? content_type;
+      mat.title = mat.title ?? `Material ${mat.order_number}`;
+      mat.duration = Math.max(1, Math.ceil(mat.duration ?? (isArticle ? 10 : 1)));
 
-  // ✅ Convert duration to integer using Math.ceil or Math.floor
-  const rawDuration = mat.duration || 0.5;
-  mat.duration = Math.max(1, Math.ceil(rawDuration)); // Ensure minimum duration of 1 minute
+      if (!Array.isArray(mat.structured_content) || !mat.structured_content.length) {
+        mat.structured_content = [{
+          type: "text",
+          content: "Content missing – placeholder.",
+          narration: isArticle ? undefined : "Narration not provided"
+        }];
+      }
 
- if (mat.content && ["article", "video"].includes(mat.content_type)) {
-  const format = mat.content_type === "article" ? "pdf" : "video";
-  mat.content_url = await generateContentUrl(mat.title, mat.content, format);
-} else {
-  mat.content_url = null;
-  console.warn(`⚠️ No content available for material "${mat.title}". Skipping URL generation.`);
-}
+      const format = isArticle ? "pdf" : "video";
+      const voiceToUse = isArticle ? null : voice;
 
-}
+      mat.content_url = await generateContentUrl(mat.title, mat.structured_content, format, voiceToUse);
+    }
   }
- if (defaultContentType === "article" && parsed.modules.length > 1) {
-  parsed.modules = [parsed.modules[0]];
-}
 
- const totalDuration = parsed.modules.reduce(
-  (sum, mod) => sum + mod.learning_materials.reduce((s, m) => s + (m.duration || 0), 0),
-  0
-);
+  const totalDuration = parsed.modules.reduce(
+    (sum, mod) => sum + mod.learning_materials.reduce((s, m) => s + (m.duration ?? 0), 0),
+    0
+  );
 
-return {
-  ...parsed,
- estimated_duration: Math.max(1, Math.min(Math.floor(totalDuration), 2))
-// Always integer, max 2
-};
-
+  return { ...parsed, estimated_duration: Math.max(1, Math.floor(totalDuration)) };
 }
 
 
@@ -288,10 +324,10 @@ async function generateQuizContent(courseTitle, learningMaterials = []) {
 async function generateCourseRecommendation(
     prompt, 
     history, 
-    type = 'personalized',
-    currentDifficulty = 'intermediate',
-    currentContentType = 'article'
-) {
+    currentDifficulty,
+    currentContentType
+)
+{
     const messages = [
         {
             role: "system",
@@ -332,19 +368,24 @@ async function generateCourseRecommendation(
         description: result.description || "Next learning step",
         difficulty: ['beginner','intermediate','advanced'].includes(result.difficulty) 
             ? result.difficulty 
-            : currentDifficulty,
-        duration: Math.min(120, Math.max(5, result.duration || 30)),
+            : null,   // no fallback
+        duration: (typeof result.duration === 'number' && result.duration >= 5 && result.duration <= 120) 
+            ? result.duration 
+            : null,   // no fallback
         type: ['personalized','trending','new_skill'].includes(result.type)
             ? result.type
-            : type,
+            : null,   // no fallback
         contentType: ['article','video'].includes(result.contentType)
             ? result.contentType
-            : currentContentType,
-        reason: result.reason || "Recommended based on your progress",
-        confidence: Math.min(100, Math.max(0, result.confidence || 75))
+            : null,   // no fallback
+        reason: result.reason || null,
+        confidence: (typeof result.confidence === 'number' && result.confidence >= 0 && result.confidence <= 100)
+            ? result.confidence
+            : null   // no fallback
     };
-}
 
+}
+ 
 // ✅ Export functions
 module.exports = {
   generateCourseContent,

@@ -25,13 +25,13 @@ class TutorController {
       const userId = req.user?.id;
       const { message } = req.body;
 
-      if (!userId || !message) {
+      if (!userId || !message) { 
         return res.status(400).json({
           success: false,
           message: 'Authenticated user and message are required',
         });
       }
-
+ 
       // Fetch all related data for the user
       const interests = await this.interestRepo.getAll({ user_id: userId });
 

@@ -104,7 +104,7 @@ async getAll(req, res) {
       const records = await feedbackRepo.getWhere({ course_id });
 
       if (!records.length) {
-        return res.status(404).json({ success: false, message: 'No feedback found for this course' });
+        return res.json({ success: false, message: 'No feedback found for this course' });
       }
 
       return res.json({ success: true, data: records });
@@ -177,3 +177,4 @@ async getAll(req, res) {
 }
 
 module.exports = new FeedbackController();
+ 

@@ -1,30 +1,47 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState, useRef } from 'react';
-import { FaUser, FaEdit, FaCog, FaLock, FaBook, FaClock, FaFire, FaSave, FaTimes } from "react-icons/fa";
-import { GiGraduateCap } from "react-icons/gi";
+import { FaUser, FaEdit,  FaLock,  FaSave, FaTimes } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 import PageLoader from '../../components/Loader/pageLoader';
-import { getUserById, uploadProfileImage, updateUserBio, updatePassword } from '../../api/APIs'; 
+import { getUserById, uploadProfileImage, updateUserBio, updatePassword, getInterestFlowsByUserId } from '../../api/APIs'; 
+import { getUserId } from "../../utils/authToken";
 import './Profile.css';
 
 const Profile = () => {
   const [userId, setUserId] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [userInterests, setUserInterests] = useState([]);
   const [editingBio, setEditingBio] = useState(false);
   const [bioText, setBioText] = useState('');
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Start in loading state
   const [passwordMode, setPasswordMode] = useState(false);
   const [newPassword, setNewPassword] = useState('');
+  const [showAccountDetails, setShowAccountDetails] = useState(false);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedUserId = localStorage.getItem('userId');
+    const storedUserId = getUserId();
     if (storedUserId) {
       setUserId(storedUserId);
-      fetchUserData(storedUserId);
+      // Load both data sources together
+      Promise.all([
+        getUserById(storedUserId),
+        getInterestFlowsByUserId()
+      ])
+        .then(([userResponse, interestsResponse]) => {
+          setUserData(userResponse.data);
+          setBioText(userResponse.data.bio || '');
+          setUserInterests(interestsResponse.data || []);
+        })
+        .catch(error => {
+          console.error("Failed to fetch data:", error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     } else {
       window.location.href = '/auth';
     }
@@ -103,20 +120,10 @@ const Profile = () => {
     }
   };
 
-  const goToInterestPage = () => navigate('/user-interest');
-  const goToPreferencesPage = () => navigate('/preferences');
-  const goToAccountDetailsPage = () => navigate('/account-details');
-
-  const stats = [
-    { icon: <FaBook className="stat-icon" />, label: "Courses Completed", value: userData?.courses_completed ?? 0 },
-    { icon: <FaClock className="stat-icon" />, label: "Hours Learned", value: userData?.hours_learned ?? 0 },
-    { icon: <FaFire className="stat-icon" />, label: "Current Streak", value: userData?.current_streak ?? "0 days" },
-    { icon: <GiGraduateCap className="stat-icon" />, label: "Certificates", value: userData?.certificates ?? 0 }
-  ];
-
+  
   const getUserTitle = () => {
-    if (userData?.interests?.length > 0) {
-      const primaryInterest = userData.interests[0];
+    if (userInterests?.length > 0) {
+      const primaryInterest = userInterests[0];
       return `${primaryInterest.selected_field} ${primaryInterest.selected_experience}`;
     }
     return "Learning Enthusiast";
@@ -155,7 +162,7 @@ const Profile = () => {
           <div className="profile-info-section">
             <h1 className="profile-name">{userData?.name || 'User'}</h1>
             <p className="profile-email">{userData?.email}</p>
-            <p className="profile-title">{userData?.title || getUserTitle()}</p>
+            <p className="profile-title">{getUserTitle()}</p>
 
             <div className="bio-section">
               {!editingBio ? (
@@ -198,26 +205,26 @@ const Profile = () => {
           <section className="interests-section">
             <div className="section-header">
               <h2><span className="title-icon">🎯</span> Learning Interests</h2>
-              {(!userData?.interests || userData.interests.length === 0) && (
-                <button className="update-interests-btn" onClick={goToInterestPage}>
+              {userInterests?.length === 0 && (
+                <button className="update-interests-btn" onClick={() => navigate('/user-interest')}>
                   + Add Interests
                 </button>
               )}
             </div>
-            {userData?.interests?.length > 0 ? (
+            {userInterests?.length > 0 ? (
               <div className="interests-grid">
-                {userData.interests.map((interest, idx) => (
+                {userInterests.map((interest, idx) => (
                   <div key={idx} className="interest-card">
                     <div className="interest-header">
                       <h3>{interest.selected_specialization}</h3>
-                      <span>{interest.selected_experience}</span>
+                      <span className="experience-badge">{interest.selected_experience}</span>
                     </div>
-                    {interest.skills?.length > 0 && (
+                    {interest.selectedSkills && (
                       <div className="interest-skills">
                         <h4>Skills:</h4>
                         <div className="skills-tags">
-                          {interest.skills.map((s, i) => (
-                            <span key={i} className="skill-tag">{s.skill}</span>
+                          {Object.entries(interest.selectedSkills).map(([category, skill], i) => (
+                            <span key={i} className="skill-tag">{skill}</span>
                           ))}
                         </div>
                       </div>
@@ -236,20 +243,15 @@ const Profile = () => {
             <h2><span className="title-icon">⚙️</span> Account Settings</h2>
             <div className="settings-grid">
               <div className="setting-card">
-                <div className="setting-icon"><FaCog /></div>
-                <div className="setting-content">
-                  <h3>Preferences</h3>
-                  <p>Customize your learning experience</p>
-                </div>
-                <button className="setting-action-btn" onClick={goToPreferencesPage}>Manage</button>
-              </div>
-              <div className="setting-card">
                 <div className="setting-icon"><FaLock /></div>
                 <div className="setting-content">
                   <h3>Change Password</h3>
                   <p>Update your account security</p>
                 </div>
-                <button className="setting-action-btn" onClick={() => setPasswordMode(!passwordMode)}>
+                <button 
+                  className="setting-action-btn" 
+                  onClick={() => setPasswordMode(!passwordMode)}
+                >
                   {passwordMode ? 'Cancel' : 'Manage'}
                 </button>
               </div>
@@ -257,9 +259,14 @@ const Profile = () => {
                 <div className="setting-icon"><FaUser /></div>
                 <div className="setting-content">
                   <h3>Account Details</h3>
-                  <p>Edit personal information</p>
+                  <p>View personal information</p>
                 </div>
-                <button className="setting-action-btn" onClick={goToAccountDetailsPage}>Manage</button>
+                <button 
+                  className="setting-action-btn" 
+                  onClick={() => setShowAccountDetails(!showAccountDetails)}
+                >
+                  {showAccountDetails ? 'Hide' : 'View'}
+                </button>
               </div>
             </div>
 
@@ -275,6 +282,40 @@ const Profile = () => {
                 <button onClick={handlePasswordUpdate} className="save-password-btn">
                   <FaSave /> Update Password
                 </button>
+              </div>
+            )}
+
+
+            {showAccountDetails && userData && (
+              <div className="account-details-panel">
+                <h3>Account Information</h3>
+                <div className="detail-item">
+                  <span className="detail-label">Name:</span>
+                  <span className="detail-value">{userData.name}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Email:</span>
+                  <span className="detail-value">{userData.email}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Account Created:</span>
+                  <span className="detail-value">
+                    {new Date(userData.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Last Login:</span>
+                  <span className="detail-value">
+                    {new Date(userData.last_login).toLocaleString()}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Status:</span>
+                  <span className="detail-value">
+                    {userData.is_active ? 'Active' : 'Inactive'}
+                    {userData.is_verified && ' • Verified'}
+                  </span>
+                </div>
               </div>
             )}
           </section>

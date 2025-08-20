@@ -308,6 +308,7 @@ getMessages = async (req, res) => {
           ...message,
           user_name: currentUser ? 'You' :user.name,
           profile_image: user.profile_image,
+          bio: user.bio,
           is_current_user: currentUser 
         };
       })
@@ -416,6 +417,7 @@ getChatMembers = async (req, res) => {
           user_id: member.user_id,
           name: user?.name || 'Unknown',
           profile_image: user?.profile_image || null,
+          bio: user.bio,
           is_admin: member.is_admin,
           joined_at: member.joined_at,
         };

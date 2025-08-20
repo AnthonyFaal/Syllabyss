@@ -9,7 +9,7 @@ class UserAnalyticsController {
     try {
       const data = req.body;
 
-      // Validate input
+      // Validate input 
       validateEntity(data, 'systemAnalytics', 'create');
 
       // Check if similar record exists (avoid duplicates)

@@ -1,4 +1,22 @@
  {
+    "voices":[
+            {
+        "name": "Ava",
+        "file_path": "/voices/Ava.wav"
+    },
+    {
+        "name": "Liam",
+        "file_path": "/voices/Liam.wav"
+    },
+    {
+        "name": "Aaron",
+        "file_path": "/voices/Aaron.wav"
+    },
+    {
+        "name": "Noah",
+        "file_path": "/voices/Noah.wav"
+    }
+], 
         
     "field_selection": {
         "question": "What field are you learning for?",

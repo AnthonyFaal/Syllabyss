@@ -24,7 +24,7 @@ const createTables = async () => {
         is_active BOOLEAN DEFAULT TRUE
       );
     `);
-
+ 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS user_interest_flows (
         interest_flow_id SERIAL PRIMARY KEY,
@@ -45,7 +45,7 @@ const createTables = async () => {
         created_at TIMESTAMP DEFAULT NOW()
      );
     `);
-
+ 
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS courses (

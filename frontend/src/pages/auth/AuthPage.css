@@ -343,3 +343,47 @@
     flex-direction: column;
   }
 }
+
+/* Add to your AuthPage.css */
+.form-links {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.resend-verification {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.resend-btn {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  text-decoration: underline;
+  cursor: pointer;
+  margin-left: 0.5rem;
+  padding: 0;
+}
+
+.btn-loader {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Add loading spinner animation */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.btn-loader::after {
+  content: "";
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 0.8s linear infinite;
+}

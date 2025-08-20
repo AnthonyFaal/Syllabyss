@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { overview, timetable, getLeaderboard , acceptRecommendation} from "../api/APIs";
+import React, { useEffect, useState,  useRef } from 'react';
+import {defaultAvatar, overview, timetable, getLeaderboard , acceptRecommendation, uploadProfileImage} from "../api/APIs";
 import PageLoader from "../components/Loader/pageLoader";
 import { getUserId } from "../utils/authToken";
+import Modal from "../components/Modal/Modal";
+import MaterialViewer from "./course/MaterialViewer";
+import CourseCard from "../components/Card/courseCard";
 
 import { 
   FiBook,  FiAward, FiCalendar, FiClock, FiTarget, FiTrendingUp, 
-  FiStar, FiCheckCircle, FiBarChart2, FiFlag, FiBookmark, FiUsers, FiCoffee
+  FiStar, FiCheckCircle, FiBarChart2, FiBookmark, FiUsers, FiCoffee
 } from 'react-icons/fi';
 import { FaMedal, FaAward } from 'react-icons/fa';
 import "./Dashboard.css";
@@ -16,6 +19,9 @@ const Dashboard = () => {
   const [timeTableData, setTimeTableData] = useState([]);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [leaderboardData, setLeaderboardData] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState(null); 
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
   const [processingRecommendation, setProcessingRecommendation] = useState(null);
 
   const [error, setError] = useState(null);
@@ -42,6 +48,23 @@ useEffect(() => {
     fetchData();
   }, []);
 
+   const handleFileChange = async (event) => {
+    const userId = getUserId();
+      const file = event.target.files[0];
+      if (file && userId) {
+        setUploading(true);
+        try {
+          await uploadProfileImage(userId, file);
+        } catch (error) {
+          console.error("Image upload failed:", error);
+          alert("Failed to upload image. Please try again.");
+        } finally {
+          setUploading(false);
+        }
+      }
+    };
+
+  
   if (loading) return <PageLoader />;
   if (error) return <div className="error-message">Error: {error}</div>;
   if (!dashboardData) return <div className="no-data">No data available</div>;
@@ -91,12 +114,13 @@ useEffect(() => {
     );
   };
 
+  const handleContinue = (course) => {
+  setSelectedCourse(course);
+};
 const handleShowLeaderboard = async () => {
   if (!showLeaderboard) {
     try {
-      console.log("📡 Fetching leaderboard data...");
-      const response = await getLeaderboard(); // Axios full response
-      console.log("✅ Raw leaderboard response:", response);
+      const response = await getLeaderboard();;
 
       // Corrected structure access
       if (response?.data?.success && Array.isArray(response.data.data)) {
@@ -138,11 +162,38 @@ const handleAcceptRecommendation = async (recommendationId) => {
       {/* User Profile Header */}
       <header className="dashboard-header">
         <div className="user-profile">
-          <img 
-            src={user.profileImage || "https://via.placeholder.com/150"} 
-            alt="Profile" 
-            className="profile-image"
-          />
+          <div 
+              className="avatar-wrapper" 
+              onClick={() => fileInputRef.current.click()} // click avatar to trigger upload
+              style={{ cursor: "pointer", position: "relative" }}
+            >
+              <img 
+                src={user.profileImage || defaultAvatar} 
+                alt="Profile" 
+                className="profile-image"
+              />
+              {uploading && <div className="uploading-overlay">Uploading...</div>}
+            </div>
+
+            {/* Hidden file input */}
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={async (e) => {
+                await handleFileChange(e);
+
+                // refresh avatar immediately after upload
+                const userId = getUserId();
+                const updatedOverview = await overview(userId);
+                setDashboardData(prev => ({
+                  ...prev,
+                  user: { ...prev.user, profileImage: updatedOverview.user.profileImage }
+                }));
+              }}
+            />
+          
           <div className="user-info">
             <h1>{user.name || "Unknown User"}</h1>
             <p className="user-role">
@@ -266,61 +317,15 @@ const handleAcceptRecommendation = async (recommendationId) => {
         <h2><FiBook className="section-icon" /> Active Courses</h2>
         {activeCourses.length > 0 ? (
           <div className="courses-grid">
-            {activeCourses.map(course => (
-              <div key={course.course_id} className="course-card">
-                <div className="course-header">
-                  <div>
-                    <h3>{course.title || "Untitled Course"}</h3>
-                    <div className="course-progress">
-                      <div className="progress-bar">
-                        <div 
-                          className="progress-fill" 
-                          style={{ width: `${course.progress || 0}%` }}
-                        ></div>
-                      </div>
-                      <span>{course.progress || 0}% complete</span>
-                    </div>
-                  </div>
-                  <span className={`difficulty-badge ${course.difficulty_level || "unknown"}`}>
-                    {course.difficulty_level || "N/A"}
-                  </span>
-                </div>
-                <p className="course-description">{course.description || "No description available."}</p>
-                <div className="course-meta">
-                  <div className="meta-item">
-                    <FiClock className="meta-icon" />
-                    <div>
-                      <span className="meta-label">Duration:</span>
-                      <span>{course.estimated_duration ?? "N/A"} hours</span>
-                    </div>
-                  </div>
-                  <div className="meta-item">
-                    <FiCalendar className="meta-icon" />
-                    <div>
-                      <span className="meta-label">Started:</span>
-                      <span>{formatDate(course.started_at)}</span>
-                    </div>
-                  </div>
-                  <div className="meta-item">
-                    <FiFlag className="meta-icon" />
-                    <div>
-                      <span className="meta-label">Deadline:</span>
-                      <span>{formatDate(course.deadline)}</span>
-                    </div>
-                  </div>
-                  <div className="meta-item">
-                    <div className="status-container">
-                      <span className="meta-label">Status:</span>
-                      <span className={`status-badge ${course.status || "unknown"}`}>
-                        {(course.status || "N/A").replace('_', ' ')}
-                      </span>
-                    </div>
-                    <button className="continue-button">Continue</button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+        {activeCourses.map(course => (
+          <CourseCard
+            key={course.course_id}
+            course={course}
+            onClick={() => handleContinue(course)} // opens MaterialViewer
+          />
+        ))}
+      </div>
+
         ) : (
           <div className="empty-state">
             <FiBook className="empty-icon" size={48} />
@@ -501,6 +506,16 @@ const handleAcceptRecommendation = async (recommendationId) => {
           </div>
         )}
       </section>
+      {/* Course Viewer Modal */}
+      {selectedCourse && (
+        <Modal
+          isOpen={!!selectedCourse}
+          onClose={() => setSelectedCourse(null)}
+          variant="side-panel"    
+        >
+          <MaterialViewer courseId={selectedCourse.course_id} />
+        </Modal>
+      )}
     </div>
   );
 };

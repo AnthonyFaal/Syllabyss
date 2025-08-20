@@ -35,14 +35,14 @@ const Sidebar = ({ children }) => {
       id: 1,
       title: "System Maintenance",
       content: "There will be scheduled maintenance on July 25th from 2-4 AM.",
-      date: "2023-07-20",
+      date: "2025-08-20",
       isNew: true
     },
     {
       id: 2,
       title: "New Features Added",
       content: "Check out the new collaboration tools in the platform!",
-      date: "2023-07-15",
+      date: "2025-08-15",
       isNew: false
     }
   ]);

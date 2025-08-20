@@ -295,352 +295,52 @@
   color: #6b7280;
 }
 
-.modules-section {
-  margin-top: 30px;
-}
 
-.modules-section h3 {
-  font-size: 20px;
-  color: #1f2937;
-  margin-bottom: 15px;
-}
 
-.modules-list {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.module-card {
-  background: #f9fafb;
-  border-radius: 8px;
-  padding: 15px;
-  border-left: 4px solid #3b82f6;
-}
-
-.module-card h4 {
-  font-size: 16px;
-  color: #1f2937;
-  margin-bottom: 8px;
-}
-
-.module-card p {
-  font-size: 14px;
-  color: #6b7280;
-  margin-bottom: 12px;
-}
-
-.materials-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.material-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background: white;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-.material-type {
-  font-size: 12px;
-  color: #6b7280;
-  text-transform: capitalize;
-}
-
-/* Add to your CoursePage.css */
-
-/* Module Card Styling */
-.module-card {
-  background: #ffffff;
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 15px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  border-left: 4px solid #4a89dc;
-  transition: all 0.3s ease;
-}
-
-.module-card.completed {
-  border-left-color: #37bc9b;
-  background-color: #f8fafc;
-}
-
-.module-card:hover {
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  transform: translateY(-2px);
-}
-
-.module-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.module-header h4 {
-  margin: 0;
-  color: #2c3e50;
-  font-size: 1.1rem;
-}
-
-.module-status-icon {
-  font-size: 1.2rem;
-}
-
-.module-status-icon.completed {
-  color: #37bc9b;
-}
-
-.module-status-icon.inprogress {
-  color: #f6bb42;
-}
-
-/* Material Item Styling */
-.material-item {
-  padding: 12px 15px;
-  border-radius: 6px;
-  background: #f8f9fa;
-  margin-bottom: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border-left: 3px solid #4a89dc;
-}
-
-.material-item:hover {
-  background: #e9ecef;
-  transform: translateY(-1px);
-}
-
-.material-info {
-  flex-grow: 1;
-}
-
-.material-title {
-  font-weight: 500;
-  color: #34495e;
-  margin-bottom: 3px;
-}
-
-.material-meta {
-  display: flex;
-  gap: 10px;
-  font-size: 0.85rem;
-  color: #7f8c8d;
-}
-
-.material-icon {
-  color: #4a89dc;
-  font-size: 1.2rem;
-}
-
-/* Inline Material Viewer Styling */
-.inline-material-viewer {
-  margin: 10px 0;
-  padding: 15px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  border: 1px solid #e0e0e0;
-  position: relative;
-}
-
-.material-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.material-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-grow: 1;
-}
-
-.material-title h3 {
-  margin: 0;
-  font-size: 1.1rem;
-  color: #2c3e50;
-}
-
-.close-material-button {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-  color: #95a5a6;
-  padding: 5px;
-  display: flex;
-  align-items: center;
-}
-
-.close-material-button:hover {
-  color: #e74c3c;
-}
-
-/* Content-specific styling */
-.video-container {
-  width: 100%;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 10px;
-}
-
-.pdf-viewer {
-  width: 100%;
-  min-height: 500px;
-  border: 1px solid #eee;
-  margin-bottom: 10px;
-}
-
-.article-iframe {
-  width: 100%;
-  min-height: 500px;
-  border: 1px solid #eee;
-  border-radius: 4px;
-}
-
-.pdf-controls {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
+/* Voice Selector Styles */
+.voice-selector {
   margin-top: 10px;
 }
 
-.pdf-controls button {
-  background: #f0f0f0;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
+.voice-selector ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.voice-selector li {
   display: flex;
   align-items: center;
-  transition: background 0.2s;
-}
-
-.pdf-controls button:hover:not(:disabled) {
-  background: #4a89dc;
-  color: white;
-}
-
-.pdf-controls button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Footer styling */
-.material-footer {
-  display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-top: 20px;
-  padding-top: 15px;
-  border-top: 1px solid #eee;
-}
-
-.complete-button {
-  background: #37bc9b;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  transition: background 0.2s;
-}
-
-.complete-button:hover {
-  background: #2e9c81;
-}
-
-.completion-badge {
-  color: #37bc9b;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-weight: 500;
-}
-
-.material-meta {
-  display: flex;
-  gap: 15px;
-  color: #7f8c8d;
-  font-size: 0.9rem;
-}
-
-/* Color coding for different content types */
-.material-item[data-content-type="video"] {
-  border-left-color: #e74c3c;
-}
-
-.material-item[data-content-type="pdf"] {
-  border-left-color: #4a89dc;
-}
-
-.material-item[data-content-type="article"] {
-  border-left-color: #37bc9b;
-}
-
-.material-icon[data-content-type="video"] {
-  color: #e74c3c;
-}
-
-.material-icon[data-content-type="pdf"] {
-  color: #4a89dc;
-}
-
-.material-icon[data-content-type="article"] {
-  color: #37bc9b;
-}
-
-
-.material-item {
-  padding: 12px 15px;
-  border-radius: 6px;
-  background: #f8f9fa;
+  padding: 8px 12px;
   margin-bottom: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: #fafafa;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.voice-selector li:hover {
+  background: #f0f8ff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.voice-selector label {
+  font-weight: 500;
+  color: #333;
   display: flex;
   align-items: center;
-  gap: 12px;
-  border: 1px solid #e0e0e0;
+  gap: 8px;
+  cursor: pointer;
 }
 
-.material-item:hover {
-  background: #e9ecef;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+.voice-selector input[type="radio"] {
+  accent-color: #4a90e2; /* modern browsers */
+  transform: scale(1.1);
+  cursor: pointer;
 }
 
-.material-viewer-container {
-  position: fixed;
-  top: 0;
-  right: 0;
-  height: 100%;
-  width: 50%;
-  background-color: #fff;
-  border-left: 1px solid #ccc;
-  z-index: 999;
-  overflow-y: auto;
-  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease-in-out;
+.voice-option audio {
+  height: 32px;
+  margin-left: 10px;
 }
-
-@media (max-width: 768px) {
-  .material-viewer-container {
-    width: 100%;
-  }
-}
-

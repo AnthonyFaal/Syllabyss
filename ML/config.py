@@ -1,57 +1,40 @@
 import os
-import requests
-from PIL import ImageFont
-import cloudinary
+from typing import Dict, Any
 
-# ==== ✅ Cloudinary Config ====
-cloudinary.config(
-    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
-    api_key=os.getenv("CLOUDINARY_API_KEY"),
-    api_secret=os.getenv("CLOUDINARY_API_SECRET")
-)
+# ======================================================================
+#                     CONFIGURATION (secrets & defaults)
+# ======================================================================
+# Removed hardcoded values - will use environment variables directly
+CLOUDINARY_CLOUD_NAME = os.getenv("CLOUDINARY_CLOUD_NAME")
+CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY")
+CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET")
 
-# ==== ✅ Design Config ====
-class DesignConfig:
-    COLOR_SCHEMES = {
-        "professional": {
-            "background": (25, 32, 45),
-            "primary": (0, 150, 255),
-            "secondary": (240, 240, 240),
-            "accent": (255, 200, 0)
-        }
+CONTENT_CONFIG: Dict[str, Any] = {
+    "slide": {
+        "min_duration": 2.5,   # seconds
+        "max_duration": 16.0
+    },
+    "pdf": {
+        "max_paragraphs": 64,
+        "max_words_per_para": 300
     }
-    CURRENT_SCHEME = "professional"
+}
 
-    FONT_FILES = {
-        "TITLE_FONT": ("Roboto-Bold.ttf", "https://github.com/google/fonts/raw/main/apache/roboto/Roboto-Bold.ttf"),
-        "SUBTITLE_FONT": ("Roboto-Medium.ttf", "https://github.com/google/fonts/raw/main/apache/roboto/Roboto-Medium.ttf"),
-        "BODY_FONT": ("Roboto-Regular.ttf", "https://github.com/google/fonts/raw/main/apache/roboto/Roboto-Regular.ttf")
-    }
+# ======================================================================
+#                           VOICE MAP
+# ======================================================================
+VOICE_MAP = {
+    "Aaron": "v2/en_speaker_3",  # Calm Measured
+    "Ava": "v2/en_speaker_6",    # Professional Balanced
+    "Liam": "v2/en_speaker_0",   # Warm Expressive
+    "Noah": "v2/en_speaker_1"    # Energetic Engaging
+}
 
-    # Download fonts if not found
-    for fname, url in FONT_FILES.values():
-        if not os.path.exists(fname):
-            try:
-                r = requests.get(url)
-                r.raise_for_status()
-                with open(fname, "wb") as f:
-                    f.write(r.content)
-            except Exception as e:
-                print(f"[WARN] Could not download font {fname}: {e}")
+def resolve_voice_id(user_voice: str) -> str:
+    return VOICE_MAP.get(user_voice, user_voice or "")
 
-    # Load fonts (fallback to default)
-    try:
-        TITLE_FONT = ImageFont.truetype(FONT_FILES["TITLE_FONT"][0], 80)
-        SUBTITLE_FONT = ImageFont.truetype(FONT_FILES["SUBTITLE_FONT"][0], 60)
-        BODY_FONT = ImageFont.truetype(FONT_FILES["BODY_FONT"][0], 48)
-    except Exception as e:
-        print(f"[WARN] Falling back to default fonts: {e}")
-        TITLE_FONT = ImageFont.load_default()
-        SUBTITLE_FONT = ImageFont.load_default()
-        BODY_FONT = ImageFont.load_default()
-
-    # PDF font settings
-    PDF_TITLE_FONT = "Helvetica-Bold"
-    PDF_TITLE_SIZE = 18
-    PDF_BODY_FONT = "Helvetica"
-    PDF_BODY_SIZE = 11
+def friendly_name_from_id(voice_id: str) -> str:
+    for name, vid in VOICE_MAP.items():
+        if vid == voice_id:
+            return name
+    return voice_id or "Unknown"

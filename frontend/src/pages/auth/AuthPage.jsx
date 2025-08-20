@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { registerUser, loginUser } from '../../api/APIs';
 import { useNavigate } from 'react-router-dom';
 import FormField from '../../components/Fields/FormField';
-import { setAuthToken, getAuthToken } from '../../utils/authToken';
+import { setAuthToken } from '../../utils/authToken';
 import './AuthPage.css';
 
 const AuthPage = () => {
@@ -14,15 +14,6 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const token = getAuthToken();
-    const remember = localStorage.getItem('rememberMe') === 'true';
-
-    if (token && remember) {
-      navigate('/app/dashboard', { replace: true });
-    }
-  }, [navigate]);
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
@@ -38,8 +29,8 @@ const AuthPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (loading) return;
+
     setLoading(true);
     setMessage({ text: '', type: '' });
 
@@ -54,40 +45,32 @@ const AuthPage = () => {
         const { token, userId } = res.data;
 
         setAuthToken(token, userId);
-
-        if (rememberMe) {
-          localStorage.setItem('rememberMe', 'true');
-        } else {
-          localStorage.removeItem('rememberMe');
-        }
+        rememberMe
+          ? localStorage.setItem('rememberMe', 'true')
+          : localStorage.removeItem('rememberMe');
 
         setMessage({ text: 'Login successful!', type: 'success' });
         navigate('/app/dashboard', { replace: true });
-
       } else {
         const res = await registerUser(formData);
-
-        // Properly access res.data.message
-        const successMessage = res.data?.message || 'Registered! Check your email to verify.';
-        setMessage({ text: successMessage, type: 'success' });
-
+        setMessage({ text: res.data?.message || 'Registered! Check your email to verify.', type: 'success' });
         setIsLogin(true);
-        setFormData(prev => ({ name: '', email: prev.email, password: '' }));
+        setFormData({ name: '', email: formData.email, password: '' });
         setAgree(false);
       }
-
     } catch (error) {
-      // Extract human-readable error
       let errorMessage = 'Something went wrong.';
-
-      if (error.response?.data?.error) {
-        errorMessage = error.response.data.error;
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
+      if (error.response) {
+        if (error.response.status === 403) {
+          errorMessage = 'Your account is not verified. A new verification email has been sent.';
+        } else if (error.response.data?.error) {
+          errorMessage = error.response.data.error;
+        } else if (error.response.data?.message) {
+          errorMessage = error.response.data.message;
+        }
       } else if (error.message) {
         errorMessage = error.message;
       }
-
       setMessage({ text: errorMessage, type: 'error' });
     } finally {
       setLoading(false);
@@ -100,67 +83,29 @@ const AuthPage = () => {
         <div className="auth-form-wrapper">
           <h2 className="form-title">{isLogin ? 'Welcome Back!' : 'Get Started'}</h2>
           <p className="form-subtitle">
-            {isLogin
-              ? 'Log in to continue your learning journey'
-              : 'Create an account to experience personalized learning'}
+            {isLogin ? 'Log in to continue your learning journey' : 'Create an account to experience personalized learning'}
           </p>
 
           <form onSubmit={handleSubmit} className="auth-form">
             {!isLogin && (
-              <FormField
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Enter your username"
-                required
-              />
+              <FormField type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Enter your username" required />
             )}
+            <FormField type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Enter your email" required />
+            <FormField type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Enter your password" required />
 
-            <FormField
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Enter your email"
-              required
-            />
-
-            <FormField
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              required
-            />
-
-            {isLogin && (
-              <a href="/forgot-password" className="forgot-password">Forgot password?</a>
-            )}
+            {isLogin && <a href="/forgot-password" className="forgot-password">Forgot password?</a>}
 
             <div className="form-options">
               {!isLogin && (
                 <div className="form-check">
-                  <input
-                    type="checkbox"
-                    id="agree-terms"
-                    checked={agree}
-                    onChange={(e) => setAgree(e.target.checked)}
-                  />
+                  <input type="checkbox" id="agree-terms" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
                   <label htmlFor="agree-terms">
                     I agree to the <a href="/terms" target="_blank" rel="noreferrer">Terms & Conditions</a>
                   </label>
                 </div>
               )}
-
               <div className="form-check">
-                <input
-                  type="checkbox"
-                  id="remember-me"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                />
+                <input type="checkbox" id="remember-me" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
                 <label htmlFor="remember-me">Remember me</label>
               </div>
             </div>
@@ -169,9 +114,7 @@ const AuthPage = () => {
               {loading ? (isLogin ? 'Logging in...' : 'Signing up...') : (isLogin ? 'Log In' : 'Sign Up')}
             </button>
 
-            {message.text && (
-              <div className={`message ${message.type}`}>{message.text}</div>
-            )}
+            {message.text && <div className={`message ${message.type}`}>{message.text}</div>}
           </form>
 
           <p className="toggle-form">

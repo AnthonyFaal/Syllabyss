@@ -760,7 +760,32 @@ eventMessage: {
       length: { minimum: 1, maximum: 5000 }
     }
   }
-} 
+} ,
+
+token: {
+    create: {
+      token: {
+        presence: true,
+        length: { minimum: 20, maximum: 255 }
+      }
+    }
+  },
+
+  tokenExpiration: {
+    validate: {
+      token_expires_at: {
+        presence: true,
+        datetime: {
+          latest: moment().add(1, 'minute').toDate(), // Allow 1 minute grace period
+          message: "must be a future date"
+        }
+      },
+      current_time: {
+        presence: true,
+        datetime: true
+      }
+    }
+  }
 
 };
 

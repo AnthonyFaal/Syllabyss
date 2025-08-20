@@ -13,23 +13,30 @@ export default function InterestFlow() {
   const localUserId = localStorage.getItem('userId');
   const userId = paramUserId || localUserId;
 
-  useEffect(() => {
-    if (paramUserId) {
-      localStorage.setItem('userId', paramUserId);
-    }
-  }, [paramUserId]);
-
   const [data, setData] = useState(null);
   const [step, setStep] = useState(0);
   const [selectedField, setSelectedField] = useState('');
   const [selectedExperience, setSelectedExperience] = useState('');
   const [selectedSpecialization, setSelectedSpecialization] = useState('');
   const [selectedSkills, setSelectedSkills] = useState({});
+  const [message, setMessage] = useState({ text: '', type: '' }); // type: 'success' or 'error'
 
+  // Handle userId from query vs local storage
+  useEffect(() => {
+    if (paramUserId) {
+      localStorage.setItem('userId', paramUserId);
+    }
+  }, [paramUserId]);
+
+  // Load interest data
   useEffect(() => {
     async function loadData() {
-      const result = await fetchInterestData();
-      setData(result);
+      try {
+        const result = await fetchInterestData();
+        setData(result);
+      } catch (err) {
+        setMessage({ text: 'Failed to load data. Please try again later.', type: 'error' });
+      }
     }
     loadData();
   }, []);
@@ -65,25 +72,45 @@ export default function InterestFlow() {
   };
 
   const handleSubmit = async () => {
-    const payload = {
-      userId,
-      selectedField,
-      selectedExperience,
-      selectedSpecialization,
-      selectedSkills,
-    };
-
-    try {
-      await createInterestFlow(payload);
-      navigate('/api/dashboard');
-    } catch (error) {
-      console.error('Failed to submit interest flow:', error);
-      alert('Failed to submit. Please try again.');
-    }
+  const payload = {
+    userId,
+    selectedField,
+    selectedExperience,
+    selectedSpecialization,
+    selectedSkills,
   };
+
+  try {
+    await createInterestFlow(payload);
+    setMessage({ text: 'Your interests have been saved successfully!', type: 'success' });
+
+    setTimeout(() => {
+      if (paramUserId) {
+        // If visiting someone else’s flow, go to dashboard
+        navigate('/app/dashboard');
+      } else {
+        // If it’s your own (local only), just pop back instantly
+        navigate(-1);
+      }
+    }, 1000);
+  } catch (error) {
+    console.error('Failed to submit interest flow:', error);
+    setMessage({ text: 'Failed to submit. Please try again.', type: 'error' });
+  }
+};
 
   return (
     <div className="Interest_container ml-8 mt-8 max-w-2xl">
+      {message.text && (
+        <div
+          className={`mb-4 p-3 rounded-md text-sm ${
+            message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
+
       {step === 0 && (
         <div>
           <h2 className="text-xl font-semibold mb-6">{data.field_selection.question}</h2>

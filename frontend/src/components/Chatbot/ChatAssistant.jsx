@@ -47,7 +47,6 @@ const ChatAssistant = ({ onClose, onSendMessage }) => {
     try {
       setLoading(true);
       const response = await onSendMessage(text);
-      console.log("Full Server Response:", response); // ✅ Log full server response
       setLoading(false);
 
       const botReply = {
@@ -56,7 +55,6 @@ const ChatAssistant = ({ onClose, onSendMessage }) => {
       };
       setMessages((prev) => [...prev, botReply]);
     } catch (err) {
-      console.error("Error from server:", err);
       setLoading(false);
       const errorReply = {
         from: "bot",
