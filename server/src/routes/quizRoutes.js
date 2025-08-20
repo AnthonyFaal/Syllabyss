@@ -1,21 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const quizController = require('../controllers/quizController');
+const  UserQuizController = require('../controllers/quizController');
+const authenticate = require('../middlewares/authenticate');
 
-// Questions
-router.post('/questions', quizController.createQuestion);
-router.get('/quizzes/:quiz_id/questions', quizController.getQuestionsByQuiz);
+// Protected routes (require authentication)
+router.use(authenticate);
 
-// Question Options
-router.post('/question-options', quizController.createOption);
-router.get('/questions/:question_id/options', quizController.getOptionsByQuestion);
-
-// Quiz Attempts
-router.post('/attempts', quizController.createAttempt);
-router.get('/users/:user_id/attempts', quizController.getAttemptsByUser);
-
-// Answers
-router.post('/answers', quizController.createAnswer);
-router.get('/attempts/:attempt_id/answers', quizController.getAnswersByAttempt);
+// ANSWER quiz (submit answers for a quiz)
+router.post('/:quiz_id/answer', (req, res) => UserQuizController.answerQuiz(req, res));
+router.get('/:quiz_id/attempt-status',  UserQuizController.getQuizAttemptStatus);
 
 module.exports = router;

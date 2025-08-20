@@ -6,91 +6,101 @@ const CourseCard = ({ course, onClick }) => {
   const formatDate = (dateString) => {
     if (!dateString) return "No deadline";
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
-  };
-
-  const calculateProgress = () => {
-    if (!course.deadline || !course.created_at) return 0;
-    
-    const createdDate = new Date(course.created_at);
-    const deadlineDate = new Date(course.deadline);
-    const now = new Date();
-    
-    const totalDuration = deadlineDate - createdDate;
-    const elapsed = now - createdDate;
-    
-    return Math.min(100, (elapsed / totalDuration) * 100);
   };
 
   const getDeadlineStatus = () => {
     if (!course.deadline) return { text: "No deadline", color: "#6b7280" };
-    
     const now = new Date();
     const deadlineDate = new Date(course.deadline);
-    const progress = calculateProgress();
-    
+    const timeRemaining = deadlineDate - now;
+    const daysRemaining = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
+
     if (now > deadlineDate) return { text: "Deadline passed", color: "#ef4444" };
-    if (progress >= 90) return { text: `Due: ${formatDate(course.deadline)}`, color: "#ef4444" };
-    if (progress >= 70) return { text: `Due: ${formatDate(course.deadline)}`, color: "#f59e0b" };
+    if (daysRemaining <= 1) return { text: `Due: ${formatDate(course.deadline)}`, color: "#ef4444" };
+    if (daysRemaining <= 3) return { text: `Due: ${formatDate(course.deadline)}`, color: "#f59e0b" };
     return { text: `Due: ${formatDate(course.deadline)}`, color: "#10b981" };
   };
 
-  const totalMaterials = course.modules?.reduce(
-    (acc, module) => acc + (module.learning_materials?.length || 0), 0
-  ) || 0;
-
+  const getStatusText = () => { 
+    switch (course.status) {
+      case "completed":
+        return "Completed";
+      case "in_progress":
+        return "In Progress";
+      default:
+        return "Not Started";
+    }
+  };
+  
   const deadlineStatus = getDeadlineStatus();
+  const statusText = getStatusText();
+
+  const totalModules = course.total_module_count ?? 0;
+  const completedModules = course.completed_module_count ?? 0;
 
   return (
-    <div className="course-card" onClick={onClick}>
-      <div className="course-card-content">    
+    <div
+      className="course-card"
+      onClick={() => onClick(course)} // pass the course object to parent
+    >
+      <div className="course-card-content">
         <div className="course-card-header">
           <h3 className="course-card-title">{course.title}</h3>
-          <span className={`difficulty-badge ${course.difficulty_level}`}>
-            {course.difficulty_level}
-          </span>
+          <span className={`difficulty-badge ${course.difficulty_level}`}>{course.difficulty_level}</span>
         </div>
-        
+
         <p className="course-card-description">{course.description}</p>
 
         <div className="course-card-stats">
           <div className="stat-item">
             <FaBook className="stat-icon" />
-            <span>{course.modules?.length || 0} Modules</span>
+            <span>{completedModules}/{totalModules} Modules</span>
           </div>
           <div className="stat-item">
             <FaClock className="stat-icon" />
             <span>{course.estimated_duration} hrs</span>
+          </div>
+          <div className="stat-item">
+            <span className={`status-badge ${course.status}`}>{statusText}</span>
           </div>
         </div>
 
         <div className="deadline-container">
           <div className="deadline-header">
             <FaClock className="deadline-icon" style={{ color: deadlineStatus.color }} />
-            <span style={{ color: deadlineStatus.color }}>
-              {deadlineStatus.text}
-            </span>
+            <span style={{ color: deadlineStatus.color }}>{deadlineStatus.text}</span>
           </div>
           {course.deadline && (
             <div className="progress-bar">
-              <div 
+              <div
                 className="progress-fill deadline"
-                style={{ 
-                  width: `${calculateProgress()}%`, 
-                  backgroundColor: deadlineStatus.color 
+                style={{
+                  width: `${course.progress || 0}%`,
+                  backgroundColor: deadlineStatus.color,
                 }}
-              ></div>
+              />
             </div>
           )}
         </div>
 
-        <button className="course-card-btn">
+        <button
+          className="course-card-btn"
+          onClick={(e) => {
+            e.stopPropagation(); // prevent double triggering
+            onClick(course); // open modal
+          }}
+        >
           <FaPlay className="btn-icon" />
-          {totalMaterials > 0 ? "Continue Learning" : "Start Learning"}
+          {course.status === "completed"
+            ? "View Course"
+            : course.status === "in_progress"
+            ? "Continue Learning"
+            : "Start Learning"}
         </button>
       </div>
     </div>

@@ -197,3 +197,76 @@ main {
     opacity: 1;
   }
 }
+
+/* Announcements Styles */
+.announcements-header {
+  position: relative;
+}
+
+.announcements-container {
+  max-height: 300px;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.05);
+  margin: 5px 0;
+  border-radius: 8px;
+  padding: 5px;
+}
+
+.announcement-item {
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.announcement-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.announcement-item.new {
+  border-left: 3px solid #4CAF50;
+}
+
+.announcement-title {
+  font-weight: 600;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.announcement-content {
+  font-size: 0.9em;
+  opacity: 0.8;
+  margin-bottom: 5px;
+}
+
+.announcement-date {
+  font-size: 0.8em;
+  opacity: 0.6;
+}
+
+.new-badge {
+  background: #4CAF50;
+  color: white;
+  font-size: 0.7em;
+  padding: 2px 5px;
+  border-radius: 10px;
+  margin-left: 8px;
+}
+
+.announcement-badge {
+  background: #ff5722;
+  color: white;
+  font-size: 0.7em;
+  padding: 2px 6px;
+  border-radius: 50%;
+  margin-left: 8px;
+}
+
+.announcement-item.empty {
+  text-align: center;
+  opacity: 0.7;
+  font-style: italic;
+}

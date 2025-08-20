@@ -15,7 +15,6 @@ const uploadFileBuffer = (buffer, folder = 'general_uploads') => {
       { folder, resource_type: 'auto' },
       (error, result) => {
         if (error) {
-          console.error('Cloudinary upload error:', error);
           return reject(error);
         }
         resolve(result.secure_url);

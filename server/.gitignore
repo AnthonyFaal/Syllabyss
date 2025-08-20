@@ -9,3 +9,4 @@ dist-ssr/
 .env
 .env.*.local
 *.local
+src/config/*.json

@@ -1,144 +1,521 @@
-/* eslint-disable no-unused-vars */
-import React, { useEffect, useState } from 'react';
-import { FaChartPie, FaBookOpen, FaTrophy, FaUsers, FaCalendarAlt, FaBell, FaSearch } from "react-icons/fa";
-import { getUserById } from '../api/APIs';
-import PageLoader from '../components/Loader/pageLoader';
-import {getAuthToken, getUserId}  from '../utils/authToken';
+import React, { useEffect, useState,  useRef } from 'react';
+import {defaultAvatar, overview, timetable, getLeaderboard , acceptRecommendation, uploadProfileImage} from "../api/APIs";
+import PageLoader from "../components/Loader/pageLoader";
+import { getUserId } from "../utils/authToken";
+import Modal from "../components/Modal/Modal";
+import MaterialViewer from "./course/MaterialViewer";
+import CourseCard from "../components/Card/courseCard";
+
+import { 
+  FiBook,  FiAward, FiCalendar, FiClock, FiTarget, FiTrendingUp, 
+  FiStar, FiCheckCircle, FiBarChart2, FiBookmark, FiUsers, FiCoffee
+} from 'react-icons/fi';
+import { FaMedal, FaAward } from 'react-icons/fa';
 import "./Dashboard.css";
 
 const Dashboard = () => {
-  const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [timeTableData, setTimeTableData] = useState([]);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [leaderboardData, setLeaderboardData] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState(null); 
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const [processingRecommendation, setProcessingRecommendation] = useState(null);
 
-  useEffect(() => {
-    const id = getUserId();
-    const token = getAuthToken();
+  const [error, setError] = useState(null);
 
-    if (id) {
-      fetchUserData(id);
-    } else {
-      setLoading(false);
-    }
+useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const userId = getUserId();
+        // Fetch both data sources in parallel
+        const [overviewResponse, timetableResponse] = await Promise.all([
+          overview(userId),
+          timetable(userId)
+        ]);
+        
+        setDashboardData(overviewResponse);
+        setTimeTableData(timetableResponse);
+      } catch (err) {
+        setError(err.message || "An error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const fetchUserData = async (id) => {
+   const handleFileChange = async (event) => {
+    const userId = getUserId();
+      const file = event.target.files[0];
+      if (file && userId) {
+        setUploading(true);
+        try {
+          await uploadProfileImage(userId, file);
+        } catch (error) {
+          console.error("Image upload failed:", error);
+          alert("Failed to upload image. Please try again.");
+        } finally {
+          setUploading(false);
+        }
+      }
+    };
+
+  
+  if (loading) return <PageLoader />;
+  if (error) return <div className="error-message">Error: {error}</div>;
+  if (!dashboardData) return <div className="no-data">No data available</div>;
+
+  const stats = dashboardData.stats || {};
+  const activeCourses = dashboardData.activeCourses || [];
+  //const progressData = dashboardData.progressData || [];
+  const userGoals = dashboardData.userGoals || [];
+  const recommendations = dashboardData.recommendations || [];
+  const leaderboardPosition = dashboardData.leaderboardPosition ?? "N/A";
+  const user = dashboardData.user || {};
+
+  const formatTime = (timeStr) => {
+  if (!timeStr) return '0 min';
+  const parts = timeStr.split(':');
+  if (parts.length < 2) return '0 min';
+
+  const hours = parseInt(parts[0], 10);
+  const mins = parseInt(parts[1], 10);
+
+  if (isNaN(hours) || isNaN(mins)) return '0 min';
+
+  return hours > 0 ? `${hours}: ${mins}` : `${mins}`;
+};
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "Not set";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const StatCard = ({ icon, title, value, color }) => {
+    const IconComponent = icon;
+    return (
+      <div className="stat-card" style={{ borderTop: `4px solid ${color}` }}>
+        <div className="stat-icon" style={{ backgroundColor: `${color}20`, color }}>
+          <IconComponent size={20} />
+        </div>
+        <h3>{title}</h3>
+        <p className="stat-value">{value}</p>
+      </div>
+    );
+  };
+
+  const handleContinue = (course) => {
+  setSelectedCourse(course);
+};
+const handleShowLeaderboard = async () => {
+  if (!showLeaderboard) {
     try {
-      setLoading(true);
-      const response = await getUserById(id);
-      setUserData(response.data);
-    } catch (error) {
-      console.error("Failed to fetch user data:", error);
-    } finally {
-      setLoading(false);
+      const response = await getLeaderboard();;
+
+      // Corrected structure access
+      if (response?.data?.success && Array.isArray(response.data.data)) {
+        setLeaderboardData(response.data.data);
+        console.log("🎯 Leaderboard data set:", response.data.data);
+      } else {
+        console.warn("⚠️ Unexpected leaderboard response structure:", response);
+        setLeaderboardData([]);
+      }
+    } catch (err) {
+      console.error("❌ Failed to load leaderboard:", err);
     }
-  };
-
-  const stats = {
-    activeCourses: 5,
-    challengesCompleted: 12,
-    collaborationGroups: 3,
-    learningProgress: 78
-  };
-
-  const weeklySchedule = [
-    { day: "Mon", time: "09:00 - 10:30", course: "React Hooks Deep Dive", type: "live" },
-    { day: "Tue", time: "14:00 - 15:00", course: "Data Structures", type: "self-paced" },
-    { day: "Wed", time: "11:00 - 12:30", course: "UI/UX Workshop", type: "live" },
-    { day: "Thu", time: "16:00 - 17:00", course: "Python Fundamentals", type: "self-paced" },
-    { day: "Fri", time: "10:00 - 11:30", course: "DevOps Basics", type: "live" }
-  ];
-
-  if (loading) {
-    return <PageLoader />;
   }
-  if (!userData) {
-    return <p>Unable to load user data.</p>;
+  setShowLeaderboard(prev => !prev);
+};
+
+const handleAcceptRecommendation = async (recommendationId) => {
+  try {
+    setProcessingRecommendation(recommendationId);
+    await acceptRecommendation(recommendationId);
+    
+    setDashboardData(prevData => ({
+      ...prevData,
+      recommendations: prevData.recommendations.filter(
+        rec => rec.recommendation_id !== recommendationId
+      )
+    }));
+    
+    console.log("Recommendation accepted successfully");
+  } catch (error) {
+    console.error("Failed to accept recommendation:", error);
+  } finally {
+    setProcessingRecommendation(null);
   }
+};
 
   return (
     <div className="dashboard-container">
-      {loading && <PageLoader />}
-      
+      {/* User Profile Header */}
       <header className="dashboard-header">
-        <div className="header-profile">
-          <FaBell className="notification-icon" />
-          <div className="user-avatar">
-            {userData?.profile_image ? (
-              <img src={userData.profile_image} alt={userData.name || "User"} />
-            ) : (
-              <div className="avatar-placeholder">{userData?.name?.charAt(0)}</div>
-            )}
+        <div className="user-profile">
+          <div 
+              className="avatar-wrapper" 
+              onClick={() => fileInputRef.current.click()} // click avatar to trigger upload
+              style={{ cursor: "pointer", position: "relative" }}
+            >
+              <img 
+                src={user.profileImage || defaultAvatar} 
+                alt="Profile" 
+                className="profile-image"
+              />
+              {uploading && <div className="uploading-overlay">Uploading...</div>}
+            </div>
+
+            {/* Hidden file input */}
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={async (e) => {
+                await handleFileChange(e);
+
+                // refresh avatar immediately after upload
+                const userId = getUserId();
+                const updatedOverview = await overview(userId);
+                setDashboardData(prev => ({
+                  ...prev,
+                  user: { ...prev.user, profileImage: updatedOverview.user.profileImage }
+                }));
+              }}
+            />
+          
+          <div className="user-info">
+            <h1>{user.name || "Unknown User"}</h1>
+            <p className="user-role">
+              <span className="role-badge">{user.role || "N/A"}</span>
+              <span className="welcome-message">Welcome back! Ready to learn today?</span>
+            </p>
           </div>
         </div>
-        <div className="header-search">
-          <FaSearch className="search-icon" />
-          <input type="text" placeholder="Search courses, resources..." />
+        <div className="quick-stats">
+          <div className="quick-stat">
+            <FiTrendingUp className="quick-stat-icon" />
+            <span>Day {stats.currentStreak ?? 0} streak</span>
+          </div>
+          <div className="quick-stat">
+            <FiAward className="quick-stat-icon" />
+            <span>{stats.xpPoints ?? 0} XP</span>
+          </div>
         </div>
       </header>
 
-      <div className="dashboard">
-        <h1>Welcome back, {userData?.name?.split(' ')[0]}!</h1>
-        <p className="dashboard-subtitle">Here's your learning overview</p>
-
+      {/* Stats Summary Cards */}
+      <section className="stats-section">
+        <h2><FiBarChart2 className="section-icon" /> Your Learning Stats</h2>
         <div className="stats-grid">
-          <div className="stat-card">
-            <FaBookOpen className="stat-icon" />
-            <h3>Active Courses</h3>
-            <p>{stats.activeCourses}</p>
-          </div>
-          <div className="stat-card">
-            <FaTrophy className="stat-icon" />
-            <h3>Challenges Completed</h3>
-            <p>{stats.challengesCompleted}</p>
-          </div>
-          <div className="stat-card">
-            <FaUsers className="stat-icon" />
-            <h3>Collaboration Groups</h3>
-            <p>{stats.collaborationGroups}</p>
-          </div>
-          <div className="stat-card">
-            <FaChartPie className="stat-icon" />
-            <h3>Learning Progress</h3>
-            <div className="progress-container">
-              <p>{stats.learningProgress}%</p>
-              <div className="progress-bar">
-                <div
-                  className="progress-fill"
-                  style={{ width: `${stats.learningProgress}%` }}
-                ></div>
-              </div>
-            </div>
-          </div>
+          <StatCard 
+            icon={FiBook} 
+            title="Courses in Progress" 
+            value={stats.coursesInProgress ?? 0} 
+            color="#4e73df" 
+          />
+          <StatCard 
+            icon={FiCheckCircle} 
+            title="Completion %" 
+            value={`${stats.completionPercentage ?? 0}%`} 
+            color="#1cc88a" 
+          />
+          <StatCard 
+            icon={FiTarget} 
+            title="Goals Completed" 
+            value={stats.goalsCompleted ?? 0} 
+            color="#f6c23e" 
+          />
+          <StatCard 
+            icon={FiCalendar} 
+            title="Current Streak" 
+            value={`${stats.currentStreak ?? 0} days`} 
+            color="#e74a3b" 
+          />
+          <StatCard 
+            icon={FiStar} 
+            title="Longest Streak" 
+            value={`${stats.longestStreak ?? 0} days`} 
+            color="#36b9cc" 
+          />
+          <StatCard 
+            icon={FiAward} 
+            title="Total XP" 
+            value={stats.xpPoints ?? 0} 
+            color="#5a5c69" 
+          />
+          <StatCard 
+            icon={FiTrendingUp} 
+            title="Weekly XP" 
+            value={stats.weeklyXp ?? 0} 
+            color="#858796" 
+          />
+          
+          <StatCard 
+            icon={FiBookmark} 
+            title="Materials Completed" 
+            value={stats.materialsCompleted ?? 0} 
+            color="#2e59d9" 
+          />
         </div>
-
-        <div className="dashboard-content">
-          <div className="content-section schedule-section">
-            <div className="section-header">
-              <FaCalendarAlt className="section-icon" />
-              <h2>Your Weekly Schedule</h2>
-            </div>
-            <div className="schedule-grid">
-              {weeklySchedule.map((item, index) => (
-                <div key={index} className="schedule-item">
-                  <div className="schedule-day">{item.day}</div>
-                  <div className="schedule-time">{item.time}</div>
-                  <div className="schedule-course">{item.course}</div>
-                  <span className={`schedule-type ${item.type}`}>
-                    {item.type === 'live' ? 'Live Session' : 'Self-Paced'}
-                  </span>
+      </section> 
+      
+       {/* Timetable Section - now using the local timeTableData state */}
+      <div className="timetable-container">
+        <h2><FiClock className="section-icon" /> Today's Schedule</h2>
+        
+        {timeTableData.length > 0 ? (
+          <div className="timetable-events">
+            {timeTableData.map((event, index) => (
+              <div key={`${event.id}-${index}`} className={`timetable-event ${event.content_type}`}>
+                <div className="event-time">
+                  {formatTime(event.start_time)} - {formatTime(event.end_time)}
                 </div>
-              ))}
-            </div>
+                <div className="event-content">
+                  <div className="event-icon">
+                    {event.content_type === 'break' ? 
+                      <FiCoffee className="content-icon" /> : 
+                      <FiBook className="content-icon" />}
+                  </div>
+                  <div className="event-details">
+                    <h3>{event.material_title}</h3>
+                    {event.content_type !== 'break' && (
+                      <>
+                        <p className="event-course">{event.course_title}</p>
+                        <p className="event-module">{event.module_title}</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+                {event.content_type !== 'break' && event.deadline && (
+                  <div className="event-deadline">
+                    <span>Due: {formatDate(event.deadline)}</span>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-
-          {userData?.role === 'admin' && (
-            <div className="admin-panel-access">
-              <h2>Admin Panel</h2>
-              <p>You have access to the admin panel.</p>
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="timetable-empty">
+            <p>No scheduled activities for today</p>
+          </div>
+        )}
       </div>
+
+      {/* Active Courses Section */}
+      <section className="courses-section">
+        <h2><FiBook className="section-icon" /> Active Courses</h2>
+        {activeCourses.length > 0 ? (
+          <div className="courses-grid">
+        {activeCourses.map(course => (
+          <CourseCard
+            key={course.course_id}
+            course={course}
+            onClick={() => handleContinue(course)} // opens MaterialViewer
+          />
+        ))}
+      </div>
+
+        ) : (
+          <div className="empty-state">
+            <FiBook className="empty-icon" size={48} />
+            <p className="no-data-message">You don't have any active courses</p>
+            <button className="browse-button">Browse Courses</button>
+          </div>
+        )}
+      </section>
+
+      {/* Progress Data Section 
+      <section className="progress-section">
+        <h2><FiTrendingUp className="section-icon" /> Your Progress</h2>
+        {progressData.length > 0 ? (
+          <div className="progress-chart">
+            <p>Progress chart would be displayed here</p>
+          </div>
+        ) : (
+          <div className="empty-state">
+            <FiBarChart2 className="empty-icon" size={48} />
+            <p className="no-data-message">No progress data available yet</p>
+          </div>
+        )}
+      </section>*/}
+
+      {/* User Goals Section */}
+      <section className="goals-section">
+        <h2><FiTarget className="section-icon" /> Your Goals</h2>
+        {userGoals.length > 0 ? (
+          <ul className="goals-list">
+            {userGoals.map(goal => (
+              <li key={goal.user_goal_id} className="goal-item">
+                <div className="goal-checkbox">
+                  {goal.status === 'completed' ? (
+                    <FiCheckCircle className="completed-icon" />
+                  ) : (
+                    <div className="incomplete-circle"></div>
+                  )}
+                </div>
+                <div className="goal-content">
+                  <div className="goal-header">
+                    <img src={goal.icon || '/goal-icon.svg'} alt="Goal Icon" className="goal-icon" />
+                    <h4>{goal.title || "Untitled Goal"}</h4>
+                  </div>
+                  <p className="goal-description">{goal.description || "No description provided."}</p>
+                  <p className="goal-started">Started: {formatDate(goal.started_at)}</p>
+                  {goal.completed_at && <p className="goal-completed">Completed: {formatDate(goal.completed_at)}</p>}
+                  {goal.earned_date && <p className="goal-reward">Reward Earned: {formatDate(goal.earned_date)}</p>}
+                </div>
+                <span className={`goal-status ${goal.status}`}>
+                  {goal.status.replace('_', ' ')}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="empty-state">
+            <FiTarget className="empty-icon" size={48} />
+            <p className="no-data-message">You haven't set any goals yet</p>
+          </div>
+        )}
+      </section>
+
+      {/* Recommendations Section */}
+      <section className="recommendations-section">
+        <h2><FiStar className="section-icon" /> Recommended For You</h2>
+        {recommendations.length > 0 ? (
+          <div className="recommendations-grid">
+            {recommendations.map(rec => (
+              <div key={rec.recommendation_id} className="recommendation-card">
+                <div className="rec-image-placeholder">
+                  <div className="confidence-badge">
+                    {rec.confidence_score}% Match
+                  </div>
+                </div>
+                <div className="rec-content">
+                  <div className="rec-header">
+                    <h3>{rec.suggested_course_title || "Untitled Recommendation"}</h3>
+                    <span className={`rec-type ${rec.recommendation_type}`}>
+                      {rec.recommendation_type}
+                    </span>
+                  </div>
+                  <p className="rec-description">
+                    {rec.suggested_course_description || "No description available."}
+                  </p>
+                  <div className="rec-meta">
+                    <span className={`rec-difficulty ${rec.suggested_difficulty_level}`}>
+                      {rec.suggested_difficulty_level || "Beginner"}
+                    </span>
+                    <span className="rec-duration">
+                      {Math.round(rec.suggested_estimated_duration / 60)} hours
+                    </span>
+                    <span className="rec-date">
+                      {new Date(rec.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="rec-reason">
+                    <strong>Why we recommend this:</strong> {rec.reason}
+                  </div>
+                  <div className="rec-actions">
+                    <button 
+                      className="accept-button"
+                      onClick={() => handleAcceptRecommendation(rec.recommendation_id)}
+                      disabled={processingRecommendation === rec.recommendation_id}
+                    >
+                      {processingRecommendation === rec.recommendation_id ? (
+                        "Processing..."
+                      ) : (
+                        "Accept Recommendation"
+                      )}
+                    </button>
+                    <button className="decline-button">Not Interested</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state">
+            <FiStar className="empty-icon" size={48} />
+            <p className="no-data-message">No recommendations available yet</p>
+          </div>
+        )}
+      </section>
+
+     {/* Leaderboard Section */}
+      <section className="leaderboard-section">
+        <h2><FiUsers className="section-icon" /> Your Leaderboard Position</h2>
+
+        <div className="leaderboard-card">
+          <div className="trophy-icon">
+            {leaderboardPosition <= 3 ? (
+              <div className={`trophy trophy-${leaderboardPosition}`}>
+                {leaderboardPosition === 1 ? '🥇' : leaderboardPosition === 2 ? '🥈' : '🥉'}
+              </div>
+            ) : (
+              <FiUsers size={40} />
+            )}
+          </div>
+          <p className="leaderboard-position">#{leaderboardPosition}</p>
+          <p className="leaderboard-message">Keep learning to improve your position!</p>
+          <button className="view-leaderboard" onClick={handleShowLeaderboard}>
+            {showLeaderboard ? 'Hide Leaderboard' : 'View Full Leaderboard'}
+          </button>
+        </div>
+
+        {showLeaderboard && (
+          <div className="leaderboard-list">
+            {leaderboardData.length > 0 ? (
+              leaderboardData.map((user) => {
+                let tagIcon = null;
+                if (user.position === 1) tagIcon = <FaMedal className="gold" />;
+                else if (user.position === 2) tagIcon = <FaMedal className="silver" />;
+                else if (user.position === 3) tagIcon = <FaMedal className="bronze" />;
+                else if (user.position <= 10) tagIcon = <FaAward className="top10" />;
+                else if (user.position <= 50) tagIcon = <FaAward className="top50" />;
+                else tagIcon = <FiUsers />;
+
+                return (
+                  <div key={user.user_id} className="leaderboard-user">
+                    <span className={`position-badge badge-${user.position <= 3 ? 'top' : user.position <= 10 ? 'top10' : 'default'}`}>
+                      #{user.position}
+                    </span>
+                    <img
+                      src={user.user_image}
+                      alt={user.user_name}
+                      className="leaderboard-avatar"
+                    />
+                    <div className="leaderboard-info">
+                      <p className="leaderboard-name">{user.user_name} {tagIcon}</p>
+                      <p className="leaderboard-xp">{user.xp_points} XP</p>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="no-data-message">No leaderboard data available.</p>
+            )}
+          </div>
+        )}
+      </section>
+      {/* Course Viewer Modal */}
+      {selectedCourse && (
+        <Modal
+          isOpen={!!selectedCourse}
+          onClose={() => setSelectedCourse(null)}
+          variant="side-panel"    
+        >
+          <MaterialViewer courseId={selectedCourse.course_id} />
+        </Modal>
+      )}
     </div>
   );
 };

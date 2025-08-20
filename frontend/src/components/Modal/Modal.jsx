@@ -1,13 +1,19 @@
-import React from "react";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import "./Modal.css";
 
-const Modal = ({ isOpen, onClose, children }) => {
+const Modal = ({
+  isOpen,
+  onClose,
+  children,
+  variant = "center", // 'center' | 'side-right' | 'side-left' | 'bottom'
+  width,
+  height,
+  showOverlay = true
+}) => {
+
   useEffect(() => {
     const handleEscape = (e) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
+      if (e.key === "Escape") onClose();
     };
 
     if (isOpen) {
@@ -23,10 +29,18 @@ const Modal = ({ isOpen, onClose, children }) => {
 
   if (!isOpen) return null;
 
+  const style = {};
+  if (width) style.width = width;
+  if (height) style.height = height;
+
   return (
-    <div className="modal-overlay">
-      <div className="modal-backdrop" onClick={onClose}></div>
-      <div className="modal-container">
+    <>
+      {showOverlay && <div className="modal-overlay" onClick={onClose}></div>}
+
+      <div
+        className={`modal-container ${variant} ${isOpen ? "open" : ""}`}
+        style={style}
+      >
         <div className="modal-content">
           <button className="modal-close-button" onClick={onClose}>
             &times;
@@ -34,7 +48,7 @@ const Modal = ({ isOpen, onClose, children }) => {
           {children}
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

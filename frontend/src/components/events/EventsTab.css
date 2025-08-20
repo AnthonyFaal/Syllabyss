@@ -1,0 +1,508 @@
+/* Events Container */
+.events-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 15px;
+  background-color: #f9f9f9;
+}
+
+/* Events Header */
+.events-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e1e1e1;
+}
+
+.events-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.create-event-btn {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.9rem;
+}
+
+.create-event-btn:hover {
+  background-color: #3a7bc8;
+}
+
+/* Create Event Form */
+.create-event-form {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.create-event-form h4 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #555;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background-color: #fff;
+}
+
+.form-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+/* Type and Max Participants Side-by-Side */
+.type-max-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.type-max-row .form-group {
+  flex: 1;
+}
+
+.form-group input[type="number"]::-webkit-inner-spin-button,
+.form-group input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+input[type="datetime-local"] {
+  appearance: none;
+  background-color: #fff;
+  padding: 10px 12px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  font-size: 0.9rem;
+}
+
+input[type="datetime-local"]:focus {
+  border-color: #4a90e2;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.cancel-btn {
+  background-color: #f1f1f1;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancel-btn:hover {
+  background-color: #e1e1e1;
+}
+
+.create-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.create-btn:hover {
+  background-color: #218838;
+}
+
+.create-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Additional styles for nicer UI can go here... */
+
+
+/* Events List */
+.events-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.event-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.event-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.event-icon {
+  margin-right: 15px;
+  font-size: 1.5rem;
+  color: #4a90e2;
+}
+
+.event-details {
+  flex: 1;
+}
+
+.event-details h4 {
+  margin: 0 0 5px 0;
+  color: #333;
+}
+
+.event-meta {
+  display: flex;
+  gap: 15px;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.event-type {
+  background-color: #f0f7ff;
+  padding: 2px 8px;
+  border-radius: 12px;
+  color: #4a90e2;
+}
+
+.event-time {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.event-status {
+  font-size: 1.2rem;
+}
+
+.completed-icon {
+  color: #6c757d;
+}
+
+.upcoming-icon {
+  color: #28a745;
+}
+
+.no-events {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.no-events p {
+  margin-bottom: 20px;
+}
+
+/* Event Detail View */
+.event-detail-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.event-detail-header {
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e1e1e1;
+  margin-bottom: 15px;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  color: #4a90e2;
+  cursor: pointer;
+  padding: 5px 0;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.back-button:hover {
+  text-decoration: underline;
+}
+
+.event-header-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.event-status {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.event-status.upcoming {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.event-status.ongoing {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.event-status.completed {
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
+
+.event-status.cancelled {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.join-event-btn {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+}
+
+.join-event-btn:hover {
+  background-color: #3a7bc8;
+}
+
+.event-main-content {
+  display: flex;
+  flex: 1;
+  gap: 20px;
+  overflow: hidden;
+}
+
+.event-info-section {
+  flex: 1;
+  padding: 15px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.event-icon-large {
+  font-size: 2rem;
+  color: #4a90e2;
+  margin-bottom: 15px;
+}
+
+.event-description {
+  margin: 15px 0;
+  line-height: 1.5;
+  color: #333;
+}
+
+.time-block {
+  margin-bottom: 10px;
+}
+
+.time-block strong {
+  display: block;
+  margin-bottom: 3px;
+  color: #555;
+}
+
+.time-block span {
+  color: #333;
+}
+
+.participants-info {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 15px;
+  color: #555;
+}
+/* Message Section Styles */
+.event-messages-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+
+.message-bubble.system {
+  align-self: center;
+  background-color: #f1f1f1;
+  color: #666;
+  font-style: italic;
+  border-radius: 10px;
+}
+
+.message-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  margin-bottom: 5px;
+}
+
+.message-content {
+  white-space: pre-wrap;
+}
+.username{
+  margin-right: 10px;
+}
+.message-input-container {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.message-input-container input[type="text"] {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  outline: none;
+}
+
+.message-input-container button {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  padding: 0 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.message-input-container button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+
+.event-participants-section {
+  flex: 1;
+  padding: 15px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+.event-participants-section h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.participants-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.participant-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  background-color: #f8f9fa;
+}
+
+
+
+.initials-avatar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #495057;
+}
+
+.participant-info {
+  flex: 1;
+}
+
+.participant-info strong {
+  display: block;
+  margin-bottom: 2px;
+  color: #333;
+}
+
+.participant-status {
+  font-size: 0.7rem;
+  color: #6c757d;
+  text-transform: capitalize;
+}
+
+/* Event Type Icons */
+.study-icon { color: #4a90e2; }
+.project-icon { color: #6f42c1; }
+.quiz-icon { color: #ffc107; }
+.brainstorm-icon { color: #20c997; }
+.code-icon { color: #17a2b8; }
+.review-icon { color: #fd7e14; }
+.qna-icon { color: #e83e8c; }
+.default-icon { color: #6c757d; }
+

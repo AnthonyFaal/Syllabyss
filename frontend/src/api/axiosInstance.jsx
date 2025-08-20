@@ -2,9 +2,13 @@
 import axios from 'axios';
 import { clearAuthToken } from '../utils/authToken';
 
+export const API_BASE_URL = 'http://10.236.236.203:4000';
+// export const API_BASE_URL = 'http://localhost:4000/';
+// export const API_BASE_URL = 'https://final-year-server.onrender.com';
+
 const axiosInstance = axios.create({
-  baseURL:'https://final-year-server.onrender.com', //'http://localhost:4000/api',
-  timeout: 100000,
+  baseURL: `${API_BASE_URL}/api`,
+  timeout: 30000,
 });
 
 axiosInstance.interceptors.request.use(
@@ -27,8 +31,8 @@ axiosInstance.interceptors.response.use(
     }
 
     const errorMessage = error.response?.data?.message || 
-                       error.message || 
-                       'Request failed';
+                         error.message || 
+                         'Request failed';
     
     return Promise.reject({
       message: errorMessage,

@@ -1,49 +1,67 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState, useRef } from 'react';
-import { FaUser, FaEdit, FaCog, FaLock, FaBook, FaClock, FaFire, FaSave, FaTimes } from "react-icons/fa";
-import { GiGraduateCap } from "react-icons/gi";
+import { FaUser, FaEdit,  FaLock,  FaSave, FaTimes } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
-import { getUserById, uploadProfileImage, updateUserBio } from '../../api/APIs'; 
+import PageLoader from '../../components/Loader/pageLoader';
+import { getUserById, uploadProfileImage, updateUserBio, updatePassword, getInterestFlowsByUserId } from '../../api/APIs'; 
+import { getUserId } from "../../utils/authToken";
 import './Profile.css';
- 
+
 const Profile = () => {
   const [userId, setUserId] = useState(null);
-  const [token, setToken] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [userInterests, setUserInterests] = useState([]);
   const [editingBio, setEditingBio] = useState(false);
   const [bioText, setBioText] = useState('');
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
-  
+  const [loading, setLoading] = useState(true); // Start in loading state
+  const [passwordMode, setPasswordMode] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [showAccountDetails, setShowAccountDetails] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedUserId = localStorage.getItem('userId');
-    const storedToken = localStorage.getItem('token');
-
-    if (storedUserId && storedToken) {
+    const storedUserId = getUserId();
+    if (storedUserId) {
       setUserId(storedUserId);
-      setToken(storedToken);
-      fetchUserData(storedUserId);
+      // Load both data sources together
+      Promise.all([
+        getUserById(storedUserId),
+        getInterestFlowsByUserId()
+      ])
+        .then(([userResponse, interestsResponse]) => {
+          setUserData(userResponse.data);
+          setBioText(userResponse.data.bio || '');
+          setUserInterests(interestsResponse.data || []);
+        })
+        .catch(error => {
+          console.error("Failed to fetch data:", error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     } else {
       window.location.href = '/auth';
     }
   }, []);
 
   const fetchUserData = async (id) => {
+    setLoading(true);
     try {
       const response = await getUserById(id);
       setUserData(response.data);
       setBioText(response.data.bio || '');
     } catch (error) {
       console.error("Failed to fetch user data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleAvatarClick = () => {
-    if(fileInputRef.current){
-      fileInputRef.current.click();
-    }
+    fileInputRef.current?.click();
   };
 
   const handleFileChange = async (event) => {
@@ -62,7 +80,6 @@ const Profile = () => {
     }
   };
 
-  // Bio editing handlers
   const handleBioEditClick = () => setEditingBio(true);
   const handleBioChange = (e) => {
     if (e.target.value.length <= 300) {
@@ -71,7 +88,6 @@ const Profile = () => {
   };
   const handleBioSave = async () => {
     try {
-      // Send bio in the request body as expected by the backend
       await updateUserBio(userId, { bio: bioText });
       setEditingBio(false);
       await fetchUserData(userId);
@@ -80,32 +96,42 @@ const Profile = () => {
       alert("Could not update bio. Please try again.");
     }
   };
-
   const handleBioCancel = () => {
     setBioText(userData?.bio || '');
     setEditingBio(false);
   };
 
-  const goToInterestPage = () => {
-    navigate('/user-interest');
+  const handlePasswordUpdate = async () => {
+    if (!newPassword) {
+      alert("Please enter a new password.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await updatePassword(userId, { password: newPassword });
+      alert("Password updated successfully.");
+      setNewPassword('');
+      setPasswordMode(false);
+    } catch (error) {
+      console.error("Failed to update password:", error);
+      alert("Failed to update password. Try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Dynamic stats from userData or default fallback values
-  const stats = [
-    { icon: <FaBook className="stat-icon" />, label: "Courses Completed", value: userData?.courses_completed ?? 0 },
-    { icon: <FaClock className="stat-icon" />, label: "Hours Learned", value: userData?.hours_learned ?? 0 },
-    { icon: <FaFire className="stat-icon" />, label: "Current Streak", value: userData?.current_streak ?? "0 days" },
-    { icon: <GiGraduateCap className="stat-icon" />, label: "Certificates", value: userData?.certificates ?? 0 }
-  ];
-
-  // Dynamic title based on user's interests or default
+  
   const getUserTitle = () => {
-    if (userData?.interests?.length > 0) {
-      const primaryInterest = userData.interests[0];
+    if (userInterests?.length > 0) {
+      const primaryInterest = userInterests[0];
       return `${primaryInterest.selected_field} ${primaryInterest.selected_experience}`;
     }
     return "Learning Enthusiast";
   };
+
+  if (loading) {
+    return <PageLoader />;
+  }
 
   return (
     <div className="profile-page">
@@ -115,11 +141,7 @@ const Profile = () => {
             <div className="avatar-container" onClick={handleAvatarClick}>
               <div className="avatar">
                 {userData?.profile_image ? (
-                  <img 
-                    src={userData.profile_image} 
-                    alt={userData.name || "User"} 
-                    className="avatar-image" 
-                  />
+                  <img src={userData.profile_image} alt={userData.name || "User"} className="avatar-image" />
                 ) : (
                   <div className="avatar-placeholder">
                     {userData?.name?.charAt(0).toUpperCase() || 'U'}
@@ -128,7 +150,6 @@ const Profile = () => {
               </div>
               {uploading && <div className="uploading-overlay">Uploading...</div>}
             </div>
-
             <input
               type="file"
               accept="image/*"
@@ -139,24 +160,16 @@ const Profile = () => {
           </div>
 
           <div className="profile-info-section">
-            <div className="profile-info">
-              <h1 className="profile-name">{userData?.name || 'User'}</h1>
-              <p className="profile-email">{userData?.email}</p>
-              {userData?.title && (
-                <p className="profile-title">{userData.title}</p>
-              )}
-              {!userData?.title && (
-                <p className="profile-title">{getUserTitle()}</p>
-              )}
-            </div>
+            <h1 className="profile-name">{userData?.name || 'User'}</h1>
+            <p className="profile-email">{userData?.email}</p>
+            <p className="profile-title">{getUserTitle()}</p>
 
-            {/* Bio Section */}
             <div className="bio-section">
               {!editingBio ? (
                 <div className="bio-display">
                   <p className="profile-bio">
-                    {userData?.bio && userData.bio.trim() !== '' 
-                      ? userData.bio 
+                    {userData?.bio?.trim() !== ''
+                      ? userData.bio
                       : "You haven't added a bio yet. Click to add one."}
                   </p>
                   <button className="edit-bio-btn" onClick={handleBioEditClick}>
@@ -165,17 +178,15 @@ const Profile = () => {
                 </div>
               ) : (
                 <div className="bio-edit-container">
-                  <textarea 
-                    value={bioText} 
-                    onChange={handleBioChange} 
-                    maxLength={300} 
-                    rows={4} 
+                  <textarea
+                    value={bioText}
+                    onChange={handleBioChange}
+                    maxLength={300}
+                    rows={4}
                     placeholder="Tell us about yourself (max 300 characters)..."
                     className="bio-textarea"
                   />
-                  <div className="bio-character-count">
-                    {bioText.length} / 300 characters
-                  </div>
+                  <div className="bio-character-count">{bioText.length} / 300 characters</div>
                   <div className="bio-edit-buttons">
                     <button onClick={handleBioSave} className="save-bio-btn">
                       <FaSave /> Save
@@ -191,33 +202,29 @@ const Profile = () => {
         </div>
 
         <div className="profile-content">
-          {/* Interests Section */}
           <section className="interests-section">
             <div className="section-header">
-              <h2 className="section-title">
-                <span className="title-icon">🎯</span> Learning Interests
-              </h2>
-              {(!userData?.interests || userData.interests.length === 0) && (
-                <button className="update-interests-btn" onClick={goToInterestPage}>
+              <h2><span className="title-icon">🎯</span> Learning Interests</h2>
+              {userInterests?.length === 0 && (
+                <button className="update-interests-btn" onClick={() => navigate('/user-interest')}>
                   + Add Interests
                 </button>
               )}
             </div>
-            
-            {userData?.interests?.length > 0 ? (
+            {userInterests?.length > 0 ? (
               <div className="interests-grid">
-                {userData.interests.map((interest, idx) => (
+                {userInterests.map((interest, idx) => (
                   <div key={idx} className="interest-card">
                     <div className="interest-header">
-                      <h3 className="interest-specialization">{interest.selected_specialization}</h3>
-                      <span className="interest-experience">{interest.selected_experience}</span>
+                      <h3>{interest.selected_specialization}</h3>
+                      <span className="experience-badge">{interest.selected_experience}</span>
                     </div>
-                    {interest.skills?.length > 0 && (
+                    {interest.selectedSkills && (
                       <div className="interest-skills">
-                        <h4 className="skills-title">Skills:</h4>
+                        <h4>Skills:</h4>
                         <div className="skills-tags">
-                          {interest.skills.map((s, i) => (
-                            <span key={i} className="skill-tag">{s.skill}</span>
+                          {Object.entries(interest.selectedSkills).map(([category, skill], i) => (
+                            <span key={i} className="skill-tag">{skill}</span>
                           ))}
                         </div>
                       </div>
@@ -226,64 +233,92 @@ const Profile = () => {
                 ))}
               </div>
             ) : (
-              <div className="no-interests">
-                <p className="no-interests-message">
-                  You haven't set up any learning interests yet. Add interests to get personalized recommendations.
-                </p>
-              </div>
+              <p className="no-interests-message">
+                You haven't set up any learning interests yet. Add interests to get personalized recommendations.
+              </p>
             )}
           </section>
 
-          <div className="profile-bottom-sections">
-            <section className="stats-section">
-              <h2 className="section-title">
-                <span className="title-icon">📊</span> Learning Statistics
-              </h2>
-              <div className="stats-grid">
-                {stats.map((stat, index) => (
-                  <div key={index} className="stat-card">
-                    <div className="stat-icon-container">{stat.icon}</div>
-                    <div className="stat-content">
-                      <h3 className="stat-label">{stat.label}</h3>
-                      <p className="stat-value">{stat.value}</p>
-                    </div>
-                  </div>
-                ))}
+          <section className="settings-section">
+            <h2><span className="title-icon">⚙️</span> Account Settings</h2>
+            <div className="settings-grid">
+              <div className="setting-card">
+                <div className="setting-icon"><FaLock /></div>
+                <div className="setting-content">
+                  <h3>Change Password</h3>
+                  <p>Update your account security</p>
+                </div>
+                <button 
+                  className="setting-action-btn" 
+                  onClick={() => setPasswordMode(!passwordMode)}
+                >
+                  {passwordMode ? 'Cancel' : 'Manage'}
+                </button>
               </div>
-            </section>
+              <div className="setting-card">
+                <div className="setting-icon"><FaUser /></div>
+                <div className="setting-content">
+                  <h3>Account Details</h3>
+                  <p>View personal information</p>
+                </div>
+                <button 
+                  className="setting-action-btn" 
+                  onClick={() => setShowAccountDetails(!showAccountDetails)}
+                >
+                  {showAccountDetails ? 'Hide' : 'View'}
+                </button>
+              </div>
+            </div>
 
-            <section className="settings-section">
-              <h2 className="section-title">
-                <span className="title-icon">⚙️</span> Account Settings
-              </h2>
-              <div className="settings-grid">
-                <div className="setting-card">
-                  <div className="setting-icon"><FaCog /></div>
-                  <div className="setting-content">
-                    <h3>Preferences</h3>
-                    <p>Customize your learning experience</p>
-                  </div>
-                  <button className="setting-action-btn">Manage</button>
+            {passwordMode && (
+              <div className="password-update">
+                <input
+                  type="password"
+                  placeholder="Enter new password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="password-input"
+                />
+                <button onClick={handlePasswordUpdate} className="save-password-btn">
+                  <FaSave /> Update Password
+                </button>
+              </div>
+            )}
+
+
+            {showAccountDetails && userData && (
+              <div className="account-details-panel">
+                <h3>Account Information</h3>
+                <div className="detail-item">
+                  <span className="detail-label">Name:</span>
+                  <span className="detail-value">{userData.name}</span>
                 </div>
-                <div className="setting-card">
-                  <div className="setting-icon"><FaLock /></div>
-                  <div className="setting-content">
-                    <h3>Change Password</h3>
-                    <p>Update your account security</p>
-                  </div>
-                  <button className="setting-action-btn">Manage</button>
+                <div className="detail-item">
+                  <span className="detail-label">Email:</span>
+                  <span className="detail-value">{userData.email}</span>
                 </div>
-                <div className="setting-card">
-                  <div className="setting-icon"><FaUser /></div>
-                  <div className="setting-content">
-                    <h3>Account Details</h3>
-                    <p>Edit personal information</p>
-                  </div>
-                  <button className="setting-action-btn">Manage</button>
+                <div className="detail-item">
+                  <span className="detail-label">Account Created:</span>
+                  <span className="detail-value">
+                    {new Date(userData.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Last Login:</span>
+                  <span className="detail-value">
+                    {new Date(userData.last_login).toLocaleString()}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Status:</span>
+                  <span className="detail-value">
+                    {userData.is_active ? 'Active' : 'Inactive'}
+                    {userData.is_verified && ' • Verified'}
+                  </span>
                 </div>
               </div>
-            </section>
-          </div>
+            )}
+          </section>
         </div>
       </div>
     </div>

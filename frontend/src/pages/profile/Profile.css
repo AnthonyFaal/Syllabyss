@@ -1,4 +1,18 @@
-/* Profile Header */
+/* Base container adjustments */
+.profile-page {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.profile-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 1rem; /* Reduced from 2rem */
+  box-sizing: border-box;
+}
+
 .profile-header {
   display: flex;
   flex-direction: column;
@@ -518,4 +532,69 @@
   .profile-bottom-sections {
     grid-template-columns: 2fr 3fr;
   }
+}
+
+.password-update {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+  gap: 8px;
+}
+
+.password-input {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.save-password-btn {
+  background-color: #007BFF;
+  color: white;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.save-password-btn:hover {
+  background-color: #0056b3;
+}
+
+
+/* Account Details Panel */
+.account-details-panel {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e1e4e8;
+}
+
+.account-details-panel h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #2c3e50;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+}
+
+.detail-item {
+  display: flex;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #495057;
+  width: 150px;
+  min-width: 150px;
+}
+
+.detail-value {
+  color: #6c757d;
+  flex-grow: 1;
 }

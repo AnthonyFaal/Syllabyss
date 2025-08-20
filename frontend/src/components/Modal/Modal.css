@@ -1,79 +1,197 @@
+/* =========================
+   Modal Overlay
+   ========================= */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  background-color: rgba(0, 0, 0, 0.35); /* softer overlay */
   z-index: 1000;
+  transition: opacity 0.3s ease;
 }
 
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1001;
-}
-
+/* =========================
+   Modal Container Base
+   ========================= */
 .modal-container {
-  position: relative;
-  z-index: 1002;
+  position: fixed;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  overflow-y: auto;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+  display: flex;
+  flex-direction: column;
+  width: 80%;
+}
+
+/* =========================
+   Centered Modal
+   ========================= */
+.modal-container.center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
   width: 90%;
   max-width: 600px;
   max-height: 90vh;
-  overflow-y: auto;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  animation: modalFadeIn 0.3s ease-out;
 }
 
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.modal-container.center.open {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
 }
 
+/* =========================
+   Side Panels
+   ========================= */
+.modal-container.side-panel,
+.modal-container.side-right {
+  top: 0;
+  right: 0;
+  left: auto;
+  height: 100%;
+  border-radius: 0;
+}
+
+.modal-container.side-left {
+  top: 0;
+  left: 0;
+  right: auto;
+  width: 40%;
+  max-width: 600px;
+  height: 100%;
+  border-radius: 0;
+  transform: translateX(-100%);
+}
+
+.modal-container.side-panel.open,
+.modal-container.side-right.open,
+.modal-container.side-left.open {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* =========================
+   Bottom Panel
+   ========================= */
+.modal-container.bottom {
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  border-radius: 12px 12px 0 0;
+  transform: translateY(100%);
+}
+
+.modal-container.bottom.open {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* =========================
+   Modal Content
+   ========================= */
 .modal-content {
   padding: 30px;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow-y: auto;
 }
 
+/* =========================
+   Close Button
+   ========================= */
 .modal-close-button {
   position: absolute;
   top: 15px;
   right: 15px;
-  background: none;
+  background-color: #ff4d4d; /* Bright red for visibility */
   border: none;
-  font-size: 24px;
+  border-radius: 50%; /* Circular button */
+  width: 40px; /* Fixed width */
+  height: 40px; /* Fixed height */
   cursor: pointer;
-  color: #6b7280;
-  transition: color 0.2s ease;
-  padding: 5px;
-  line-height: 1;
+  color: #ffffff; /* White text for high contrast */
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions */
+  display: flex; /* Use flexbox for centering */
+  align-items: center; /* Center vertically */
+  justify-content: center; /* Center horizontally */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2); /* Shadow for depth */
 }
 
 .modal-close-button:hover {
-  color: #1f2937;
+  background-color: #ff1a1a; /* Darker red on hover */
+  transform: scale(1.1); /* Slightly enlarge on hover for emphasis */
+}
+/* =========================
+   Responsive Adjustments
+   ========================= */
+@media (max-width: 1024px) {
+  .modal-container.side-panel,
+  .modal-container.side-right,
+  .modal-container.side-left {
+    width: 60%;
+  }
 }
 
+
 @media (max-width: 768px) {
-  .modal-container {
+  .modal-container.center {
     width: 95%;
     max-height: 85vh;
   }
-  
+
+  .modal-container.side-panel,
+  .modal-container.side-right,
+  .modal-container.side-left {
+    width: 100%;
+  }
+
+  .modal-container.bottom {
+    height: 70%;
+  }
+
   .modal-content {
     padding: 20px;
   }
+}
+
+/* =========================
+   Smooth Scrollbars
+   ========================= */
+.modal-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-container::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.2);
+  border-radius: 4px;
+}
+
+.modal-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.3);
+}
+
+/* =========================
+   Optional: Header & Footer Styling
+   ========================= */
+.modal-header,
+.modal-footer {
+  padding: 15px 30px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-footer {
+  border-top: 1px solid #e5e7eb;
+  border-bottom: none;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }

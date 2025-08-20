@@ -1,39 +1,67 @@
+/* eslint-disable no-unused-vars */
 import React, { useState } from "react";
 import { FaTimes } from "react-icons/fa";
-import MiriamAvatar from "../../assets/Avatar.jpeg"; // Ensure correct path
+import MiriamAvatar from "../../assets/Avatar.jpeg";
 import "./ChatAssistant.css";
+import { Filter } from "bad-words";
 
-const dummyReplies = [
-  "Hello! How can I assist you today?",
-  "Sure, I can help with that!",
-  "Interesting question, let me explain...",
-  "You're doing great, keep going!",
-  "Let’s dive a bit deeper into that topic.",
-  "That's a smart question!",
-  "Great job asking that. Here's what I found...",
-];
+const filter = new Filter();
 
-const ChatAssistant = ({ onClose }) => {
+const ChatAssistant = ({ onClose, onSendMessage }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSend = () => {
-    if (input.trim() === "") return;
+  const isGreeting = (text) => {
+    const greetings = ["hello", "hi", "hey", "good morning", "good afternoon"];
+    const cleaned = text.toLowerCase().trim();
+    return greetings.some((greet) => cleaned.includes(greet));
+  };
 
-    const userMessage = { from: "user", text: input };
-    const botReply = {
-      from: "bot",
-      text: dummyReplies[Math.floor(Math.random() * dummyReplies.length)],
-    };
+  const handleSend = async () => {
+    if (!input.trim()) return;
 
+    const text = input.trim();
+    const userMessage = { from: "user", text };
     setMessages((prev) => [...prev, userMessage]);
-
-    // Simulate delay
-    setTimeout(() => {
-      setMessages((prev) => [...prev, botReply]);
-    }, 800);
-
     setInput("");
+
+    if (filter.isProfane(text)) {
+      const blockedReply = {
+        from: "bot",
+        text: "Let's keep our conversation respectful 😊",
+      };
+      setMessages((prev) => [...prev, blockedReply]);
+      return;
+    }
+
+    if (isGreeting(text)) {
+      const greetingReply = {
+        from: "bot",
+        text: "Hello! How can I assist you today?",
+      };
+      setMessages((prev) => [...prev, greetingReply]);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await onSendMessage(text);
+      setLoading(false);
+
+      const botReply = {
+        from: "bot",
+        text: response?.data?.data?.reply || "I'm not sure how to respond to that yet.",
+      };
+      setMessages((prev) => [...prev, botReply]);
+    } catch (err) {
+      setLoading(false);
+      const errorReply = {
+        from: "bot",
+        text: "Sorry, something went wrong. Please try again later.",
+      };
+      setMessages((prev) => [...prev, errorReply]);
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -56,15 +84,18 @@ const ChatAssistant = ({ onClose }) => {
             className={`chat-message ${msg.from === "user" ? "user" : "bot"}`}
           >
             {msg.from === "bot" && (
-              <img
-                src={MiriamAvatar}
-                alt="Miriam"
-                className="avatar"
-              />
+              <img src={MiriamAvatar} alt="Miriam" className="avatar" />
             )}
             <span>{msg.text}</span>
           </div>
         ))}
+
+        {loading && (
+          <div className="chat-message bot">
+            <img src={MiriamAvatar} alt="Miriam" className="avatar" />
+            <span className="typing-indicator-alt">Typing<span className="dot">.</span><span className="dot">.</span><span className="dot">.</span></span>
+          </div>
+        )}
       </div>
 
       <div className="chat-input">
