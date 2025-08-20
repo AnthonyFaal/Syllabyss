@@ -4,8 +4,8 @@ const bcrypt = require('bcrypt');
 const { sendVerificationEmail, sendPasswordUpdateEmail } = require('../utils/sendEmail');
 const { generateToken } = require('../utils/generateToken');
 const { uploadFileBuffer } = require('../utils/cloudinary');
-const { HOST, PORT } = require('../../port');
-
+const dotenv = require('dotenv');
+dotenv.config(); 
 
 const userRepo = new BaseRepository('users', 'user_id');
 
@@ -56,6 +56,9 @@ const verifyEmail = async (req, res) => {
     const { token } = req.params;
     const now = new Date();
 
+    // Use FRONTEND_URL from environment variables with fallback
+    const frontendUrl = process.env.FRONTEND_URL;
+    
     // Find user with the verification token
     const user = await userRepo.getOne({ verification_token: token });
     
@@ -77,10 +80,12 @@ const verifyEmail = async (req, res) => {
       token_expires_at: null
     });
 
-    return res.redirect(`http://${HOST}:5173/user-interest?verified=true&userId=${user.user_id}`);
+    // Use the FRONTEND_URL variable
+    return res.redirect(`${frontendUrl}/user-interest?verified=true&userId=${user.user_id}`);
   } catch (err) {
     console.error('Verification error:', err);
-    return res.redirect(`http://${HOST}:5173/user-interest?verified=false&error=${encodeURIComponent('Verification failed. Please try again.')}`);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    return res.redirect(`${frontendUrl}/user-interest?verified=false&error=${encodeURIComponent('Verification failed. Please try again.')}`);
   }
 };
 
