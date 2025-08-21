@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendVerificationEmail = async (to, token) => {
-  const url = `${HOST}/api/auth/verify/${token}`;
+  const url = `https://final-year-server.onrender.com/api/auth/verify/${token}`;
 
   await transporter.sendMail({
     from: `"Syllabyss" <${process.env.EMAIL_FROM}>`, 

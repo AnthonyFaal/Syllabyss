@@ -6,7 +6,7 @@ const openai = require("../config/openaiClient");
 const { OPEN_AI_MODEL } = require("../config/openaiClient");
 const dotenv = require('dotenv');
 dotenv.config();
-
+ 
 const { jsonrepair } = require("jsonrepair");
 
 const CONTENT_GENERATION_API =`${process.env.CONTENT_GENERATOR_URL}/generate`;
@@ -67,11 +67,7 @@ async function generateCourseContent(userPrompt, userHistory = [], options = {})
   const content_type = options.content_type ?? "article"; // fallback only if undefined or null
   const difficulty_level = options.difficulty_level ?? "beginner";
   const voice = options.voice ?? "Ava";
-  
-   console.log(`📌 Received content type in generateCourseContent: ${content_type}`);
-  console.log(`📌 Received difficulty in generateCourseContent: ${difficulty_level}`);
-  console.log(`📌 Received voice in generateCourseContent: ${voice}`);
-
+ 
   const isArticle = content_type === "article";
 
   // ---- LLM Call (same as before) ----
