@@ -108,7 +108,7 @@ const Profile = () => {
     }
     setLoading(true);
     try {
-      await updatePassword(userId, { password: newPassword });
+      await updatePassword({ newPassword });
       alert("Password updated successfully.");
       setNewPassword('');
       setPasswordMode(false);

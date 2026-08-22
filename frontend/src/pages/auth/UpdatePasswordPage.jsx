@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { forgotPassword } from '../../api/APIs';
 import './UpdatePasswordPage.css';
 
@@ -8,12 +9,14 @@ const UpdatePasswordPage = () => {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [searchParams] = useSearchParams();
+  const resetToken = searchParams.get('token');
 
   const handleUpdate = async (e) => {
     e.preventDefault();
 
-    if (!email || !newPassword) {
-      setError('Please provide your email and a new password.');
+    if (resetToken ? !newPassword : !email) {
+      setError(resetToken ? 'Please provide a new password.' : 'Please provide your email address.');
       return;
     }
 
@@ -22,7 +25,9 @@ const UpdatePasswordPage = () => {
     setMessage('');
 
     try {
-      const response = await forgotPassword({ email, newPassword });
+      const response = await forgotPassword(
+        resetToken ? { token: resetToken, newPassword } : { email }
+      );
 
       setMessage(
         response.data.message || 'Your password has been reset successfully.'
@@ -48,22 +53,15 @@ const UpdatePasswordPage = () => {
   return (
     <div className="update-password-container">
       <div className="update-password-card">
-        <h2 className="update-password-title">Reset Your Password</h2>
+        <h2 className="update-password-title">{resetToken ? 'Choose a New Password' : 'Reset Your Password'}</h2>
 
         <form onSubmit={handleUpdate}>
-          <div className="form-group">
+          {!resetToken && <div className="form-group">
             <label className="form-label">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="form-input"
-              placeholder="Enter your email"
-              required
-            />
-          </div>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="form-input" placeholder="Enter your email" required />
+          </div>}
 
-          <div className="form-group">
+          {resetToken && <div className="form-group">
             <label className="form-label">New Password</label>
             <input
               type="password"
@@ -74,7 +72,7 @@ const UpdatePasswordPage = () => {
               minLength={6}
               required
             />
-          </div>
+          </div>}
 
           {error && (
             <div className="error-message" role="alert">
@@ -92,9 +90,10 @@ const UpdatePasswordPage = () => {
             disabled={loading}
             className="submit-button"
           >
-            {loading ? 'Processing...' : 'Reset Password'}
+            {loading ? 'Processing...' : resetToken ? 'Set New Password' : 'Send Reset Link'}
           </button>
         </form>
+        <Link to="/auth" className="forgot-password">Back to login</Link>
       </div>
     </div>
   );

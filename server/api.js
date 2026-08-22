@@ -20,8 +20,14 @@ const feedbackRoutes = require('./src/routes/feedbackRoutes');
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',');
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('Origin not allowed by CORS'));
+  }
+}));
+app.use(express.json({ limit: '1mb' }));
 
 // Mount API routes
 app.use("/api", authRoutes);

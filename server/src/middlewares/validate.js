@@ -28,7 +28,6 @@ const validateLogin = [
 ];
 
 const validatePasswordUpdate = [
-  body('userId').notEmpty().withMessage('User ID is required'),
   body('newPassword')
     .isLength({ min: 6 }).withMessage('New password must be at least 6 characters long')
     .matches(/\d/).withMessage('New password must contain a number'),

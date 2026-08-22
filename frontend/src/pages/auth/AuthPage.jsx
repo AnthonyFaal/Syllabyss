@@ -44,7 +44,7 @@ const AuthPage = () => {
         const res = await loginUser(formData);
         const { token, userId } = res.data;
 
-        setAuthToken(token, userId);
+        setAuthToken(token, userId, rememberMe);
         rememberMe
           ? localStorage.setItem('rememberMe', 'true')
           : localStorage.removeItem('rememberMe');

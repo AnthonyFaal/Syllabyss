@@ -49,7 +49,7 @@ export const registerUser = (data) => post('/auth/register', data);
 export const loginUser = (data) => post('/auth/login', data);
 export const verifyEmail = (token) => get(`/auth/verify/${token}`);
 export const updatePassword = (data) => put('/auth/update-password', data);
-export const forgotPassword = (data) => put('auth/forgot-password', data);
+export const forgotPassword = (data) => put('/auth/forgot-password', data);
 export const updateUserBio = (userId, data) => put(`/users/${userId}/bio`, data);
 export const getUsers = () => get('/users');
 export const getUserById = (userId) => get(`/users/${userId}`);

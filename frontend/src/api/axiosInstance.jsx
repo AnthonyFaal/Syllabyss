@@ -2,9 +2,7 @@
 import axios from 'axios';
 import { clearAuthToken } from '../utils/authToken';
 
-export const API_BASE_URL = 'http://10.236.236.203:4000';
-// export const API_BASE_URL = 'http://localhost:4000/';
-// export const API_BASE_URL = 'https://final-year-server.onrender.com';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
 
 const axiosInstance = axios.create({
   baseURL: `${API_BASE_URL}/api`,
@@ -25,9 +23,9 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && window.location.pathname.startsWith('/app')) {
       clearAuthToken();
-      window.location.href = '/auth';
+      window.location.replace('/auth');
     }
 
     const errorMessage = error.response?.data?.message || 
@@ -38,6 +36,7 @@ axiosInstance.interceptors.response.use(
       message: errorMessage,
       status: error.response?.status,
       data: error.response?.data,
+      response: error.response,
     });
   }
 );

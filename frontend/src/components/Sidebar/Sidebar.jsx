@@ -75,7 +75,6 @@ const Sidebar = ({ children }) => {
       setIsOpen(false); 
     }
     navigate('/auth', { replace: true }); 
-    window.location.reload(); 
   };
 
   const markAsRead = (id) => {

@@ -70,4 +70,15 @@ const sendPasswordUpdateEmail = async (to) => {
   });
 };
 
-module.exports = { sendVerificationEmail, sendPasswordUpdateEmail };
+const sendPasswordResetEmail = async (to, token) => {
+  const frontendUrl = process.env.FRONTEND_URL || `http://${HOST}:5173`;
+  const url = `${frontendUrl}/forgot-password?token=${encodeURIComponent(token)}`;
+  await transporter.sendMail({
+    from: `"Syllabyss Security" <${process.env.EMAIL_FROM}>`,
+    to,
+    subject: 'Reset your Syllabyss password',
+    html: `<p>Use the link below to reset your password. It expires in one hour.</p><p><a href="${url}">Reset password</a></p><p>If you did not request this, you can ignore this email.</p>`
+  });
+};
+
+module.exports = { sendVerificationEmail, sendPasswordResetEmail, sendPasswordUpdateEmail };
