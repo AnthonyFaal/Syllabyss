@@ -1,6 +1,6 @@
 // src/api/axiosInstance.js
 import axios from 'axios';
-import { clearAuthToken } from '../utils/authToken';
+import { clearAuthToken, getAuthToken } from '../utils/authToken';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
 
@@ -11,7 +11,7 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = getAuthToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
