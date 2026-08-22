@@ -4,8 +4,8 @@ const bcrypt = require('bcrypt');
 const { sendVerificationEmail, sendPasswordResetEmail, sendPasswordUpdateEmail } = require('../utils/sendEmail');
 const { generateToken } = require('../utils/generateToken');
 const { uploadFileBuffer } = require('../utils/cloudinary');
-const { HOST, PORT } = require('../../port');
-
+const dotenv = require('dotenv');
+dotenv.config(); 
 
 const userRepo = new BaseRepository('users', 'user_id');
 
@@ -58,6 +58,9 @@ const verifyEmail = async (req, res) => {
     const { token } = req.params;
     const now = new Date();
 
+    // Use FRONTEND_URL from environment variables with fallback
+    const frontendUrl = process.env.FRONTEND_URL;
+    
     // Find user with the verification token
     const user = await userRepo.getOne({ verification_token: token });
     

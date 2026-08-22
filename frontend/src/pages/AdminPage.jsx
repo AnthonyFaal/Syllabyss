@@ -99,12 +99,6 @@ const AdminPanel = () => {
       {/* Mobile Header */}
       {windowWidth <= 768 && (
         <div className="mobile-header">
-          <button 
-            className="mobile-menu-btn"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
-          </button>
           <h1><FaUserShield /> Admin</h1>
         </div>
       )}
