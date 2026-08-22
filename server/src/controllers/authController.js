@@ -1,13 +1,15 @@
 const { BaseRepository} = require('../utils/index');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { sendVerificationEmail, sendPasswordUpdateEmail } = require('../utils/sendEmail');
+const { sendVerificationEmail, sendPasswordResetEmail, sendPasswordUpdateEmail } = require('../utils/sendEmail');
 const { generateToken } = require('../utils/generateToken');
 const { uploadFileBuffer } = require('../utils/cloudinary');
 const dotenv = require('dotenv');
 dotenv.config(); 
 
 const userRepo = new BaseRepository('users', 'user_id');
+
+const canManageUser = (req, userId) => req.user.role === 'admin' || String(req.user.id) === String(userId);
 
 const register = async (req, res) => {
   try {
@@ -80,12 +82,10 @@ const verifyEmail = async (req, res) => {
       token_expires_at: null
     });
 
-    // Use the FRONTEND_URL variable
-    return res.redirect(`${frontendUrl}/user-interest?verified=true&userId=${user.user_id}`);
+    return res.redirect(`${process.env.FRONTEND_URL || `http://${HOST}:5173`}/user-interest?verified=true&userId=${user.user_id}`);
   } catch (err) {
     console.error('Verification error:', err);
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    return res.redirect(`${frontendUrl}/user-interest?verified=false&error=${encodeURIComponent('Verification failed. Please try again.')}`);
+    return res.redirect(`${process.env.FRONTEND_URL || `http://${HOST}:5173`}/user-interest?verified=false&error=${encodeURIComponent('Verification failed. Please try again.')}`);
   }
 };
 
@@ -146,10 +146,11 @@ const login = async (req, res) => {
 
 const updatePasswordController = async (req, res) => {
   try {
-    const { userId, newPassword } = req.body;
+    const { newPassword } = req.body;
+    const userId = req.user.id;
 
-    if (!userId || !newPassword) {
-      return res.status(400).json({ error: 'User ID and new password are required.' });
+    if (!newPassword) {
+      return res.status(400).json({ error: 'A new password is required.' });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -171,17 +172,33 @@ const updatePasswordController = async (req, res) => {
 
 const forgotPasswordController = async (req, res) => {
   try {
-    const { email, newPassword } = req.body;
+    const { email, token, newPassword } = req.body;
 
-    if (!email || !newPassword) {
-      return res.status(400).json({ error: 'Email and new password are required.' });
+    if (email && !token && !newPassword) {
+      const user = await userRepo.getOne({ email });
+      if (user) {
+        const resetToken = generateToken();
+        await userRepo.update(user.user_id, {
+          verification_token: resetToken,
+          token_expires_at: new Date(Date.now() + 60 * 60 * 1000)
+        });
+        await sendPasswordResetEmail(email, resetToken);
+      }
+      return res.json({ message: 'If an account exists for that email, a reset link has been sent.' });
+    }
+
+    if (!token || !newPassword) return res.status(400).json({ error: 'A valid reset token and new password are required.' });
+    if (newPassword.length < 6 || !/\d/.test(newPassword)) {
+      return res.status(422).json({ error: 'Password must be at least 6 characters and include a number.' });
+    }
+
+    const user = await userRepo.getOne({ verification_token: token });
+    if (!user || !user.token_expires_at || new Date(user.token_expires_at) < new Date()) {
+      return res.status(400).json({ error: 'This password reset link is invalid or has expired.' });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    const updatedUser = await userRepo.update(
-      { email },
-      { password: hashedPassword }
-    );
+    const updatedUser = await userRepo.update(user.user_id, { password: hashedPassword, verification_token: null, token_expires_at: null });
 
     if (!updatedUser) {
       return res.status(404).json({ error: 'No account found with the provided email address.' });
@@ -202,7 +219,7 @@ const getUsers = async (req, res) => {
       {},
       `CASE WHEN role = 'admin' THEN 0 ELSE 1 END, name ASC`
     );
-    res.status(200).json(users);
+    res.status(200).json(users.map(({ password, verification_token, token_expires_at, ...user }) => user));
   } catch (err) {
     res.status(500).json({ error: 'Server error: ' + err.message });
   }
@@ -212,6 +229,7 @@ const getUsers = async (req, res) => {
 const updateProfileImageController = async (req, res) => {
   try {
     const userId = req.params.userId;
+    if (!canManageUser(req, userId)) return res.status(403).json({ message: 'You cannot update this profile.' });
     const file = req.file;
     const location = 'profile_images';
 
@@ -259,6 +277,8 @@ const updateBioController = async (req, res) => {
   try {
     const { userId } = req.params;
     const { bio } = req.body;
+
+    if (!canManageUser(req, userId)) return res.status(403).json({ message: 'You cannot update this profile.' });
 
     if (!bio) {
       return res.status(400).json({ message: 'Bio is required' });
