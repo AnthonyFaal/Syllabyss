@@ -163,78 +163,78 @@ const Insights = () => {
         
         {/* Recent Activity */}
      <div className="insight-card large">
-  <h3><HiOutlineAcademicCap className="section-icon" /> Activity Log</h3>
-  {activityLog.length > 0 ? (
-    <ul className="activity-log">
-      {activityLog.slice(0, 5).map((log) => (
-        <li key={log.activity_id} className="activity-item">
-          <div className="activity-content">
-            <div className="activity-icon">
-              {log.activity_type === "quiz_completed" && <FaRegCheckCircle className="quiz-icon" />}
-              {log.activity_type === "course_started" && <FaPlay className="course-icon" />}
-              {log.activity_type === "course_completed" && <FaAward className="complete-icon" />}
-              {!["quiz_completed", "course_started", "course_completed"].includes(log.activity_type) && 
-                <FaExclamationTriangle className="default-icon" />}
-            </div>
-            <div className="activity-text">
-              {log.activity_type === "quiz_completed" && (
-                <>
-                  <div className="activity-type">Completed quiz</div>
-                  <div className="activity-title">
-                    <FaBook className="title-icon" /> {log.quiz_title}
+        <h3><HiOutlineAcademicCap className="section-icon" /> Activity Log</h3>
+        {activityLog.length > 0 ? (
+          <ul className="activity-log">
+            {activityLog.slice(0, 5).map((log) => (
+              <li key={log.activity_id} className="activity-item">
+                <div className="activity-content">
+                  <div className="activity-icon">
+                    {log.activity_type === "quiz_completed" && <FaRegCheckCircle className="quiz-icon" />}
+                    {log.activity_type === "course_started" && <FaPlay className="course-icon" />}
+                    {log.activity_type === "course_completed" && <FaAward className="complete-icon" />}
+                    {!["quiz_completed", "course_started", "course_completed"].includes(log.activity_type) && 
+                      <FaExclamationTriangle className="default-icon" />}
                   </div>
-                  {log.description && (
-                    <div className="activity-detail">
-                      <FaChartBar className="detail-icon" />
-                      Score: {log.description.match(/score (\d+\.?\d*)/)?.[1]}%
-                    </div>
-                  )}
-                </>
-              )}
-              {log.activity_type === "course_started" && (
-                <>
-                  <div className="activity-type">Started course</div>
-                  <div className="activity-title">
-                    <FaBookOpen className="title-icon" /> {log.course_title}
+                  <div className="activity-text">
+                    {log.activity_type === "quiz_completed" && (
+                      <>
+                        <div className="activity-type">Completed quiz</div>
+                        <div className="activity-title">
+                          <FaBook className="title-icon" /> {log.quiz_title}
+                        </div>
+                        {log.description && (
+                          <div className="activity-detail">
+                            <FaChartBar className="detail-icon" />
+                            Score: {log.description.match(/score (\d+\.?\d*)/)?.[1]}%
+                          </div>
+                        )}
+                      </>
+                    )}
+                    {log.activity_type === "course_started" && (
+                      <>
+                        <div className="activity-type">Started course</div>
+                        <div className="activity-title">
+                          <FaBookOpen className="title-icon" /> {log.course_title}
+                        </div>
+                      </>
+                    )}
+                    {log.activity_type === "course_completed" && (
+                      <>
+                        <div className="activity-type">Completed course</div>
+                        <div className="activity-title">
+                          <FaBook className="title-icon" /> {log.course_title}
+                        </div>
+                      </>
+                    )}
+                    {!["quiz_completed", "course_started", "course_completed"].includes(log.activity_type) && (
+                      <div className="activity-title">
+                        <FaExclamationTriangle className="title-icon" />
+                        {log.description || log.activity_type.replace(/_/g, ' ')}
+                      </div>
+                    )}
                   </div>
-                </>
-              )}
-              {log.activity_type === "course_completed" && (
-                <>
-                  <div className="activity-type">Completed course</div>
-                  <div className="activity-title">
-                    <FaBook className="title-icon" /> {log.course_title}
+                  <div className="activity-time">
+                    <FaRegClock className="time-icon" />
+                    {new Date(log.created_at).toLocaleString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
                   </div>
-                </>
-              )}
-              {!["quiz_completed", "course_started", "course_completed"].includes(log.activity_type) && (
-                <div className="activity-title">
-                  <FaExclamationTriangle className="title-icon" />
-                  {log.description || log.activity_type.replace(/_/g, ' ')}
                 </div>
-              )}
-            </div>
-            <div className="activity-time">
-              <FaRegClock className="time-icon" />
-              {new Date(log.created_at).toLocaleString(undefined, {
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="no-data">
+            <FaInbox className="no-data-icon" />
+            No recent activity
           </div>
-        </li>
-      ))}
-    </ul>
-  ) : (
-    <div className="no-data">
-      <FaInbox className="no-data-icon" />
-      No recent activity
+        )}
+      </div>
     </div>
-  )}
-</div>
-        </div>
 
       {/* performance */}
    <div className="insight-card">
