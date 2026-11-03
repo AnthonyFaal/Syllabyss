@@ -11,9 +11,20 @@ const userRepo = new BaseRepository('users', 'user_id');
 
 const canManageUser = (req, userId) => req.user.role === 'admin' || String(req.user.id) === String(userId);
 
+// Email delivery is intentionally not part of the authentication critical path.
+// A slow SMTP provider must never make a successful registration or login look
+// like it failed to the learner.
+const deliverEmailInBackground = (operation, context) => {
+  void operation().catch((error) => {
+    console.error(`Unable to send ${context} email:`, error.message);
+  });
+};
+
 const register = async (req, res) => {
   try {
-    const { email, password, name } = req.body;
+    const { password } = req.body;
+    const email = req.body.email.trim().toLowerCase();
+    const name = req.body.name.trim();
     const token = generateToken();
     const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 1 day
 
@@ -40,10 +51,10 @@ const register = async (req, res) => {
       is_verified: false
     });
 
-    await sendVerificationEmail(email, token);
+    deliverEmailInBackground(() => sendVerificationEmail(email, token), 'verification');
     
     res.status(201).json({
-      message: 'User registered successfully. A verification link has been sent to your email.',
+      message: 'Account created. Your verification email is on its way and may take a moment to arrive.',
       userId: user.user_id
     });
   } catch (err) {
@@ -82,16 +93,17 @@ const verifyEmail = async (req, res) => {
       token_expires_at: null
     });
 
-    return res.redirect(`${process.env.FRONTEND_URL || `http://${HOST}:5173`}/user-interest?verified=true&userId=${user.user_id}`);
+    return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/user-interest?verified=true&userId=${user.user_id}`);
   } catch (err) {
     console.error('Verification error:', err);
-    return res.redirect(`${process.env.FRONTEND_URL || `http://${HOST}:5173`}/user-interest?verified=false&error=${encodeURIComponent('Verification failed. Please try again.')}`);
+    return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/user-interest?verified=false&error=${encodeURIComponent('Verification failed. Please try again.')}`);
   }
 };
 
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { password } = req.body;
+    const email = req.body.email.trim().toLowerCase();
    
     // 1. Check if user exists
     const user = await userRepo.getOne({ email });
@@ -107,28 +119,35 @@ const login = async (req, res) => {
 
     // 3. Verify account status
     if (!user.is_verified) {
-      const token = generateToken();
-      const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); 
-      
-      // Update verification token
-      await userRepo.update(user.user_id, {
-        verification_token: token,
-        token_expires_at: tokenExpiresAt
-      });
-      
-      await sendVerificationEmail(email, token);
+      // Preserve the helpful resend behaviour without putting SMTP or an extra
+      // database write on the login response path.
+      deliverEmailInBackground(async () => {
+        const tokenIsUsable = user.verification_token
+          && user.token_expires_at
+          && new Date(user.token_expires_at) > new Date();
+        const token = tokenIsUsable ? user.verification_token : generateToken();
+
+        if (!tokenIsUsable) {
+          await userRepo.update(user.user_id, {
+            verification_token: token,
+            token_expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          });
+        }
+
+        await sendVerificationEmail(email, token);
+      }, 'verification');
 
       return res.status(403).json({
-        error: 'Email not verified. A new verification email has been sent.'
+        error: 'Email not verified. A verification email is on its way.'
       });
     }
 
-    // 4. Update last login
-    await userRepo.update(user.user_id, {
-      last_login: new Date()
+    // Record analytics without making a successful login wait for an extra write.
+    void userRepo.update(user.user_id, { last_login: new Date() }).catch((error) => {
+      console.error('Unable to update last login:', error.message);
     });
 
-    // 5. Create JWT
+    // Create JWT
     const token = jwt.sign(
       { user_id: user.user_id, role: user.role },
       process.env.JWT_SECRET, 

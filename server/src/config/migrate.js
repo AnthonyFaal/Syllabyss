@@ -382,9 +382,12 @@ const createTables = async () => {
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_goals_user ON user_goals(user_id);`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_goals_goal ON user_goals(goal_id);`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_id ON users(user_id);`);
+    // The UNIQUE constraint already indexes email, but this explicit index also
+    // supports databases created before that constraint was introduced.
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_course_id ON courses(course_id);`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_material_id ON learning_materials(material_id);`);
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_quiz ON user_quiz_attempts(user_id, quiz_id);`);await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_quiz ON user_quiz_attempts(user_id, quiz_id);`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_quiz ON user_quiz_attempts(user_id, quiz_id);`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_chat_events_chat_id ON chat_events(chat_id);`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_event_participants_event_id ON event_participants(event_id);`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_event_participants_user_id ON event_participants(user_id);`);

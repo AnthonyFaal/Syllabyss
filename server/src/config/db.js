@@ -13,6 +13,13 @@ if (!process.env.POSTGRES_URL) {
 // Initialize the PostgreSQL connection pool
 const pool = new Pool({
   connectionString: process.env.POSTGRES_URL,
+  // Fail a request predictably instead of leaving the browser waiting for the
+  // default driver timeout when the database is unavailable or saturated.
+  connectionTimeoutMillis: Number(process.env.DB_CONNECTION_TIMEOUT_MS || 7000),
+  query_timeout: Number(process.env.DB_QUERY_TIMEOUT_MS || 10000),
+  statement_timeout: Number(process.env.DB_STATEMENT_TIMEOUT_MS || 10000),
+  idleTimeoutMillis: Number(process.env.DB_IDLE_TIMEOUT_MS || 30000),
+  max: Number(process.env.DB_POOL_MAX || 10),
 });
 
 // Test the connection and log success or failure

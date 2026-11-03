@@ -1,112 +1,147 @@
-# Syllabyss
+# Syllabys
 
-Syllabyss is a full-stack learning platform for personalised learning, course progress, assessments, goals, analytics, peer collaboration, recommendations, and AI-assisted study support.
+<p align="center">
+  <img src="frontend/public/Logo.png" alt="Syllabys logo" width="160" />
+</p>
 
-It consists of a React/Vite single-page application and an Express/PostgreSQL API, designed for separate frontend and backend deployments.
+<p align="center">A focused learning companion for planning coursework, tracking progress, testing knowledge, and learning with others.</p>
+
+<p align="center"><a href="https://final-year-yynk.onrender.com"><strong>Open the live demo</strong></a></p>
+
+## Overview
+
+Syllabys is a full-stack learning platform for learners who want a clearer path through their coursework. It combines course planning, learning material, assessments, goals, progress analytics, peer collaboration, and AI-assisted study support in one product.
+
+It is split into a React single-page application and an Express/PostgreSQL API, so the web client and API can be deployed independently.
+
+## Live demo and video
+
+Try the deployed application at [final-year-yynk.onrender.com](https://final-year-yynk.onrender.com). It is the current interactive product demo.
+
+> Video walkthrough: add a public YouTube, Loom, or MP4 URL here when a recording is available. The supplied URL is a live application—not a video—so it is intentionally labelled accurately.
+
+## Product preview
+
+| Syllabys | Learning flow |
+| --- | --- |
+| ![Syllabys logo](frontend/public/Logo.png) | Sign up, choose learning interests, organise coursework, study materials, complete quizzes, and review progress over time. |
+
+## Features
+
+- Account creation, email verification, sign-in, password reset, and profile management.
+- Interest flow and personalised learning recommendations.
+- Courses, modules, materials, deadlines, and progress tracking.
+- Quizzes, goals, XP, streaks, leaderboards, and learning insights.
+- Collaboration through chats, events, and Socket.IO real-time updates.
+- AI study assistant where OpenAI/DeepSeek credentials are configured.
+- User and platform management through administrator views.
 
 ## Architecture
 
-```text
-Browser (React + Vite)
-        |
-        | HTTPS / JSON + Bearer JWT
-        v
-Express API + Socket.IO
-        |
-        +-- PostgreSQL
-        +-- Cloudinary (media uploads)
-        +-- Email provider via Nodemailer
-        +-- OpenAI / DeepSeek (where configured)
+```mermaid
+flowchart LR
+  U[Learner or administrator] --> W[React + Vite web application]
+  W -->|HTTPS JSON + JWT| A[Express API]
+  W <-->|Realtime updates| S[Socket.IO]
+  A --> P[(PostgreSQL)]
+  A --> M[SMTP email provider]
+  A --> C[Cloudinary media storage]
+  A --> I[AI providers]
+  S --> A
 ```
 
 | Area | Location | Responsibility |
 | --- | --- | --- |
-| Frontend | `frontend/` | React UI, routes, API client, session handling |
-| Backend | `server/` | Express routes, controllers, auth, database access |
-| Migrations | `server/src/config/migrate.js` | PostgreSQL schema setup |
-| API client | `frontend/src/api/` | Axios setup and endpoint functions |
+| Web application | `frontend/` | React UI, navigation, API client, browser sessions |
+| API | `server/` | Express routes, authentication, business logic, Socket.IO |
+| Database schema | `server/src/config/migrate.js` | PostgreSQL tables and indexes |
+| API client | `frontend/src/api/` | Axios configuration and endpoint helpers |
+| Authentication | `server/src/controllers/authController.js` | Registration, verification, login, passwords |
 
-## Features
+## Technology
 
-- Email registration, verification, login, logout, password reset, and password changes
-- Normal browser-session login plus optional persistent “Remember me” login
-- Courses, modules, materials, and learning-progress tracking
-- Quizzes, goals, XP, streaks, leaderboards, and insights
-- Interest flow and learning recommendations
-- Collaboration chat, events, and Socket.IO updates
-- Profile biography and image upload
-- Tutor/chat assistant, feedback, and admin views
+| Layer | Tools |
+| --- | --- |
+| Frontend | React 19, Vite, React Router, Material UI, Recharts |
+| Backend | Node.js, Express, Socket.IO |
+| Data | PostgreSQL with `pg` |
+| Auth | JWT, bcrypt, email verification |
+| Integrations | Nodemailer, Cloudinary, OpenAI, DeepSeek, Dialogflow |
 
-## Requirements
+## Project structure
 
-- Node.js 18+ (Node 20 LTS recommended)
-- npm 9+
-- PostgreSQL
-- SMTP credentials (a Gmail app password works)
+```text
+final_year/
+├── frontend/                 # React/Vite client
+│   ├── public/               # Logo, voices, public assets
+│   └── src/                  # Pages, components, routes, API client
+├── server/                   # Express API
+│   ├── scripts/              # Operational scripts
+│   └── src/
+│       ├── controllers/      # Request handlers
+│       ├── models/           # Data access helpers
+│       ├── routes/           # API route definitions
+│       └── config/           # Database and runtime configuration
+└── README.md
+```
 
-Cloudinary, OpenAI, and DeepSeek credentials are optional unless their related features are enabled.
+## Local setup
 
-## Local development
+### Prerequisites
 
-1. Clone and enter the repository.
+- Node.js 20 LTS or newer
+- npm 9 or newer
+- PostgreSQL database
+- SMTP credentials for verification and password email
 
-   ```bash
-   git clone <repository-url>
-   cd final_year
-   ```
+Cloudinary and AI-provider credentials are optional unless those features are enabled.
 
-2. Create your environment files.
+### Configure environment files
 
-   ```bash
-   copy frontend\.env.example frontend\.env
-   copy server\.env.example server\.env
-   ```
+```powershell
+copy frontend\.env.example frontend\.env
+copy server\.env.example server\.env
+```
 
-   On macOS/Linux, use `cp` instead of `copy`.
+On macOS/Linux, replace `copy` with `cp`. Set real secret values in `server/.env`; never commit environment files, database URLs, API keys, or email passwords.
 
-3. Set the real values in `server/.env`, especially `POSTGRES_URL`, `JWT_SECRET`, email credentials, and allowed frontend URL.
+### Install, migrate, and run
 
-4. Install dependencies.
+```powershell
+cd frontend
+npm ci
 
-   ```bash
-   cd frontend
-   npm ci
+cd ..\server
+npm ci
+npm run create-tables
+```
 
-   cd ..\server
-   npm ci
-   ```
+Start the API and frontend in separate terminals:
 
-5. Create/update database tables. Review migrations before running against a shared or production database.
+```powershell
+# Terminal 1
+cd server
+npm run dev
 
-   ```bash
-   npm run create-tables
-   ```
+# Terminal 2
+cd frontend
+npm run dev
+```
 
-6. Start the services in separate terminals.
-
-   ```bash
-   # terminal 1
-   cd server
-   npm run dev
-
-   # terminal 2
-   cd frontend
-   npm run dev
-   ```
-
-The default URLs are `http://localhost:5173` for the UI and `http://localhost:4000` for the API.
+The local frontend runs at `http://localhost:5173`; the API runs at `http://localhost:4000` by default.
 
 ## Environment variables
 
-Never commit real `.env` files or credentials. Keep the supplied `.env.example` files current.
+Templates are included at `frontend/.env.example` and `server/.env.example`.
 
 ### Frontend: `frontend/.env`
 
 ```env
 VITE_API_BASE_URL=http://localhost:4000
+VITE_SUPPORT_EMAIL=admin@your-domain.example
 ```
 
-Vite compiles `VITE_*` values at build time. Rebuild/redeploy the frontend after changing this value.
+`VITE_*` values are embedded at build time. Rebuild and redeploy the frontend whenever one changes.
 
 ### Backend: `server/.env`
 
@@ -114,136 +149,100 @@ Vite compiles `VITE_*` values at build time. Rebuild/redeploy the frontend after
 NODE_ENV=development
 PORT=4000
 POSTGRES_URL=postgresql://USER:PASSWORD@HOST:5432/DATABASE?sslmode=require
-JWT_SECRET=use-a-long-random-secret
+JWT_SECRET=replace-with-a-long-random-secret
 FRONTEND_URL=http://localhost:5173
 CORS_ORIGIN=http://localhost:5173
-EMAIL_FROM=your-email@example.com
+BASE_URL=http://localhost:4000
+
+APP_NAME=Syllabys
+SUPPORT_EMAIL=admin@your-domain.example
+EMAIL_FROM=admin@your-domain.example
 EMAIL_PASS=your-email-provider-app-password
 ```
 
-Optional integrations:
+For a custom SMTP provider, configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and optionally `SMTP_SECURE`. Gmail settings are used when no custom SMTP host is supplied.
 
-```env
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
-OPEN_AI_KEY=
-DEEPSEEK_API_KEY=
-BASE_URL=http://localhost:4000
-```
+## Authentication and reliability
 
-For multiple allowed frontend origins, use a comma-separated list without trailing slashes:
-
-```env
-CORS_ORIGIN=http://localhost:5173,https://your-frontend.onrender.com
-```
-
-## Authentication
-
-The API uses JWT bearer tokens. The frontend adds the `Authorization: Bearer <token>` header automatically.
-
-- **Normal login:** token is stored in `sessionStorage`; it lasts for the current browser session.
-- **Remember me:** token is stored in `localStorage`; it survives browser restarts.
-- **Logout or expired token:** stored tokens are cleared and protected routes send the user to `/auth`.
-- **Verification:** accounts must verify their email before login.
-- **Password reset:** requesting a reset sends a one-hour, single-use link. The API uses a generic response to avoid account enumeration.
-- **Password change:** requires a valid JWT and changes only the authenticated account.
+- JWTs are sent in the `Authorization: Bearer <token>` header.
+- Normal sessions use `sessionStorage`; “Remember me” sessions use `localStorage`.
+- Password hashes and verification/reset tokens are never returned by user endpoints.
+- Registration responds after the account is created; verification delivery runs in the background so a slow SMTP provider does not cause sign-up timeouts.
+- An unverified sign-in triggers a non-blocking verification email resend.
+- Database connection/query limits and browser timeouts are bounded to provide clear failure feedback rather than indefinite loading.
 
 ## API overview
 
-All routes are mounted beneath `/api`.
+All endpoints are mounted under `/api`.
 
-| Area | Example endpoints |
+| Domain | Representative endpoints |
 | --- | --- |
-| Authentication | `POST /auth/register`, `POST /auth/login`, `GET /auth/verify/:token`, `PUT /auth/forgot-password`, `PUT /auth/update-password` |
-| Current user | `GET /me`, `GET /users/:userId`, `PUT /users/:userId/bio` |
+| Authentication | `POST /auth/register`, `POST /auth/login`, `GET /auth/verify/:token` |
+| Passwords | `PUT /auth/forgot-password`, `PUT /auth/update-password` |
+| Users | `GET /users`, `GET /users/:userId`, `PUT /users/:userId/bio` |
 | Learning | `/courses`, `/progress`, `/quizzes` |
 | Engagement | `/goals`, `/leaderboard`, `/insights`, `/recommendations` |
 | Collaboration | `/chats`, `/events`, Socket.IO |
-| Other | `/interest-flow`, `/assistant`, `/feedback`, `/analytics` |
+| Supporting features | `/interest-flow`, `/assistant`, `/feedback`, `/analytics` |
 
-Protected endpoints need a valid bearer token. See `server/src/routes/` and `frontend/src/api/APIs.jsx` for the full inventory.
+Protected routes require a valid bearer token. See `server/src/routes/` for the complete route definitions.
+
+## Administrator operations
+
+Use the one-time account management script to change an existing account’s email/password and assign the `admin` role. It requires an existing user matching `CURRENT_ADMIN_EMAIL`, never prints the password, and requires a password of at least 12 characters.
+
+```powershell
+cd server
+$env:CURRENT_ADMIN_EMAIL='existing-admin@example.com'
+$env:ADMIN_EMAIL='new-admin@example.com'
+$env:ADMIN_PASSWORD='use-a-unique-password-of-at-least-12-characters'
+npm run manage-admin
+```
 
 ## Deployment
 
 Deploy `frontend` and `server` as separate services.
 
-### Backend service
+| Service | Root | Build | Start/publish |
+| --- | --- | --- | --- |
+| API | `server` | `npm ci` | `npm start` |
+| Web | `frontend` | `npm ci && npm run build` | publish `dist` |
 
-- Root directory: `server`
-- Build command: `npm ci`
-- Start command: `npm start`
-- Configure `POSTGRES_URL`, `JWT_SECRET`, email credentials, `FRONTEND_URL`, and `CORS_ORIGIN` in the host’s secret manager.
+Set `POSTGRES_URL`, `JWT_SECRET`, email settings, `FRONTEND_URL`, and `CORS_ORIGIN` in the API host’s secret manager. Set `VITE_API_BASE_URL=https://your-api.example.com` in the frontend build environment.
 
-### Frontend service
+## Quality checks
 
-- Root directory: `frontend`
-- Build command: `npm ci && npm run build`
-- Publish directory: `dist`
-- Set `VITE_API_BASE_URL=https://your-api.onrender.com`
-
-### Render configuration example
-
-```env
-# Backend
-FRONTEND_URL=https://your-frontend.onrender.com
-CORS_ORIGIN=https://your-frontend.onrender.com,http://localhost:5173
-
-# Frontend
-VITE_API_BASE_URL=https://your-api.onrender.com
+```powershell
+cd frontend
+npm run lint
+npm run build
 ```
 
-Deploy the backend after modifying CORS values. Redeploy the frontend after modifying any `VITE_*` variable.
+```powershell
+cd server
+node --check src/controllers/authController.js
+node --check src/utils/sendEmail.js
+```
 
 ## Security and operations
 
-- Use a distinct, high-entropy `JWT_SECRET` in each environment.
-- Limit `CORS_ORIGIN` to known origins. Do not use `*` for authenticated browser APIs.
-- Use HTTPS for frontend, API, and database in production.
-- Keep credentials in the deployment provider’s secret manager only.
-- Back up PostgreSQL and test recovery.
-- Add rate limiting for login, registration, and password reset before substantial public traffic.
-- Add structured logs, uptime monitoring, error tracking, and database metrics for production operations.
-- Restrict Socket.IO origins in `server/src/config/socket.js` before enabling real-time features for public traffic.
+- Use HTTPS in production for the web app, API, and database connection.
+- Restrict `CORS_ORIGIN` to approved frontend origins; do not use `*` with authenticated requests.
+- Use a distinct high-entropy `JWT_SECRET` in every environment.
+- Keep deployment secrets in the host’s secret manager, not committed `.env` files.
+- Add rate limiting, structured logs, uptime monitoring, and error tracking before substantial public traffic.
+- Back up PostgreSQL and test recovery procedures.
 
 ## Troubleshooting
 
-### CORS or preflight failure
-
-Ensure `CORS_ORIGIN` includes the exact frontend origin, including `https://`, with no trailing slash. Redeploy the backend after changing it.
-
-### Login returns 401 without “Remember me”
-
-Deploy the current frontend. `axiosInstance.jsx` must use `getAuthToken()` so it can retrieve both session and persistent tokens.
-
-### Frontend cannot reach the API
-
-Check `VITE_API_BASE_URL`, rebuild the frontend, and verify that it is an HTTPS API URL. Do not include `/api`; the client appends it.
-
-### Verification/reset email does not arrive
-
-Verify `EMAIL_FROM` and `EMAIL_PASS`, use an app password where required, inspect server logs, and ensure `FRONTEND_URL` is the deployed UI address.
-
-### Database cannot connect
-
-Check `POSTGRES_URL`, SSL requirements, network access, and your provider’s connection limits. The backend logs the connection failure at startup.
-
-## Commands
-
-```bash
-# Frontend
-cd frontend
-npm run dev
-npm run build
-npm run lint
-
-# Backend
-cd server
-npm run dev
-npm start
-npm run create-tables
-```
+| Problem | What to check |
+| --- | --- |
+| Login or registration times out | API availability, `POSTGRES_URL`, SMTP configuration, and browser/server logs. |
+| Browser blocks API requests | `CORS_ORIGIN` must exactly match the frontend origin, including `https://`. |
+| Frontend cannot reach the API | Set `VITE_API_BASE_URL` to the API origin without `/api`, then rebuild. |
+| Verification email does not arrive | Sender credentials, spam folders, and `BASE_URL`/`FRONTEND_URL`. |
+| Database connection fails | PostgreSQL URL, SSL settings, provider firewall access, and connection limits. |
 
 ## License
 
-Add the appropriate license before public distribution.
+No license is currently declared. Add a license file before public distribution.

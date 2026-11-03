@@ -2,6 +2,8 @@
 import React from "react";
 import "./TermsConditions.css"; // Import the CSS file
 
+const supportEmail = import.meta.env.VITE_SUPPORT_EMAIL || 'your-support-email@example.com';
+
 const TermsConditions = () => {
   return (
     <div className="terms-container">
@@ -51,7 +53,7 @@ const TermsConditions = () => {
         </p>
 
         <h2>9. Contact Us</h2>
-        <p>Email: <a href="mailto:nyongfaalanthony@gmail.com">nyongfaalanthony@gmail.com</a></p>
+        <p>Email: <a href={`mailto:${supportEmail}`}>{supportEmail}</a></p>
         <p>Phone: 0209040199</p>
       </div>
     </div>

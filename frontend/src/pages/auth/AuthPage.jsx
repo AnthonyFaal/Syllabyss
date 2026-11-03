@@ -62,7 +62,7 @@ const AuthPage = () => {
       let errorMessage = 'Something went wrong.';
       if (error.response) {
         if (error.response.status === 403) {
-          errorMessage = 'Your account is not verified. A new verification email has been sent.';
+          errorMessage = 'Your account is not verified. A verification email is on its way.';
         } else if (error.response.data?.error) {
           errorMessage = error.response.data.error;
         } else if (error.response.data?.message) {

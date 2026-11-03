@@ -6,7 +6,9 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localho
 
 const axiosInstance = axios.create({
   baseURL: `${API_BASE_URL}/api`,
-  timeout: 30000,
+  // Auth should fail fast with a useful message rather than leaving users on a
+  // loading button for half a minute when the API is unavailable.
+  timeout: 15000,
 });
 
 axiosInstance.interceptors.request.use(
@@ -28,7 +30,9 @@ axiosInstance.interceptors.response.use(
       window.location.replace('/auth');
     }
 
-    const errorMessage = error.response?.data?.message || 
+    const errorMessage = error.code === 'ECONNABORTED'
+      ? 'The server took too long to respond. Please try again.'
+      : error.response?.data?.message ||
                          error.message || 
                          'Request failed';
     
