@@ -14,17 +14,44 @@ Syllabys is a full-stack learning platform for learners who want a clearer path 
 
 It is split into a React single-page application and an Express/PostgreSQL API, so the web client and API can be deployed independently.
 
-## Live demo and video
+## Interactive demo
 
-Try the deployed application at [final-year-yynk.onrender.com](https://final-year-yynk.onrender.com). It is the current interactive product demo.
+The deployed application is available at [final-year-yynk.onrender.com](https://final-year-yynk.onrender.com). It is a live, authenticated demo—not a static mock-up.
 
-> Video walkthrough: add a public YouTube, Loom, or MP4 URL here when a recording is available. The supplied URL is a live application—not a video—so it is intentionally labelled accurately.
+| Demo URL | Administrator login |
+| --- | --- |
+| [Open Syllabys](https://final-year-yynk.onrender.com/auth) | **Email:** `admin@gmail.com`<br>**Password:** `Adminlan!` |
+
+This account is intentionally a resume/demo account. Do not reuse these credentials for any personal or production service.
+
+### Demo walkthrough
+
+1. Open the [sign-in page](https://final-year-yynk.onrender.com/auth) and use the demo credentials above.
+2. After login, open the dashboard to review the learner overview.
+3. Use the sidebar to explore courses, challenges, insights, collaboration, profile, and administrator views.
+4. Create or update learning content to demonstrate the full course-to-progress workflow.
+
+> The live interactive demo is the canonical walkthrough. A standalone recorded video is not committed because one has not been supplied; adding a real YouTube, Loom, or MP4 URL here is the appropriate final step if a recruiter specifically requests video playback.
 
 ## Product preview
 
-| Syllabys | Learning flow |
-| --- | --- |
-| ![Syllabys logo](frontend/public/Logo.png) | Sign up, choose learning interests, organise coursework, study materials, complete quizzes, and review progress over time. |
+### Sign in
+
+![Syllabys sign-in screen](docs/images/sign-in.png)
+
+### Learning dashboard
+
+![Syllabys learning dashboard](docs/images/dashboard.png)
+
+### Learning insights
+
+![Syllabys learning insights](docs/images/insights.png)
+
+### Administrator dashboard
+
+![Syllabys administrator dashboard](docs/images/admin-panel.png)
+
+These images were captured from the deployed application with the documented demo administrator account. They show the sign-in flow, learner activity overview, progress analytics, and platform-management view.
 
 ## Features
 
