@@ -239,7 +239,7 @@ const Profile = () => {
             )}
           </section>
 
-          <section className="settings-section">
+          {/*<section className="settings-section">
             <h2><span className="title-icon">⚙️</span> Account Settings</h2>
             <div className="settings-grid">
               <div className="setting-card">
@@ -318,7 +318,7 @@ const Profile = () => {
                 </div>
               </div>
             )}
-          </section>
+          </section>*/}
         </div>
       </div>
     </div>

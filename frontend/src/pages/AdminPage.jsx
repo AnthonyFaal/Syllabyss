@@ -224,7 +224,10 @@ const AdminPanel = () => {
                           <strong>{user.name}</strong>
                         </div>
                       </td>
-                      <td><a href={`mailto:${user.email}`}>{user.email}</a></td>
+                      <td>
+                        hidden
+                        {/*<a href={`mailto:${user.email}`}>{user.email}</a>*/}
+                      </td>
                       <td><span className={`role-badge ${user.role.toLowerCase()}`}>{user.role}</span></td>
                       <td>{user.lastLogin}</td>
                     </tr>
